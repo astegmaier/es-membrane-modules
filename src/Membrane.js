@@ -2,7 +2,7 @@ import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, allT
 import { ProxyNotify } from "./ProxyNotify";
 import { ProxyMapping } from "./ProxyMapping";
 import { ObjectGraphHandler } from "./ObjectGraphHandler";
-import { valueType, makeShadowTarget, makeRevokeDeleteRefs, MembraneMayLog, Constants } from "./moduleUtilities";
+import { valueType, makeShadowTarget, NOT_YET_DETERMINED, makeRevokeDeleteRefs, MembraneMayLog, Constants } from "./moduleUtilities";
 import { ChainHandlers, ModifyRulesAPI } from "./ModifyRulesAPI";
 
 /* Reference:  http://soft.vub.ac.be/~tvcutsem/invokedynamic/js-membranes

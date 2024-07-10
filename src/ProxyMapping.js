@@ -1,5 +1,5 @@
 import { DataDescriptor } from "./sharedUtilities";
-import { valueType } from "./moduleUtilities";
+import { valueType, NOT_YET_DETERMINED } from "./moduleUtilities";
 
 /**
  * @private
