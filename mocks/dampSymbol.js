@@ -1,1 +1,1 @@
-var DAMP = Symbol("damp");
+export var DAMP = Symbol("damp");

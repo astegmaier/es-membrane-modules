@@ -1,4 +1,4 @@
-var loggerLib = (function() {
+export var loggerLib = (function() {
   function BasicLogger() {
     this.appenders = [];
     this.levels.forEach(function(level) {

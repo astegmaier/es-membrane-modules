@@ -1,19 +1,4 @@
-/*
-import "../docs/dist/es6-modules/Membrane.js";
-import "../docs/dist/es6-modules/MembraneMocks.js";
-*/
-
-if ((typeof MembraneMocks != "function") ||
-    (typeof loggerLib != "object") ||
-    (typeof DAMP != "symbol")) {
-  if (typeof require == "function") {
-    var { MembraneMocks, loggerLib, DAMP } = require("../../docs/dist/node/mocks.js");
-  }
-}
-
-if (typeof MembraneMocks != "function") {
-  throw new Error("Unable to run tests");
-}
+import { MembraneMocks, loggerLib, DAMP } from "../../mocks";
 
 describe("Function listeners", function() {
   "use strict";

@@ -1,3 +1,4 @@
+import assert from "assert";
 import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, isAccessorDescriptor } from "./sharedUtilities";
 import { ProxyMapping } from "./ProxyMapping";
 import { valueType, getRealTarget, inGraphHandler, AssertIsPropertyKey } from "./moduleUtilities";

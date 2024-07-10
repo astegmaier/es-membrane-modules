@@ -1,3 +1,4 @@
+import assert from "assert";
 import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, allTraps, Primordials } from "./sharedUtilities";
 import { ProxyNotify } from "./ProxyNotify";
 import { ProxyMapping } from "./ProxyMapping";

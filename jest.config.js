@@ -4,7 +4,6 @@ const config = {
     "^.+\\.(t|j)sx?$": "@swc/jest",
   },
   globals: {
-    assert: require('assert'),
     "DogfoodMembrane": undefined
   }
 };
