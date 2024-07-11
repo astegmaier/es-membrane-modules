@@ -2,6 +2,8 @@ import assert from "assert";
 import { DataDescriptor } from "./sharedUtilities";
 import { valueType, NOT_YET_DETERMINED } from "./moduleUtilities";
 
+const DogfoodMembrane = undefined;
+
 /**
  * @private
  *

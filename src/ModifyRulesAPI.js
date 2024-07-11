@@ -3,6 +3,8 @@ import { ObjectGraphHandler } from "./ObjectGraphHandler";
 import { getRealTarget, inGraphHandler, makeRevokeDeleteRefs } from "./moduleUtilities";
 import { DistortionsListener } from "./DistortionsListener";
 
+const DogfoodMembrane = undefined;
+
 /**
  * @fileoverview
  *
