@@ -1,11 +1,16 @@
 {
-  "name": "es-membrane-revived",
-  "version": "1.0.0",
+  "name": "es-membrane-modules",
+  "version": "0.0.1",
+  "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "test": "jest",
     "typecheck": "tsc"
   },
-  "author": "Andrew Stegmaier",
+  "contributors": [
+    "Alexander J. Vincent <ajvincent@gmail.com>",
+    "Andrew Stegmaier <andrew.stegmaier@microsoft.com"
+  ],
   "license": "ISC",
   "description": "",
   "dependencies": {
