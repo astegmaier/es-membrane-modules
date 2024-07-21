@@ -1,3 +1,5 @@
+/** @import {IDistortionsListenerPrototype} from "./DistortionsListener" */
+/** @import {NWNCDataDescriptorsOf} from "./sharedUtilities" */
 import { NWNCDataDescriptor, allTraps, Primordials } from "./sharedUtilities";
 
 export function DistortionsListener(membrane) {
@@ -27,7 +29,7 @@ export function DistortionsListener(membrane) {
   });
 }
 
-Object.defineProperties(DistortionsListener.prototype, {
+Object.defineProperties(DistortionsListener.prototype, /** @type NWNCDataDescriptorsOf<IDistortionsListenerPrototype> */({
   "addListener": new NWNCDataDescriptor(function(value, category, config) {
     if ((category === "prototype") || (category === "instance"))
       value = value.prototype;
@@ -185,6 +187,6 @@ Object.defineProperties(DistortionsListener.prototype, {
   "passThroughFilter": new NWNCDataDescriptor(function(value) {
     return this.ignorableValues.has(value);
   }, false),
-});
+}));
 
 Object.freeze(DistortionsListener.prototype);

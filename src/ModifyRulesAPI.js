@@ -1,3 +1,5 @@
+/** @import { IModifyRulesAPIPrototype, IChainHandler } from "./ModifyRulesAPI" */
+/** @import { IProxyParts } from "./Membrane" */
 import { DataDescriptor, isDataDescriptor, allTraps } from "./sharedUtilities";
 import { ObjectGraphHandler } from "./ObjectGraphHandler";
 import { getRealTarget, inGraphHandler, makeRevokeDeleteRefs } from "./moduleUtilities";
@@ -54,6 +56,7 @@ export const ChainHandlerProtection = Object.create(Reflect, {
    * Return true if a property should not be deleted or redefined.
    */
   "isProtectedName": new DataDescriptor(function(chainHandler, propName) {
+    /** @type {(string | symbol) []} */
     let rv = ["nextHandler", "baseHandler", "membrane"];
     let baseHandler = chainHandler.baseHandler;
     if (baseHandler !== Reflect)
@@ -105,6 +108,8 @@ export function ModifyRulesAPI(membrane) {
   ));
   Object.seal(this);
 }
+
+/** @type {IModifyRulesAPIPrototype} */
 ModifyRulesAPI.prototype = Object.seal({
   /**
    * Convert a shadow target to a real proxy target.
@@ -118,12 +123,14 @@ ModifyRulesAPI.prototype = Object.seal({
   /**
    * Create a ProxyHandler inheriting from Reflect or an ObjectGraphHandler.
    *
-   * @param existingHandler {ProxyHandler} The prototype of the new handler.
+   * @param existingHandler {ProxyHandler | IChainHandler} The prototype of the new handler.
    */
   createChainHandler: function(existingHandler) {
     // Yes, the logic is a little convoluted, but it seems to work this way.
+    /** @type {Reflect | ObjectGraphHandler} */
     let baseHandler = Reflect, description = "Reflect";
     if (ChainHandlers.has(existingHandler))
+      // @ts-expect-error - if an object is a IChainHandler (with a baseHandler property), it will be in the ChainHandlers WeakMap, but typescript doesn't know about this.
       baseHandler = existingHandler.baseHandler;
 
     if (existingHandler instanceof ObjectGraphHandler) {
@@ -133,7 +140,7 @@ ModifyRulesAPI.prototype = Object.seal({
       }
 
       baseHandler = this.membrane.getHandlerByName(existingHandler.fieldName);
-      description = "our membrane's " + baseHandler.fieldName + " ObjectGraphHandler";
+      description = "our membrane's " +  /** @type {ObjectGraphHandler} */(baseHandler).fieldName + " ObjectGraphHandler";
     }
 
     else if (baseHandler !== Reflect) {
@@ -160,9 +167,9 @@ ModifyRulesAPI.prototype = Object.seal({
    * Replace a proxy in the membrane.
    *
    * @param oldProxy {Proxy} The proxy to replace.
-   * @param handler  {ProxyHandler} What to base the new proxy on.
+   * @param handler  {ProxyHandler | IChainHandler} What to base the new proxy on.
    *
-   * @returns {Proxy} The newly built proxy.
+   * @returns The newly built proxy.
    */
   replaceProxy: function(oldProxy, handler) {
     if (DogfoodMembrane) {
@@ -171,6 +178,7 @@ ModifyRulesAPI.prototype = Object.seal({
         handler = unwrapped;
     }
 
+    // @ts-expect-error - if an object is a IChainHandler (with a baseHandler property), it will be in the ChainHandlers WeakMap, but typescript doesn't know about this.
     let baseHandler = ChainHandlers.has(handler) ? handler.baseHandler : handler;
     {
       /* These assertions are to make sure the proxy we're replacing is safe to
@@ -232,12 +240,13 @@ ModifyRulesAPI.prototype = Object.seal({
     else {
       shadowTarget = map.getShadowTarget(cachedField);
     }
+    /** @type {Partial<IProxyParts>} */
     let parts = Proxy.revocable(shadowTarget, handler);
     parts.value = original;
     parts.override = true;
     parts.shadowTarget = shadowTarget;
     //parts.extendedHandler = handler;
-    map.set(this.membrane, cachedField, parts);
+    map.set(this.membrane, cachedField, /** @type {IProxyParts} */(parts));
     makeRevokeDeleteRefs(parts, map, cachedField);
 
     let gHandler = this.membrane.getHandlerByName(cachedField);
@@ -248,7 +257,7 @@ ModifyRulesAPI.prototype = Object.seal({
   /**
    * Ensure that the proxy passed in matches the object graph handler.
    *
-   * @param fieldName  {Symbol|String} The handler's field name.
+   * @param fieldName  {symbol|string} The handler's field name.
    * @param proxy      {Proxy}  The value to look up.
    * @param methodName {String} The calling function's name.
    * 
@@ -265,7 +274,7 @@ ModifyRulesAPI.prototype = Object.seal({
    * Require that new properties be stored via the proxies instead of propagated
    * through to the underlying object.
    *
-   * @param fieldName {Symbol|String} The field name of the object graph handler
+   * @param fieldName {symbol|string} The field name of the object graph handler
    *                                  the proxy uses.
    * @param proxy     {Proxy}  The proxy (or underlying object) needing local
    *                           property protection.
@@ -281,7 +290,7 @@ ModifyRulesAPI.prototype = Object.seal({
    * Require that properties be deleted only on the proxy instead of propagated
    * through to the underlying object.
    *
-   * @param fieldName {Symbol|String} The field name of the object graph handler
+   * @param fieldName {symbol|string} The field name of the object graph handler
    *                                  the proxy uses.
    * @param proxy     {Proxy}  The proxy (or underlying object) needing local
    *                           property protection.
@@ -300,16 +309,16 @@ ModifyRulesAPI.prototype = Object.seal({
    * @note Local properties and local delete operations of a proxy are NOT
    * affected by the filters.
    * 
-   * @param fieldName {Symbol|String} The field name of the object graph handler
+   * @param fieldName {symbol|string} The field name of the object graph handler
    *                                  the proxy uses.
    * @param proxy     {Proxy}    The proxy (or underlying object) needing local
    *                             property protection.
-   * @param filter    {Function} The filtering function.  (May be an Array or
+   * @param filter    {Function|Set<any>|Array<any>} The filtering function.  (May be an Array or
    *                             a Set, which becomes a whitelist filter.)
    * @param options   {Object} Broken down as follows:
    * - none defined at present
    *
-   * @see Array.prototype.filter.
+   * @see Array.prototype.filter
    */
   filterOwnKeys: function(fieldName, proxy, filter, options = {}) {
     this.assertLocalProxy(fieldName, proxy, "filterOwnKeys");
@@ -358,10 +367,10 @@ ModifyRulesAPI.prototype = Object.seal({
   /**
    * Assign the number of arguments to truncate a method's argument list to.
    *
-   * @param fieldName {Symbol|String} The field name of the object graph handler
+   * @param fieldName {symbol|string} The field name of the object graph handler
    *                                  the proxy uses.
-   * @param proxy     {Proxy(Function)} The method needing argument truncation.
-   * @param value     {Boolean|Number}
+   * @param proxy     {any} The method needing argument truncation (type: proxy to a function).
+   * @param value     {boolean|number}
    *   - if true, limit to a function's arity.
    *   - if false, do not limit at all.
    *   - if a non-negative integer, limit to that number.
@@ -373,6 +382,7 @@ ModifyRulesAPI.prototype = Object.seal({
     {
       const type = typeof value;
       if (type === "number") {
+        // @ts-expect-error - typescript can't follow the logic here and thinks that value might still be a boolean.
         if (!Number.isInteger(value) || (value < 0)) {
           throw new Error("value must be a non-negative integer or a boolean!");
         }

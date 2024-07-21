@@ -1,3 +1,5 @@
+/** @import { IProxyMappingPrototype } from "./ProxyMapping" */
+/** @import { DataDescriptorsOf } from "./sharedUtilities" */
 import assert from "assert";
 import { DataDescriptor } from "./sharedUtilities";
 import { valueType, NOT_YET_DETERMINED } from "./moduleUtilities";
@@ -34,7 +36,7 @@ export function ProxyMapping(originField) {
   //this.localFlags = null
 }
 { // ProxyMapping definition
-Object.defineProperties(ProxyMapping.prototype, {
+  Object.defineProperties(ProxyMapping.prototype, /** @type {DataDescriptorsOf<IProxyMappingPrototype>} */({
   "getOriginal": new DataDescriptor(function() {
     if (this.originalValue === NOT_YET_DETERMINED)
       throw new Error("getOriginal called but the original value hasn't been set!");
@@ -338,7 +340,7 @@ Object.defineProperties(ProxyMapping.prototype, {
   new DataDescriptor(function(fieldName, value) {
     this.proxiedFields[fieldName].truncateArgList = value;
   }),
-});
+}));
 
 Object.seal(ProxyMapping.prototype);
 } // end ProxyMapping definition

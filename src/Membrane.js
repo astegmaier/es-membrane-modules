@@ -1,3 +1,4 @@
+/** @import { IMembranePrototype, IProxyParts, IBuildMappingOptions } from "./Membrane" */
 import assert from "assert";
 import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, allTraps, Primordials } from "./sharedUtilities";
 import { ProxyNotify } from "./ProxyNotify";
@@ -11,7 +12,7 @@ import { ChainHandlers, ModifyRulesAPI } from "./ModifyRulesAPI";
  * Object graph: A collection of values that talk to each other directly.
  */
 
-export function MembraneInternal(options = {}) {
+export function Membrane(options = {}) {
   let passThrough = (typeof options.passThroughFilter === "function") ?
                     options.passThroughFilter :
                     returnFalse;
@@ -51,13 +52,15 @@ export function MembraneInternal(options = {}) {
 }
 
 Reflect.defineProperty(
-  MembraneInternal,
+  Membrane,
   "Primordials",
   new NWNCDataDescriptor(Primordials, true) // this should be visible
 );
 
 { // Membrane definition
-MembraneInternal.prototype = Object.seal({
+
+/** @type {IMembranePrototype} */
+Membrane.prototype = Object.seal({
   allTraps: allTraps,
 
   /**
@@ -72,11 +75,11 @@ MembraneInternal.prototype = Object.seal({
    * Get the value associated with a field name and another known value.
    *
    * @param field {Symbol|String}  The field to look for.
-   * @param value {Variant} The key for the ProxyMapping map.
+   * @param value {any} The key for the ProxyMapping map.
    *
    * @returns [
    *    {Boolean} True if the value was found.
-   *    {Variant} The value for that field.
+   *    {any} The value for that field.
    * ]
    *
    * @note This method is not used internally in the membrane, but only by debug
@@ -95,19 +98,20 @@ MembraneInternal.prototype = Object.seal({
    * Get the proxy associated with a field name and another known value.
    *
    * @param field {Symbol|String}  The field to look for.
-   * @param value {Variant} The key for the ProxyMapping map.
+   * @param value {any} The key for the ProxyMapping map.
    *
-   * @returns [
+   * @returns {[found: boolean, value: any]} -
+   * [
    *    {Boolean} True if the value was found.
    *    {Proxy}   The proxy for that field.
    * ] if field is not the value's origin field
    * 
-   * @returns [
+   * [
    *    {Boolean} True if the value was found.
-   *    {Variant} The actual value
+   *    {any} The actual value
    * ] if field is the value's origin field
    *
-   * @returns [
+   * [
    *    {Boolean} False if the value was not found.
    *    {Object}  NOT_YET_DETERMINED
    * ]
@@ -124,10 +128,10 @@ MembraneInternal.prototype = Object.seal({
    * Assign a value to an object graph.
    *
    * @param handler {ObjectGraphHandler} A graph handler to bind to the value.
-   * @param value   {Variant} The value to assign.
-   *
-   * Options:
-   *   @param mapping {ProxyMapping} A mapping with associated values and proxies.
+   * @param value   {any} The value to assign.
+   * @param options {IBuildMappingOptions} 
+   *    mapping - A mapping with associated values and proxies.
+   *    originHandler - 
    *
    * @returns {ProxyMapping} A mapping holding the value.
    *
@@ -155,6 +159,7 @@ MembraneInternal.prototype = Object.seal({
            "Proxy requests must pass in an origin handler");
     let shadowTarget = makeShadowTarget(value);
 
+    /** @type {Partial<IProxyParts>}  */
     var parts;
     if (isOriginal) {
       parts = { value: value };
@@ -173,7 +178,7 @@ MembraneInternal.prototype = Object.seal({
     }
 
     parts.shadowTarget = shadowTarget;
-    mapping.set(this, handler.fieldName, parts);
+    mapping.set(this, handler.fieldName, /** @type {IProxyParts} */ (parts));
     makeRevokeDeleteRefs(parts, mapping, handler.fieldName);
 
     if (!isOriginal) {
@@ -216,8 +221,8 @@ MembraneInternal.prototype = Object.seal({
   /**
    * Get an ObjectGraphHandler object by field name.  Build it if necessary.
    *
-   * @param field      {Symbol|String}  The field name for the object graph.
-   * @param options    {Object} Broken down as follows:
+   * @param field      {symbol|string}  The field name for the object graph.
+   * @param options    {{ mustCreate?: boolean }} Broken down as follows:
    * - mustCreate {Boolean} True if we must create a missing graph handler.
    *
    * @returns {ObjectGraphHandler} The handler for the object graph.
@@ -240,6 +245,7 @@ MembraneInternal.prototype = Object.seal({
    */
   ownsHandler: function(handler) {
     if (ChainHandlers.has(handler))
+      // @ts-expect-error - if an object is a IChainHandler (with a baseHandler property), it will be in the ChainHandlers WeakMap, but typescript doesn't know about this.
       handler = handler.baseHandler;
     return (handler instanceof ObjectGraphHandler) &&
            (this.handlersByFieldName[handler.fieldName] === handler);
@@ -250,7 +256,8 @@ MembraneInternal.prototype = Object.seal({
    *
    * @param mapping {ProxyMapping}  A mapping whose origin field refers to the
    *                                value's object graph.
-   * @param arg     {Variant}       The value to wrap.
+   * @param arg     {any}       The value to wrap.
+   * @param options {IBuildMappingOptions}
    *
    * @note This marks the value as the "original" in the new ProxyMapping it
    * creates.
@@ -275,16 +282,15 @@ MembraneInternal.prototype = Object.seal({
   /**
    * Ensure an argument is properly wrapped in a proxy.
    *
-   * @param origin {ObjectGraphHandler} Where the argument originated from
-   * @param target {ObjectGraphHandler} The object graph we're returning the arg to.
-   * @param arg    {Variant}         The argument.
+   * @param origin  {ObjectGraphHandler} Where the argument originated from
+   * @param target  {ObjectGraphHandler} The object graph we're returning the arg to.
+   * @param arg     {any} The argument.
+   * @param options {IBuildMappingOptions}
    *
-   * @returns {Proxy}   The proxy for that field
-   *   if field is not the value's origin field
+   * @returns {any}   
+   *    - The proxy for that field - if field is not the value's origin field.
+   *    - The actual value - if field is the value's origin field.
    * 
-   * @returns {Variant} The actual value
-   *   if field is the value's origin field
-   *
    * @throws {Error} if failed (this really should never happen)
    */
   convertArgumentToProxy:
@@ -361,7 +367,7 @@ MembraneInternal.prototype = Object.seal({
    * @param handler0 {ObjectGraphHandler} The graph handler that should own value0.
    * @param value0   {Object}             The first value to store.
    * @param handler1 {ObjectGraphHandler} The graph handler that should own value1.
-   * @param value1   {Variant}            The second value to store.
+   * @param value1   {any}                The second value to store.
    */
   bindValuesByHandlers: function(handler0, value0, handler1, value1) {
     /** XXX ajvincent The logic here is convoluted, I admit.  Basically, if we
@@ -579,4 +585,4 @@ MembraneInternal.prototype = Object.seal({
 });
 
 } // end Membrane definition
-Object.seal(MembraneInternal);
+Object.seal(Membrane);

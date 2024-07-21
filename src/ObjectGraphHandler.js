@@ -1,3 +1,4 @@
+/** @import { IObjectGraphHandlerPrototype } from "./ObjectGraphHandler" */
 import assert from "assert";
 import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, isAccessorDescriptor } from "./sharedUtilities";
 import { ProxyMapping } from "./ProxyMapping";
@@ -78,7 +79,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
   });
 }
 { // ObjectGraphHandler definition
-ObjectGraphHandler.prototype = Object.seal({
+  ObjectGraphHandler.prototype = Object.seal(/** @type {IObjectGraphHandlerPrototype} */ ({
   /* Strategy for each handler trap:
    * (1) Determine the target's origin field name.
    * (2) Wrap all non-primitive arguments for Reflect in the target field.
@@ -730,6 +731,7 @@ ObjectGraphHandler.prototype = Object.seal({
 
     const mayLog = this.membrane.__mayLog__();
     if (mayLog) {
+      // @ts-expect-error -- ansteg: Typescript says "The '+' operator cannot be applied to type 'symbol'". This smells like a real bug, but I'm not sure how to fix it at the moment.
       this.membrane.logger.debug("set propName: " + propName);
     }
     let target = getRealTarget(shadowTarget);
@@ -1218,7 +1220,7 @@ ObjectGraphHandler.prototype = Object.seal({
 
   /**
    * Ensure the first argument is a known shadow target.
-   *
+   * 
    * @param {String} trapName     The name of the trap to run.
    * @param {Object} shadowTarget The supposed target.
    * @private
@@ -1241,7 +1243,7 @@ ObjectGraphHandler.prototype = Object.seal({
 
   /**
    * Get the shadow target associated with a real value.
-   *
+   * 
    * @private
    */
   getShadowTarget: function(target) {
@@ -1251,7 +1253,7 @@ ObjectGraphHandler.prototype = Object.seal({
 
   /**
    * Ensure a value has been wrapped in the membrane (and is available for distortions)
-   *
+   * 
    * @param target {Object} The value to wrap.
    */
   ensureMapping: function(target) {
@@ -1261,7 +1263,7 @@ ObjectGraphHandler.prototype = Object.seal({
   
   /**
    * Add a listener for new proxies.
-   *
+   * 
    * @see ProxyNotify
    */
   addProxyListener: function(listener) {
@@ -1273,7 +1275,7 @@ ObjectGraphHandler.prototype = Object.seal({
 
   /**
    * Remove a listener for new proxies.
-   *
+   * 
    * @see ProxyNotify
    */
   removeProxyListener: function(listener) {
@@ -1317,10 +1319,10 @@ ObjectGraphHandler.prototype = Object.seal({
    * @param reason   {String} Either "enter", "return" or "throw".
    * @param trapName {String} Either "apply" or "construct".
    * @param target   {Object} The unwrapped target we call.
-   * @param rvOrExn  {Any}    If reason is "enter", undefined.
+   * @param rvOrExn  {any}    If reason is "enter", undefined.
    *                          If reason is "return", the return value.
    *                          If reason is "throw", the exception.
-   * @param origin   {ObjectGraphHandler} The origin graph handler.
+   * @param origin   {import("./ObjectGraphHandler").ObjectGraphHandler} The origin graph handler.
    *
    * @note
    *
@@ -1376,7 +1378,7 @@ ObjectGraphHandler.prototype = Object.seal({
 
   /**
    * Set all properties on a shadow target, including prototype, and seal it.
-   *
+   * 
    * @private
    */
   lockShadowTarget: function(shadowTarget) {
@@ -1411,7 +1413,7 @@ ObjectGraphHandler.prototype = Object.seal({
    * @param {Object} shadowTarget The proxy target
    * @private
    *
-   * @returns {String[]} The list of exposed keys.
+   * @returns {(string | symbol)[]} The list of exposed keys.
    */
   setOwnKeys: function(shadowTarget) {
     var target = getRealTarget(shadowTarget);
@@ -1518,6 +1520,7 @@ ObjectGraphHandler.prototype = Object.seal({
       // step 19
       targetConfigurableKeys.forEach(function(key) {
         if (!uncheckedResultKeys.has(key)) {
+          // @ts-expect-error -- ansteg: Typescript says "Cannot find name 'propName'.". This smells like a real bug, but I'm not sure how to fix it at the moment.
           rv.push(propName);
         }
         uncheckedResultKeys.delete(key);
@@ -1535,7 +1538,7 @@ ObjectGraphHandler.prototype = Object.seal({
    *
    * @param source       {Object} The source object holding a property.
    * @param shadowTarget {Object} The shadow target for a proxy.
-   * @param propName     {String|Symbol} The name of the property to copy.
+   * @param propName     {string|symbol} The name of the property to copy.
    *
    * @returns {Boolean} true if the lazy property descriptor was defined.
    *
@@ -1593,7 +1596,7 @@ ObjectGraphHandler.prototype = Object.seal({
         if (lockState === "transient")
           return handler.membrane.getMembraneProxy(
             handler.fieldName, shadowTarget
-          ).proxy;
+          )[0]; // ansteg - this used to be ".proxy" instead of ".[0]", but typescript complained. I'm pretty sure this was a real bug.
 
         /* When the shadow target is sealed, desc.configurable is not updated.
          * But the shadow target's properties all get the [[Configurable]] flag
@@ -1803,9 +1806,9 @@ ObjectGraphHandler.prototype = Object.seal({
    * Truncate the argument list, if necessary.
    *
    * @param target        {Function} The method about to be invoked.
-   * @param argumentsList {Value[]}  The list of arguments
+   * @param argumentsList {any[]}  The list of arguments
    *
-   * returns {Value[]} a copy of the list of arguments, truncated.
+   * returns {any[]} a copy of the list of arguments, truncated.
    *
    * @private
    */
@@ -1837,7 +1840,7 @@ ObjectGraphHandler.prototype = Object.seal({
 
   /**
    * Add a ProxyMapping or a Proxy.revoke function to our list.
-   *
+   * 
    * @private
    */
   addRevocable: function(revoke) {
@@ -1848,7 +1851,7 @@ ObjectGraphHandler.prototype = Object.seal({
 
   /**
    * Remove a ProxyMapping or a Proxy.revoke function from our list.
-   *
+   * 
    * @private
    */
   removeRevocable: function(revoke) {
@@ -1875,7 +1878,7 @@ ObjectGraphHandler.prototype = Object.seal({
         revocable();
     }
   }
-});
+}));
 
 } // end ObjectGraphHandler definition
 

@@ -2,15 +2,19 @@
   "name": "es-membrane-revived",
   "version": "1.0.0",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc"
   },
   "author": "Andrew Stegmaier",
   "license": "ISC",
   "description": "",
+  "dependencies": {
+    "assert": "^2.1.0"
+  },
   "devDependencies": {
     "@swc/core": "^1.6.13",
     "@swc/jest": "^0.2.36",
-    "assert": "^2.1.0",
-    "jest": "^29.7.0"
+    "jest": "^29.7.0",
+    "typescript": "^5.5.3"
   }
 }

@@ -128,10 +128,10 @@ const p = [
   WeakSet,
 ];
 
-return p.concat(p.filter((i) => {
+return p.concat(p.filter((/** @type {any} */i) => {
     if (!i.name)
       return false;
     let j = i.name[0];
     return j.toUpperCase() === j;
-  }).map((k) => k.prototype));
+  }).map((/** @type {any} */k) => k.prototype));
 })());

@@ -1,1 +1,1 @@
-export { MembraneInternal as Membrane } from "./Membrane";
+export { Membrane } from "./Membrane";

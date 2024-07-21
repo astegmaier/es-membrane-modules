@@ -115,6 +115,7 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
   }
 }
 
+/** @type {import("./ProxyNotify").ProxyNotify.useShadowTarget} */
 ProxyNotify.useShadowTarget = function(parts, handler, mode) {
   "use strict";
   let newHandler = {};
