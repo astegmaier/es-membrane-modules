@@ -12,7 +12,7 @@
     "Andrew Stegmaier <andrew.stegmaier@microsoft.com"
   ],
   "license": "ISC",
-  "description": "",
+  "description": "A fork of es-membrane that uses modules and provides typescript definitions.",
   "dependencies": {
     "assert": "^2.1.0"
   },
