@@ -5,7 +5,9 @@ import { ProxyMapping } from "./ProxyMapping";
 import { ObjectGraphHandler } from "./ObjectGraphHandler";
 
 interface MembraneOptions {
-  passThroughFilter: (...args: any[]) => boolean;
+  passThroughFilter?: (...args: any[]) => boolean;
+  showGraphName?: boolean;
+  logger?: any;
 }
 
 export interface IProxyParts extends ReturnType<typeof Proxy.revocable> {
