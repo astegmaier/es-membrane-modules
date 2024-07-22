@@ -1,5 +1,5 @@
 {
-  "name": "es-membrane-modules",
+  "name": "@astegmaier/es-membrane-modules",
   "version": "0.0.1",
   "main": "src/index.js",
   "type": "module",
@@ -7,9 +7,16 @@
     "test": "jest",
     "typecheck": "tsc"
   },
+  "author": "Andrew Stegmaier",
   "contributors": [
-    "Alexander J. Vincent <ajvincent@gmail.com>",
-    "Andrew Stegmaier <andrew.stegmaier@microsoft.com"
+    {
+      "name": "Alexander J. Vincent",
+      "email": "ajvincent@gmail.com"
+    },
+    {
+      "name": "Andrew Stegmaier",
+      "email": "andrew.stegmaier@microsoft.com"
+    }
   ],
   "license": "ISC",
   "description": "A fork of es-membrane that uses modules and provides typescript definitions.",
@@ -21,5 +28,13 @@
     "@swc/jest": "^0.2.36",
     "jest": "^29.7.0",
     "typescript": "^5.5.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astegmaier/es-membrane-modules.git"
+  },
+  "bugs": {
+    "url": "https://github.com/astegmaier/es-membrane-modules/issues"
+  },
+  "homepage": "https://github.com/astegmaier/es-membrane-modules#readme"
 }
