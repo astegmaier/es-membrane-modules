@@ -2,6 +2,7 @@
   "name": "@astegmaier/es-membrane-modules",
   "version": "0.0.1",
   "main": "src/index.js",
+  "types": "src/index.d.ts",
   "type": "module",
   "scripts": {
     "test": "jest",

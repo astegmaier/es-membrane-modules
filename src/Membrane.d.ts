@@ -245,5 +245,5 @@ export interface IMembranePrototype {
 export interface Membrane extends IMembraneOwn, IMembranePrototype {}
 
 export class Membrane {
-  constructor(options: MembraneOptions);
+  constructor(options?: MembraneOptions);
 }
