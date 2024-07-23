@@ -1,8 +1,8 @@
 import assert from "assert";
-import { DataDescriptor, AccessorDescriptor } from "./sharedUtilities";
-import { ProxyMapping } from "./ProxyMapping";
-import { ObjectGraphHandler } from "./ObjectGraphHandler";
-import { makeRevokeDeleteRefs } from "./moduleUtilities";
+import { DataDescriptor, AccessorDescriptor } from "./sharedUtilities.js";
+import { ProxyMapping } from "./ProxyMapping.js";
+import { ObjectGraphHandler } from "./ObjectGraphHandler.js";
+import { makeRevokeDeleteRefs } from "./moduleUtilities.js";
 
 /**
  * Notify all proxy listeners of a new proxy.

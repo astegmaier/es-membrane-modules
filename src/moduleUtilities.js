@@ -1,4 +1,4 @@
-import { DataDescriptor } from "./sharedUtilities";
+import { DataDescriptor } from "./sharedUtilities.js";
 
 export function valueType(value) {
   if (value === null)

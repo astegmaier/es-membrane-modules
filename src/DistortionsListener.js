@@ -1,6 +1,6 @@
 /** @import {IDistortionsListenerPrototype} from "./DistortionsListener" */
 /** @import {NWNCDataDescriptorsOf} from "./sharedUtilities" */
-import { NWNCDataDescriptor, allTraps, Primordials } from "./sharedUtilities";
+import { NWNCDataDescriptor, allTraps, Primordials } from "./sharedUtilities.js";
 
 export function DistortionsListener(membrane) {
   // private

@@ -1,9 +1,9 @@
 /** @import { IModifyRulesAPIPrototype, IChainHandler } from "./ModifyRulesAPI" */
 /** @import { IProxyParts } from "./Membrane" */
-import { DataDescriptor, isDataDescriptor, allTraps } from "./sharedUtilities";
-import { ObjectGraphHandler } from "./ObjectGraphHandler";
-import { getRealTarget, inGraphHandler, makeRevokeDeleteRefs } from "./moduleUtilities";
-import { DistortionsListener } from "./DistortionsListener";
+import { DataDescriptor, isDataDescriptor, allTraps } from "./sharedUtilities.js";
+import { ObjectGraphHandler } from "./ObjectGraphHandler.js";
+import { getRealTarget, inGraphHandler, makeRevokeDeleteRefs } from "./moduleUtilities.js";
+import { DistortionsListener } from "./DistortionsListener.js";
 
 const DogfoodMembrane = undefined;
 

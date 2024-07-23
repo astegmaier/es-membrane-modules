@@ -1,8 +1,8 @@
 /** @import { IObjectGraphHandlerPrototype } from "./ObjectGraphHandler" */
 import assert from "assert";
-import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, isAccessorDescriptor } from "./sharedUtilities";
-import { ProxyMapping } from "./ProxyMapping";
-import { valueType, getRealTarget, inGraphHandler, AssertIsPropertyKey } from "./moduleUtilities";
+import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, isAccessorDescriptor } from "./sharedUtilities.js";
+import { ProxyMapping } from "./ProxyMapping.js";
+import { valueType, getRealTarget, inGraphHandler, AssertIsPropertyKey } from "./moduleUtilities.js";
 
 /* A proxy handler designed to return only primitives and objects in a given
  * object graph, defined by the fieldName.

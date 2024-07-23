@@ -1,1 +1,1 @@
-export { Membrane } from "./Membrane";
+export { Membrane } from "./Membrane.js";

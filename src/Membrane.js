@@ -1,11 +1,11 @@
 /** @import { IMembranePrototype, IProxyParts, IBuildMappingOptions } from "./Membrane" */
 import assert from "assert";
-import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, allTraps, Primordials } from "./sharedUtilities";
-import { ProxyNotify } from "./ProxyNotify";
-import { ProxyMapping } from "./ProxyMapping";
-import { ObjectGraphHandler } from "./ObjectGraphHandler";
-import { valueType, makeShadowTarget, NOT_YET_DETERMINED, makeRevokeDeleteRefs, MembraneMayLog, Constants } from "./moduleUtilities";
-import { ChainHandlers, ModifyRulesAPI } from "./ModifyRulesAPI";
+import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, allTraps, Primordials } from "./sharedUtilities.js";
+import { ProxyNotify } from "./ProxyNotify.js";
+import { ProxyMapping } from "./ProxyMapping.js";
+import { ObjectGraphHandler } from "./ObjectGraphHandler.js";
+import { valueType, makeShadowTarget, NOT_YET_DETERMINED, makeRevokeDeleteRefs, MembraneMayLog, Constants } from "./moduleUtilities.js";
+import { ChainHandlers, ModifyRulesAPI } from "./ModifyRulesAPI.js";
 
 /* Reference:  http://soft.vub.ac.be/~tvcutsem/invokedynamic/js-membranes
  * Definitions:
