@@ -5,7 +5,7 @@ import { ProxyMapping } from "./ProxyMapping";
 import { ObjectGraphHandler } from "./ObjectGraphHandler";
 
 interface MembraneOptions {
-  passThroughFilter?: (...args: any[]) => boolean;
+  passThroughFilter?: (value: unknown) => boolean;
   showGraphName?: boolean;
   logger?: any;
 }
@@ -35,7 +35,7 @@ export interface IMembraneOwn {
   __functionListeners__: any[];
   warnOnceSet: Set<any> | null;
   modifyRules: ModifyRulesAPI;
-  passThroughFilter: (...args: any[]) => boolean;
+  passThroughFilter: (value: unknown) => boolean;
   Primordials: typeof Primordials;
 }
 
@@ -157,7 +157,7 @@ export interface IMembranePrototype {
     options?: IBuildMappingOptions
   ): any;
 
-  passThroughFilter: (...args: any[]) => boolean;
+  passThroughFilter: (value: unknown) => boolean;
 
   /**
    * Ensure an argument is properly wrapped in a proxy.

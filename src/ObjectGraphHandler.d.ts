@@ -4,7 +4,7 @@ import type { ProxyMapping } from "./ProxyMapping";
 export interface IObjectGraphHandlerOwn {
   membrane: Membrane;
   fieldName: any;
-  passThroughFilter: any;
+  passThroughFilter: (value: unknown) => boolean;
   mayReplacePassThrough: boolean;
   boundMethods: any;
   graphNameDescriptor: any;
