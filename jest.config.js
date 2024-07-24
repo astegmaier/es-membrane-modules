@@ -6,4 +6,4 @@ const config = {
   setupFiles: ["./jest.setup.js"],
 };
 
-export default config;
+module.exports = config;

@@ -1,4 +1,4 @@
-import assert from "assert";
+const assert = require("assert");
 import { DataDescriptor, AccessorDescriptor } from "./sharedUtilities.js";
 import { ProxyMapping } from "./ProxyMapping.js";
 import { ObjectGraphHandler } from "./ObjectGraphHandler.js";
