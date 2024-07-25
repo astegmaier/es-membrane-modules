@@ -1,6 +1,6 @@
 {
   "name": "@astegmaier/es-membrane-modules",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A fork of es-membrane that uses modules and provides typescript definitions.",
   "license": "ISC",
   "author": "Andrew Stegmaier",
