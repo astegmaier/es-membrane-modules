@@ -36,11 +36,13 @@
   "types": "dist/cjs/index.d.ts",
   "scripts": {
     "test": "jest",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "npm run typecheck:src && npm run typecheck:test",
+    "typecheck:test": "tsc --project test/tsconfig.json",
+    "typecheck:src": "tsc --project src/tsconfig.json --noEmit",
     "rebuild": "npm run clean && npm run build",
     "build": "npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc && npm run copy:dts:cjs",
-    "build:esm": "tsc --module es6 --outDir dist/esm && npm run copy:dts:esm",
+    "build:cjs": "tsc --project src/tsconfig.json && npm run copy:dts:cjs",
+    "build:esm": "tsc --project src/tsconfig.json --module es6 --outDir dist/esm && npm run copy:dts:esm",
     "copy:dts:cjs": "copyfiles -u 1 \"src/**/*.d.ts\" dist/cjs",
     "copy:dts:esm": "copyfiles -u 1 \"src/**/*.d.ts\" dist/esm",
     "clean": "rimraf dist"
