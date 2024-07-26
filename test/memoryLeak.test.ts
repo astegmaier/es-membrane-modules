@@ -1,5 +1,6 @@
 import { Membrane } from "../src";
-import { writeHeapSnapshot, forceGc } from "./testUtils";
+import { writeHeapSnapshot } from "./testUtils/writeHeapSnapshot";
+import { forceGc } from "./testUtils/forceGc";
 
 class PotentiallyLeakyClass {
   testName?: string;
@@ -9,6 +10,7 @@ class PotentiallyLeakyClass {
 }
 
 describe("Memory leaks caused (or fixed) by the membrane", () => {
+  
   afterEach(() => {
     // We want heap snapshots for all failing tests that are run manually.
     const currentTestState = expect.getState();
