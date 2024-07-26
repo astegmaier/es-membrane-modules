@@ -45,7 +45,7 @@
     "build:esm": "tsc --project src/tsconfig.json --module es6 --outDir dist/esm && npm run copy:dts:esm",
     "copy:dts:cjs": "copyfiles -u 1 \"src/**/*.d.ts\" dist/cjs",
     "copy:dts:esm": "copyfiles -u 1 \"src/**/*.d.ts\" dist/esm",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist failing-test-heapsnapshots"
   },
   "dependencies": {
     "assert": "^2.1.0"

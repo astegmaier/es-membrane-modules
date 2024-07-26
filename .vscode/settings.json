@@ -1,0 +1,5 @@
+{
+  "jest.nodeEnv": {
+    "VS_CODE_JEST": "true"
+  }
+}

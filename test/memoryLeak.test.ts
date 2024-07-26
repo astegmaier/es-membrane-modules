@@ -1,23 +1,24 @@
 import { Membrane } from "../src";
+import { writeHeapSnapshot, forceGc } from "./testUtils";
 
-interface GlobalWithAsyncGc {
-  gc(params: { execution: "async" }): Promise<void>;
-}
-
-/**
- * Forces garbage collection. This will throw if node was not launched with the --expose-gc flag.
- * @param retries - Number of times to retry GC. Experimentally, 2 seems sufficient.
- */
-async function forceGc(retries: number = 2): Promise<void> {
-  if (!globalThis.gc) {
-    throw new Error("Node was not launched with the --expose-gc flag.");
-  }
-  for (let i = 0; i < retries; i += 1) {
-    await (globalThis as unknown as GlobalWithAsyncGc).gc({ execution: "async" });
+class PotentiallyLeakyClass {
+  testName?: string;
+  constructor() {
+    this.testName = expect.getState()?.currentTestName;
   }
 }
 
 describe("Memory leaks caused (or fixed) by the membrane", () => {
+  afterEach(() => {
+    // We want heap snapshots for all failing tests that are run manually.
+    const currentTestState = expect.getState();
+    const isFromVsCodeJest = process.env.VS_CODE_JEST;
+    const isFailing = currentTestState.currentTestName && currentTestState.numPassingAsserts !== currentTestState.expectedAssertionsNumber;
+    if (isFailing && !isFromVsCodeJest) {
+      writeHeapSnapshot(currentTestState.currentTestName);
+    }
+  });
+  
   it("jest tests should be able to detect basic garbage collection", async () => {
     let myObject = {};
     const finalizationFn = jest.fn();
@@ -36,7 +37,7 @@ describe("Memory leaks caused (or fixed) by the membrane", () => {
     const dryHandler = membrane.getHandlerByName("dry", { mustCreate: true });
     const wetHandler = membrane.getHandlerByName("wet", { mustCreate: true });
 
-    let wetObject: {} | null = {};
+    let wetObject: PotentiallyLeakyClass | null = new PotentiallyLeakyClass();
     let dryProxy = membrane.convertArgumentToProxy(wetHandler, dryHandler, wetObject);
     finalizationRegistry.register(wetObject, "wetObject");
     finalizationRegistry.register(dryProxy, "dryProxy");
@@ -58,7 +59,7 @@ describe("Memory leaks caused (or fixed) by the membrane", () => {
     const dryHandler = membrane.getHandlerByName("dry", { mustCreate: true });
     const wetHandler = membrane.getHandlerByName("wet", { mustCreate: true });
 
-    let wetObject: {} | null = {};
+    let wetObject: PotentiallyLeakyClass | null = new PotentiallyLeakyClass();
     let dryProxy = membrane.convertArgumentToProxy(wetHandler, dryHandler, wetObject);
     finalizationRegistry.register(wetObject, "wetObject");
     finalizationRegistry.register(dryProxy, "dryProxy");
