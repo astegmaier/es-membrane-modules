@@ -3,7 +3,7 @@ import { writeHeapSnapshot } from "./testUtils/writeHeapSnapshot";
 import { forceGc } from "./testUtils/forceGc";
 
 class PotentiallyLeakyClass {
-  testName?: string;
+  testName: string | undefined;
   constructor() {
     this.testName = expect.getState()?.currentTestName;
   }
@@ -15,14 +15,14 @@ describe("Memory leaks caused (or fixed) by the membrane", () => {
     // We want heap snapshots for all failing tests that are run manually.
     const currentTestState = expect.getState();
     const isFromVsCodeJest = process.env.VS_CODE_JEST;
-    const isFailing = currentTestState.currentTestName && currentTestState.numPassingAsserts !== currentTestState.expectedAssertionsNumber;
+    const isFailing = currentTestState.numPassingAsserts !== currentTestState.expectedAssertionsNumber;
     if (isFailing && !isFromVsCodeJest) {
       writeHeapSnapshot(currentTestState.currentTestName);
     }
   });
   
   it("jest tests should be able to detect basic garbage collection", async () => {
-    let myObject = {};
+    let myObject: PotentiallyLeakyClass | null = new PotentiallyLeakyClass();
     const finalizationFn = jest.fn();
     const finalizationRegistry = new FinalizationRegistry<string>(finalizationFn);
     finalizationRegistry.register(myObject, "myObject");

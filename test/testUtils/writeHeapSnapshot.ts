@@ -3,21 +3,21 @@ import * as fs from "fs";
 
 const HEAP_SNAPSHOT_DIR = "failing-test-heapsnapshots";
 
-export function writeHeapSnapshot(testName: string) {
+export function writeHeapSnapshot(testName?: string) {
   const fileName = `${new Date().toLocaleString()} - ${truncateStringFromStart(testName, 30)}.heapsnapshot`;
   const pathName = path.join(HEAP_SNAPSHOT_DIR, sanitizePathName(fileName));
   createDirectoryIfNotExists(HEAP_SNAPSHOT_DIR);
   require("v8").writeHeapSnapshot(pathName);
 }
 
-function createDirectoryIfNotExists(dirPath) {
+function createDirectoryIfNotExists(dirPath: string) {
   const resolvedPath = path.resolve(dirPath);
   if (!fs.existsSync(resolvedPath)) {
     fs.mkdirSync(resolvedPath, { recursive: true });
   }
 }
 
-function sanitizePathName(input) {
+function sanitizePathName(input: string) {
   // Define a regular expression to match invalid characters
   const illegalRe = /[<>:"\/\\|?*\x00-\x1F]/g; // Invalid characters for Windows
   const reservedRe = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])$/i; // Reserved filenames in Windows
@@ -40,7 +40,10 @@ function sanitizePathName(input) {
   return sanitized;
 }
 
-function truncateStringFromStart(str, x) {
+function truncateStringFromStart(str: string | undefined, x: number) {
+  if (!str) {
+    return "";
+  }
   if (str.length <= x) {
     return str;
   }
