@@ -1,4 +1,4 @@
-/** @import { IMembranePrototype, IProxyParts, IBuildMappingOptions } from "./Membrane" */
+/** @import { IMembranePrototype, IProxyParts, IBuildMappingOptions, IGetHandlerByNameOptions } from "./Membrane" */
 const assert = require("assert");
 import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, allTraps, Primordials } from "./sharedUtilities.js";
 import { ProxyNotify } from "./ProxyNotify.js";
@@ -222,7 +222,7 @@ Membrane.prototype = Object.seal({
    * Get an ObjectGraphHandler object by field name.  Build it if necessary.
    *
    * @param field      {symbol|string}  The field name for the object graph.
-   * @param options    {{ mustCreate?: boolean }} Broken down as follows:
+   * @param options    {IGetHandlerByNameOptions} Broken down as follows:
    * - mustCreate {Boolean} True if we must create a missing graph handler.
    *
    * @returns {ObjectGraphHandler} The handler for the object graph.

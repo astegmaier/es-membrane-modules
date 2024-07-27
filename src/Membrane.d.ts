@@ -23,6 +23,11 @@ export interface IBuildMappingOptions {
   override?: boolean;
 }
 
+export interface IGetHandlerByNameOptions {
+  /** True if we must create a missing graph handler. */
+  mustCreate?: boolean;
+}
+
 export interface IMembraneOwn {
   showGraphName: boolean;
   /*
@@ -122,7 +127,7 @@ export interface IMembranePrototype {
    * Get an ObjectGraphHandler object by field name.  Build it if necessary.
    *
    * @param field      {symbol|string}  The field name for the object graph.
-   * @param options    {{ mustCreate?: boolean }} Broken down as follows:
+   * @param options    {IGetHandlerByNameOptions} Broken down as follows:
    * - mustCreate {Boolean} True if we must create a missing graph handler.
    *
    * @returns {ObjectGraphHandler} The handler for the object graph.
@@ -130,7 +135,7 @@ export interface IMembranePrototype {
   getHandlerByName(
     this: Membrane,
     field: symbol | string,
-    options?: { mustCreate?: boolean }
+    options?: IGetHandlerByNameOptions
   ): ObjectGraphHandler;
 
   /**
