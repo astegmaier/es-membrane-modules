@@ -3,8 +3,26 @@ import * as fs from "fs";
 
 const HEAP_SNAPSHOT_DIR = "failing-test-heapsnapshots";
 
+export function generateSnapshotOnFailure(assertion: () => void) {
+  try {
+    assertion();
+  } catch (err) {
+    const currentTestState = expect.getState();
+    const isFromVsCodeJest = process.env.VS_CODE_JEST;
+    const isFailing =
+      currentTestState.numPassingAsserts !== currentTestState.assertionCalls;
+    if (isFailing && !isFromVsCodeJest) {
+      writeHeapSnapshot(currentTestState.currentTestName);
+    }
+    throw err;
+  }
+}
+
 export function writeHeapSnapshot(testName?: string) {
-  const fileName = `${new Date().toLocaleString()} - ${truncateStringFromStart(testName, 30)}.heapsnapshot`;
+  const fileName = `${new Date().toLocaleString()} - ${truncateStringFromStart(
+    testName,
+    30
+  )}.heapsnapshot`;
   const pathName = path.join(HEAP_SNAPSHOT_DIR, sanitizePathName(fileName));
   createDirectoryIfNotExists(HEAP_SNAPSHOT_DIR);
   require("v8").writeHeapSnapshot(pathName);
@@ -49,6 +67,3 @@ function truncateStringFromStart(str: string | undefined, x: number) {
   }
   return "..." + str.slice(-x);
 }
-
-
-

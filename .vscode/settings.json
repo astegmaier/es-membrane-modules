@@ -1,5 +1,6 @@
 {
   "jest.nodeEnv": {
     "VS_CODE_JEST": "true"
-  }
+  },
+  "prettier.printWidth": 120
 }
