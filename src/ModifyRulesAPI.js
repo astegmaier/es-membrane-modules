@@ -1,5 +1,5 @@
 /** @import { IModifyRulesAPIPrototype, IChainHandler } from "./ModifyRulesAPI" */
-/** @import { IProxyParts } from "./Membrane" */
+/** @import { IProxyParts } from "./ProxyMapping" */
 import { DataDescriptor, isDataDescriptor, allTraps } from "./sharedUtilities.js";
 import { ObjectGraphHandler } from "./ObjectGraphHandler.js";
 import { getRealTarget, inGraphHandler, makeRevokeDeleteRefs } from "./moduleUtilities.js";
@@ -240,13 +240,13 @@ ModifyRulesAPI.prototype = Object.seal({
     else {
       shadowTarget = map.getShadowTarget(cachedField);
     }
-    /** @type {Partial<IProxyParts>} */
+    /** @type {IProxyParts} */
     let parts = Proxy.revocable(shadowTarget, handler);
     parts.value = original;
     parts.override = true;
     parts.shadowTarget = shadowTarget;
     //parts.extendedHandler = handler;
-    map.set(this.membrane, cachedField, /** @type {IProxyParts} */(parts));
+    map.set(this.membrane, cachedField, parts);
     makeRevokeDeleteRefs(parts, map, cachedField);
 
     let gHandler = this.membrane.getHandlerByName(cachedField);

@@ -1,4 +1,5 @@
 import { ObjectGraphHandler } from "./ObjectGraphHandler";
+import { IProxyParts } from "./ProxyMapping";
 
 export interface ListenerMetadata {
   /**
@@ -69,14 +70,14 @@ export type UseShadowTargetMode = "frozen" | "sealed" | "prepared";
 /**
  * Notify all proxy listeners of a new proxy.
  *
- * @param parts    {Object} The field object from a ProxyMapping's proxiedFields.
+ * @param parts    {IProxyParts} The field object from a ProxyMapping's proxiedFields.
  * @param handler  {ObjectGraphHandler} The handler for the proxy.
  * @param isOrigin {boolean} True if the handler is the origin graph handler.
  * @param options  {Object} Special options to pass on to the listeners.
  *q
  * @private
  */
-export function ProxyNotify(parts: any, handler: ObjectGraphHandler, isOrigin: boolean, options: any): void;
+export function ProxyNotify(parts: IProxyParts, handler: ObjectGraphHandler, isOrigin: boolean, options: any): void;
 
 export declare module ProxyNotify {
   function useShadowTarget(this: AllListenerMetadata, parts: any, handler: ObjectGraphHandler, mode: UseShadowTargetMode): void;

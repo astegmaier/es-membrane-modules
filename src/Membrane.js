@@ -1,4 +1,5 @@
-/** @import { IMembranePrototype, IProxyParts, IBuildMappingOptions, IGetHandlerByNameOptions } from "./Membrane" */
+/** @import { IMembranePrototype, IBuildMappingOptions, IGetHandlerByNameOptions } from "./Membrane" */
+/** @import { IProxyParts } from "./ProxyMapping" */
 const assert = require("assert");
 import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, allTraps, Primordials } from "./sharedUtilities.js";
 import { ProxyNotify } from "./ProxyNotify.js";
@@ -159,7 +160,7 @@ Membrane.prototype = Object.seal({
            "Proxy requests must pass in an origin handler");
     let shadowTarget = makeShadowTarget(value);
 
-    /** @type {Partial<IProxyParts>}  */
+    /** @type {IProxyParts}  */
     var parts;
     if (isOriginal) {
       parts = { value: value };

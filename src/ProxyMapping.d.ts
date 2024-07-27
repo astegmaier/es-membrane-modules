@@ -1,8 +1,22 @@
-import type { IProxyParts, Membrane } from "./Membrane";
+import type { Membrane } from "./Membrane";
+
+// TODO: clarify which of these are required v. optional
+export interface IProxyParts {
+  value?: object;
+  shadowTarget?: object;
+  proxy?: object
+  revoke?: () => void;
+  localDescriptors?: Map<symbol | string, PropertyDescriptor>;
+  deletedLocals?: Set<symbol | string>;
+  cachedOwnKeys?: { keys: any, original: any };
+  ownKeysFilter?: () => boolean;
+  truncateArgList?: any;
+  override?: boolean;
+}
 
 export interface IProxyMappingOwn {
   originField: symbol | string;
-  proxiedFields: any;
+  proxiedFields: { [fieldName: string | symbol]: IProxyParts };
   originalValue: object;
   localFlags?: Set<any>;
   localFlagsSymbols?: Map<any, any>;
@@ -56,7 +70,7 @@ export interface IProxyMappingPrototype {
     this: ProxyMapping, 
     fieldName: any,
     propName: any,
-    desc: PropertyDecorator
+    desc: PropertyDescriptor
   ): void;
   deleteLocalDescriptor(
     this: ProxyMapping, 

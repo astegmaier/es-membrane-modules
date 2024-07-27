@@ -51,16 +51,14 @@ export function ProxyMapping(originField) {
     var rv = this.proxiedFields[field];
     if (!rv)
       throw new Error("getValue called for unknown field!");
-    rv = rv.value;
-    return rv;
+    return rv.value;
   }),
 
   "getProxy": new DataDescriptor(function(field) {
     var rv = this.proxiedFields[field];
     if (!rv)
       throw new Error("getProxy called for unknown field!");
-    rv = (!rv.override && (field === this.originField)) ? rv.value : rv.proxy;
-    return rv;
+    return (!rv.override && (field === this.originField)) ? rv.value : rv.proxy;
   }),
 
   "hasProxy": new DataDescriptor(function(proxy) {
@@ -76,8 +74,7 @@ export function ProxyMapping(originField) {
     var rv = this.proxiedFields[field];
     if (!rv)
       throw new Error("getShadowTarget called for unknown field!");
-    rv = rv.shadowTarget;
-    return rv;
+    return rv.shadowTarget;
   }),
 
   "isShadowTarget": new DataDescriptor(function(shadowTarget) {

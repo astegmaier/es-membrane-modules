@@ -1,3 +1,5 @@
+import { IProxyParts } from "./ProxyMapping";
+
 export function valueType(value: any): "function" | "object" | "primitive";
 
 export var ShadowKeyMap: WeakMap<any, any>;
@@ -24,7 +26,7 @@ export function inGraphHandler<T>(trapName: any, callback: T): T;
 
 export const NOT_YET_DETERMINED: { not_yet_determined: true };
 
-export function makeRevokeDeleteRefs(parts: any, mapping: any, field: any): any;
+export function makeRevokeDeleteRefs(parts: IProxyParts, mapping: any, field: any): any;
 
 /**
  * Helper function to determine if anyone may log.

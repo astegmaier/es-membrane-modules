@@ -10,12 +10,6 @@ interface MembraneOptions {
   logger?: any;
 }
 
-export interface IProxyParts extends ReturnType<typeof Proxy.revocable> {
-  value: any;
-  override: boolean;
-  shadowTarget?: any;
-}
-
 export interface IBuildMappingOptions {
   /** A mapping with associated values and proxies. */
   mapping?: ProxyMapping;

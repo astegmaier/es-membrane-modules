@@ -1,3 +1,4 @@
+/** @import {IProxyParts} from "./ProxyMapping" */
 const assert = require("assert");
 import { DataDescriptor, AccessorDescriptor } from "./sharedUtilities.js";
 import { ProxyMapping } from "./ProxyMapping.js";
@@ -7,7 +8,7 @@ import { makeRevokeDeleteRefs } from "./moduleUtilities.js";
 /**
  * Notify all proxy listeners of a new proxy.
  *
- * @param parts    {Object} The field object from a ProxyMapping's proxiedFields.
+ * @param parts    {IProxyParts} The field object from a ProxyMapping's proxiedFields.
  * @param handler  {ObjectGraphHandler} The handler for the proxy.
  * @param isOrigin {Boolean} True if the handler is the origin graph handler.
  * @param options  {Object} Special options to pass on to the listeners.
