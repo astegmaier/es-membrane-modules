@@ -15,7 +15,7 @@ describe("Memory leaks caused (or fixed) by the membrane", () => {
     // We want heap snapshots for all failing tests that are run manually.
     const currentTestState = expect.getState();
     const isFromVsCodeJest = process.env.VS_CODE_JEST;
-    const isFailing = currentTestState.numPassingAsserts !== currentTestState.expectedAssertionsNumber;
+    const isFailing = currentTestState.numPassingAsserts !== currentTestState.assertionCalls;
     if (isFailing && !isFromVsCodeJest) {
       writeHeapSnapshot(currentTestState.currentTestName);
     }
