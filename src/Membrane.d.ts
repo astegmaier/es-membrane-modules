@@ -50,7 +50,7 @@ export interface IMembranePrototype {
   /**
    * Returns true if we have a proxy for the value.
    */
-  hasProxyForValue(this: Membrane, field: any, value: any): boolean;
+  hasProxyForValue(this: Membrane, field: symbol | string, value: any): boolean;
 
   /**
    * Get the value associated with a field name and another known value.
@@ -76,7 +76,7 @@ export interface IMembranePrototype {
   /**
    * Get the proxy associated with a field name and another known value.
    *
-   * @param field {Symbol|String}  The field to look for.
+   * @param field {symbol|string}  The field to look for.
    * @param value {any} The key for the ProxyMapping map.
    *
    * @returns {[found: boolean, value: any]} -
@@ -121,7 +121,7 @@ export interface IMembranePrototype {
     options?: IBuildMappingOptions
   ): ProxyMapping;
 
-  hasHandlerByField(this: Membrane, field: any): boolean;
+  hasHandlerByField(this: Membrane, field: symbol | string): boolean;
 
   /**
    * Get an ObjectGraphHandler object by field name.  Build it if necessary.
@@ -208,8 +208,8 @@ export interface IMembranePrototype {
    */
   wrapDescriptor(
     this: Membrane,
-    originField: any,
-    targetField: any,
+    originField: symbol | string,
+    targetField: symbol | string,
     desc: PropertyDescriptor
   ): PropertyDescriptor;
 

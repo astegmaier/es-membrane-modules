@@ -74,7 +74,7 @@ Membrane.prototype = Object.seal({
   /**
    * Get the value associated with a field name and another known value.
    *
-   * @param field {Symbol|String}  The field to look for.
+   * @param field {symbol|string}  The field to look for.
    * @param value {any} The key for the ProxyMapping map.
    *
    * @returns [
@@ -97,7 +97,7 @@ Membrane.prototype = Object.seal({
   /**
    * Get the proxy associated with a field name and another known value.
    *
-   * @param field {Symbol|String}  The field to look for.
+   * @param field {symbol|string}  The field to look for.
    * @param value {any} The key for the ProxyMapping map.
    *
    * @returns {[found: boolean, value: any]} -
