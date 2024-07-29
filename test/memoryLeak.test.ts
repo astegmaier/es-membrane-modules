@@ -46,7 +46,7 @@ describe("Memory leaks caused (or fixed) by the membrane", () => {
     generateSnapshotOnFailure(() => expect(finalizationFn).toHaveBeenCalledWith("wetObject"));
   });
 
-  it.skip("should allow for a wet objects to be garbage collected after the membrane is revoked, even if something is still retaining the dry proxy to it", async () => {
+  it("should allow for a wet objects to be garbage collected after the membrane is revoked, even if something is still retaining the dry proxy to it", async () => {
     const finalizationFn = jest.fn();
     const finalizationRegistry = new FinalizationRegistry<string>(finalizationFn);
 

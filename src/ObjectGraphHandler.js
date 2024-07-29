@@ -69,7 +69,10 @@ export function ObjectGraphHandler(membrane, fieldName) {
       new WeakMap(/* original value: [callback() {}, ...]*/), false
     ),
 
-    "__revokeFunctions__": new NWNCDataDescriptor([], false),
+    // ansteg TODO: this used to be:
+    //"__revokeFunctions__": new NWNCDataDescriptor([], false),
+    // I changed it to make the field modifiable so that I can clear it when the handler is revoked. But maybe it should just be a private field long-term.
+    "__revokeFunctions__": new DataDescriptor([], true, false, false),
 
     "__isDead__": new DataDescriptor(false, true, true, true),
 
@@ -1872,11 +1875,31 @@ export function ObjectGraphHandler(membrane, fieldName) {
     let length = this.__revokeFunctions__.length;
     for (var i = 0; i < length; i++) {
       let revocable = this.__revokeFunctions__[i];
-      if (revocable instanceof ProxyMapping)
+      if (revocable instanceof ProxyMapping) {
         revocable.revoke();
+        // ansteg: ProxyMappings are retained by membrane.map, so we need to clear them here.
+        // TODO: this is also a band-aid solution - we need to make sure that values and proxies can get garbage-collected
+        // if they go out of scope (in non-membrane code) _before_ the membrane is revoked.
+        revocable.selfDestruct(this.membrane);
+      }
       else // typeof revocable == "function"
         revocable();
     }
+    // ansteg: The ___revokeFunctions__ array contains ProxyMappings and/or revoke functions that indirectly retain shadowTargets.
+    // This interacts with the ShadowKeyMap, which has shadowTargets as keys, and real targets as values, causing all the "real" values to leak.
+    // Clearing these functions after revoke is part of the solution, but some references to the shadowTarget remain in membrane.map.
+    // TODO: what about pre-revoke leaks? As soon as a target and all associated proxies go out of scope, they should be garbage-collectable.
+    // But merely clearing this cache on revoke won't solve this problem - we'll probably need a solution similar to RevokeFnsCache or RevokerManagement
+    this.__revokeFunctions__ = [];
+
+
+    // ansteg: the ShadowKeyMap was creating a linkage between shadowTargets and real targets, causing the real targets to leak.
+    // const areAllHandlersRevoked = Reflect.ownKeys(this.membrane.handlersByFieldName).every(fieldName => {
+    //   return this.membrane.handlersByFieldName[fieldName].__isDead__;
+    // });
+    // if (areAllHandlersRevoked) {
+    //   clearShadowKeyMap();
+    // }
   }
 }));
 

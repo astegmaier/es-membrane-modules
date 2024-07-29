@@ -141,6 +141,11 @@ export function ProxyMapping(originField) {
       membrane.map.delete(this.proxiedFields[field].value);
       delete this.proxiedFields[field];
     }
+    // ansteg: originalValue was preventing garbage collection when the proxy is revoked.
+    // TODO: this is also a band-aid solution - we need to make sure that values and proxies can get garbage-collected
+    // if they go out of scope (in non-membrane code) _before_ the membrane is revoked.
+    // We might be able to remove originalValue completely - it doesn't seem to be read in any serious way.
+    delete this.originalValue;
   }),
 
   "revoke": new DataDescriptor(function() {
