@@ -1,6 +1,6 @@
 /** @import { IMembranePrototype, IBuildMappingOptions, IGetHandlerByNameOptions } from "./Membrane" */
 /** @import { IProxyParts } from "./ProxyMapping" */
-const assert = require("assert");
+import assert from "assert";
 import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, allTraps, Primordials } from "./sharedUtilities.js";
 import { ProxyNotify } from "./ProxyNotify.js";
 import { ProxyMapping } from "./ProxyMapping.js";

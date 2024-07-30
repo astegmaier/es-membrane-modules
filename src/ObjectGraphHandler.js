@@ -1,5 +1,5 @@
 /** @import { IObjectGraphHandlerPrototype } from "./ObjectGraphHandler" */
-const assert = require("assert");
+import assert from "assert";
 import { returnFalse, DataDescriptor, NWNCDataDescriptor, isDataDescriptor, isAccessorDescriptor } from "./sharedUtilities.js";
 import { ProxyMapping } from "./ProxyMapping.js";
 import { valueType, getRealTarget, inGraphHandler, AssertIsPropertyKey } from "./moduleUtilities.js";
