@@ -1,5 +1,5 @@
 /** @import {IProxyParts} from "./ProxyMapping" */
-import assert from "assert";
+import assert from "./assert";
 import { DataDescriptor, AccessorDescriptor } from "./sharedUtilities.js";
 import { ProxyMapping } from "./ProxyMapping.js";
 import { ObjectGraphHandler } from "./ObjectGraphHandler.js";

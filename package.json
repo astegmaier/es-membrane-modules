@@ -47,9 +47,7 @@
     "copy:dts:esm": "copyfiles -u 1 \"src/**/*.d.ts\" dist/esm",
     "clean": "rimraf dist failing-test-heapsnapshots"
   },
-  "dependencies": {
-    "assert": "^2.1.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@swc/core": "^1.6.13",
     "@swc/jest": "^0.2.36",

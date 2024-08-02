@@ -1,6 +1,6 @@
 /** @import { IProxyMappingPrototype } from "./ProxyMapping" */
 /** @import { DataDescriptorsOf } from "./sharedUtilities" */
-import assert from "assert";
+import assert from "./assert";
 import { DataDescriptor } from "./sharedUtilities.js";
 import { valueType, NOT_YET_DETERMINED } from "./moduleUtilities.js";
 
