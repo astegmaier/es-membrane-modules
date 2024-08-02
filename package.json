@@ -1,6 +1,6 @@
 {
   "name": "@microsoft-loop/es-membrane",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A fork of es-membrane that uses modules and provides typescript definitions.",
   "license": "ISC",
   "author": "Andrew Stegmaier",
