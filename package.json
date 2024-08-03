@@ -36,9 +36,10 @@
   "types": "dist/cjs/index.d.ts",
   "scripts": {
     "test": "node --expose-gc ./node_modules/jest/bin/jest.js",
-    "typecheck": "npm run typecheck:src && npm run typecheck:test",
+    "typecheck": "npm run typecheck:src && npm run typecheck:test && npm run typecheck:mocks",
     "typecheck:test": "tsc --project test/tsconfig.json",
     "typecheck:src": "tsc --project src/tsconfig.json --noEmit",
+    "typecheck:mocks": "tsc --project mocks/tsconfig.json",
     "rebuild": "npm run clean && npm run build",
     "build": "npm run build:cjs && npm run build:esm",
     "build:cjs": "tsc --project src/tsconfig.json && npm run copy:dts:cjs",

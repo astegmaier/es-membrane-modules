@@ -4,16 +4,28 @@ import { Constants } from "./moduleUtilities";
 import { ProxyMapping } from "./ProxyMapping";
 import { ObjectGraphHandler } from "./ObjectGraphHandler";
 
-interface MembraneOptions {
+type LogLevel = "FATAL" | "ERROR" | "WARN" | "INFO" | "DEBUG" | "TRACE";
+
+export interface ILogger {
+  fatal(message: unknown, stack?: unknown): void;
+  error(message: unknown, stack?: unknown): void;
+  warn(message: unknown, stack?: unknown): void;
+  info(message: unknown, stack?: unknown): void;
+  debug(message: unknown, stack?: unknown): void;
+  trace(message: unknown, stack?: unknown): void;
+  log(level: LogLevel, message: unknown, stack?: unknown): void;
+}
+
+export interface MembraneOptions {
   passThroughFilter?: (value: unknown) => boolean;
   showGraphName?: boolean;
-  logger?: any;
+  logger?: ILogger;
 }
 
 export interface IBuildMappingOptions {
   /** A mapping with associated values and proxies. */
   mapping?: ProxyMapping;
-  originHandler?: any
+  originHandler?: any;
   override?: boolean;
 }
 
@@ -30,7 +42,7 @@ export interface IMembraneOwn {
    */
   map: WeakMap<any, ProxyMapping>;
   handlersByFieldName: { [fieldName: string | symbol]: any };
-  logger: any;
+  logger: ILogger;
   __functionListeners__: any[];
   warnOnceSet: Set<any> | null;
   modifyRules: ModifyRulesAPI;
@@ -61,11 +73,7 @@ export interface IMembranePrototype {
    * code to assert that we have the right values stored.  Therefore you really
    * shouldn't use it in Production.
    */
-  getMembraneValue(
-    this: Membrane,
-    field: symbol | string,
-    value: any
-  ): [found: boolean, value: any];
+  getMembraneValue(this: Membrane, field: symbol | string, value: any): [found: boolean, value: any];
 
   /**
    * Get the proxy associated with a field name and another known value.
@@ -89,31 +97,22 @@ export interface IMembranePrototype {
    *    {Object}  NOT_YET_DETERMINED
    * ]
    */
-  getMembraneProxy(
-    this: Membrane,
-    field: symbol | string,
-    value: any
-  ): [found: boolean, value: any];
+  getMembraneProxy(this: Membrane, field: symbol | string, value: any): [found: boolean, value: any];
 
   /**
    * Assign a value to an object graph.
    *
    * @param handler {ObjectGraphHandler} A graph handler to bind to the value.
    * @param value   {any} The value to assign.
-   * @param options {IBuildMappingOptions} 
+   * @param options {IBuildMappingOptions}
    *    mapping - A mapping with associated values and proxies.
-   *    originHandler - 
+   *    originHandler -
    *
    * @returns {ProxyMapping} A mapping holding the value.
    *
    * @private
    */
-  buildMapping(
-    this: Membrane,
-    handler: ObjectGraphHandler,
-    value: any,
-    options?: IBuildMappingOptions
-  ): ProxyMapping;
+  buildMapping(this: Membrane, handler: ObjectGraphHandler, value: any, options?: IBuildMappingOptions): ProxyMapping;
 
   hasHandlerByField(this: Membrane, field: symbol | string): boolean;
 
@@ -126,11 +125,7 @@ export interface IMembranePrototype {
    *
    * @returns {ObjectGraphHandler} The handler for the object graph.
    */
-  getHandlerByName(
-    this: Membrane,
-    field: symbol | string,
-    options?: IGetHandlerByNameOptions
-  ): ObjectGraphHandler;
+  getHandlerByName(this: Membrane, field: symbol | string, options?: IGetHandlerByNameOptions): ObjectGraphHandler;
 
   /**
    * Determine if the handler is a ObjectGraphHandler for this object graph.
@@ -149,12 +144,7 @@ export interface IMembranePrototype {
    * @note This marks the value as the "original" in the new ProxyMapping it
    * creates.
    */
-  wrapArgumentByProxyMapping(
-    this: Membrane,
-    mapping: ProxyMapping,
-    arg: any,
-    options?: IBuildMappingOptions
-  ): any;
+  wrapArgumentByProxyMapping(this: Membrane, mapping: ProxyMapping, arg: any, options?: IBuildMappingOptions): any;
 
   passThroughFilter: (value: unknown) => boolean;
 
@@ -165,10 +155,10 @@ export interface IMembranePrototype {
    * @param target {ObjectGraphHandler} The object graph we're returning the arg to.
    * @param arg    {any}         The argument.
    *
-   * @returns {any}   
+   * @returns {any}
    *    - The proxy for that field - if field is not the value's origin field.
    *    - The actual value - if field is the value's origin field.
-   * 
+   *
    * @throws {Error} if failed (this really should never happen)
    */
   convertArgumentToProxy(
@@ -222,10 +212,7 @@ export interface IMembranePrototype {
    *
    * @param listener {Function} The listener to remove.
    */
-  removeFunctionListener(
-    this: Membrane,
-    listener: (...args: any[]) => any
-  ): void;
+  removeFunctionListener(this: Membrane, listener: (...args: any[]) => any): void;
 
   /**
    * A flag indicating if internal properties of the Membrane are private.

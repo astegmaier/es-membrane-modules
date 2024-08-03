@@ -1,10 +1,15 @@
+/** @import { IBasicLogger, IBasicLoggerPrototype, IBasicAppenderPrototype, IBasicAppender } from "./logger" */
 export var loggerLib = (function() {
+  /** @this {IBasicLogger} */
   function BasicLogger() {
     this.appenders = [];
-    this.levels.forEach(function(level) {
-      this[level.toLowerCase()] = this.log.bind(this, level);
+    this.levels.forEach(
+      /** @this {IBasicLogger} */
+      function(level) {
+        this[level.toLowerCase()] = this.log.bind(this, level);
     }, this);
   }
+  /** @type {IBasicLoggerPrototype} */
   BasicLogger.prototype = {
     log: function(level, message) {
       var exn = null, exnFound = false;
@@ -40,10 +45,12 @@ export var loggerLib = (function() {
     BasicLogger.prototype[level.toLowerCase()] = function() {};
   });
 
+  /** @this {IBasicAppender} */
   function BasicAppender() {
     this.clear();
     this.threshold = "TRACE";
   }
+  /** @type {IBasicAppenderPrototype} */
   BasicAppender.prototype = {
     clear: function() {
       this.events = [];

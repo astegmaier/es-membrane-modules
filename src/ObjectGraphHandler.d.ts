@@ -1,5 +1,6 @@
 import type { Membrane } from "./Membrane";
 import type { ProxyMapping } from "./ProxyMapping";
+import type { WithThisValueForMethods } from "./utilityTypes";
 
 export interface IObjectGraphHandlerOwn {
   membrane: Membrane;
@@ -15,17 +16,8 @@ export interface IObjectGraphHandlerOwn {
   __functionListeners__: any[];
 }
 
-type WithThisValueForMethods<T, ThisValue> = {
-  [K in keyof T]: T[K] extends (...args: infer A) => infer R
-    ? (this: ThisValue, ...args: A) => R
-    : T[K];
-};
-
 export interface IObjectGraphHandlerPrototype
-  extends WithThisValueForMethods<
-    Required<ProxyHandler<any>>,
-    ObjectGraphHandler
-  > {
+  extends WithThisValueForMethods<Required<ProxyHandler<any>>, ObjectGraphHandler> {
   /**
    * Define a property on a target.
    *
@@ -55,11 +47,7 @@ export interface IObjectGraphHandlerPrototype
    * @param {object} shadowTarget The supposed target.
    * @private
    */
-  validateTrapAndShadowTarget(
-    this: ObjectGraphHandler,
-    trapName: string,
-    shadowTarget: object
-  ): void;
+  validateTrapAndShadowTarget(this: ObjectGraphHandler, trapName: string, shadowTarget: object): void;
 
   /**
    * Get the shadow target associated with a real value.
@@ -136,10 +124,7 @@ export interface IObjectGraphHandlerPrototype
    *
    * @private
    */
-  externalHandler<T extends (...args: unknown[]) => unknown>(
-    this: ObjectGraphHandler,
-    callback: T
-  ): ReturnType<T>;
+  externalHandler<T extends (...args: unknown[]) => unknown>(this: ObjectGraphHandler, callback: T): ReturnType<T>;
 
   /**
    * Set all properties on a shadow target, including prototype, and seal it.
@@ -170,12 +155,7 @@ export interface IObjectGraphHandlerPrototype
    *
    * @private
    */
-  defineLazyGetter(
-    this: ObjectGraphHandler,
-    source: any,
-    shadowTarget: any,
-    propName: string | symbol
-  ): boolean;
+  defineLazyGetter(this: ObjectGraphHandler, source: any, shadowTarget: any, propName: string | symbol): boolean;
 
   /**
    * Determine if a target, or any prototype ancestor, has a local-to-the-proxy
@@ -189,12 +169,7 @@ export interface IObjectGraphHandlerPrototype
    *
    * @private
    */
-  getLocalFlag(
-    this: ObjectGraphHandler,
-    target: any,
-    flagName: string,
-    recurse?: boolean
-  ): boolean;
+  getLocalFlag(this: ObjectGraphHandler, target: any, flagName: string, recurse?: boolean): boolean;
 
   /**
    * Determine whether this proxy (or one it inherits from) requires local
@@ -218,11 +193,7 @@ export interface IObjectGraphHandlerPrototype
    *
    * @private
    */
-  truncateArguments(
-    this: ObjectGraphHandler,
-    target: any,
-    argumentsList: any[]
-  ): any[];
+  truncateArguments(this: ObjectGraphHandler, target: any, argumentsList: any[]): any[];
 
   /**
    * Add a ProxyMapping or a Proxy.revoke function to our list.
@@ -244,11 +215,8 @@ export interface IObjectGraphHandlerPrototype
   revokeEverything(this: ObjectGraphHandler): void;
 }
 
-export interface ObjectGraphHandler
-  extends IObjectGraphHandlerOwn,
-    IObjectGraphHandlerPrototype {}
+export interface ObjectGraphHandler extends IObjectGraphHandlerOwn, IObjectGraphHandlerPrototype {}
 
 export class ObjectGraphHandler {
-  constructor(membrane: Membrane, fieldName: string | symbol)
+  constructor(membrane: Membrane, fieldName: string | symbol);
 }
-

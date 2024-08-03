@@ -1,3 +1,4 @@
+import { ILogger } from "./Membrane";
 import { ObjectGraphHandler } from "./ObjectGraphHandler";
 import { IProxyParts } from "./ProxyMapping";
 
@@ -14,7 +15,7 @@ export interface ListenerMetadata {
    * handler property with the new proxy handler, and call .rebuildProxy().
    */
   proxy: object;
-  
+
   /**
    * The unwrapped object or function we're building the proxy for.
    */
@@ -30,7 +31,7 @@ export interface ListenerMetadata {
   /**
    * A reference to the membrane logger, if there is one.
    */
-  logger: any;
+  logger: ILogger;
 
   /**
    * Rebuild the proxy object.
@@ -80,7 +81,12 @@ export type UseShadowTargetMode = "frozen" | "sealed" | "prepared";
 export function ProxyNotify(parts: IProxyParts, handler: ObjectGraphHandler, isOrigin: boolean, options: any): void;
 
 export declare module ProxyNotify {
-  function useShadowTarget(this: AllListenerMetadata, parts: any, handler: ObjectGraphHandler, mode: UseShadowTargetMode): void;
+  function useShadowTarget(
+    this: AllListenerMetadata,
+    parts: any,
+    handler: ObjectGraphHandler,
+    mode: UseShadowTargetMode
+  ): void;
 }
 
 export function invokeProxyListeners(listeners, meta): void;
