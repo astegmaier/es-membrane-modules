@@ -4,7 +4,7 @@ import { Constants } from "./moduleUtilities";
 import { ProxyMapping } from "./ProxyMapping";
 import { ObjectGraphHandler } from "./ObjectGraphHandler";
 
-type LogLevel = "FATAL" | "ERROR" | "WARN" | "INFO" | "DEBUG" | "TRACE";
+export type LogLevel = "FATAL" | "ERROR" | "WARN" | "INFO" | "DEBUG" | "TRACE";
 
 export interface ILogger {
   fatal(message: unknown, stack?: unknown): void;

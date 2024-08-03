@@ -11,7 +11,7 @@ export interface IDistortionsListenerOwn {
   ignorableValues: Set<any>;
 }
 
-interface IDistortionsListenerConfig {
+export interface IDistortionsListenerConfig {
   formatVersion: string;
   dataVersion: string;
   filterOwnKeys: boolean;
