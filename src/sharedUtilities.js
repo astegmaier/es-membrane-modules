@@ -73,7 +73,7 @@ export const allTraps = Object.freeze([
   "deleteProperty",
   "ownKeys",
   "apply",
-  "construct",
+  "construct"
 ]);
 
 /* XXX ajvincent This is supposed to be a complete list of top-level globals.
@@ -127,7 +127,7 @@ export const Primordials = Object.freeze(
       Uint32Array,
       URIError,
       WeakMap,
-      WeakSet,
+      WeakSet
     ];
 
     return p.concat(
@@ -139,7 +139,7 @@ export const Primordials = Object.freeze(
           let j = i.name[0];
           return j.toUpperCase() === j;
         })
-        .map((/** @type {any} */ k) => k.prototype),
+        .map((/** @type {any} */ k) => k.prototype)
     );
-  })(),
+  })()
 );

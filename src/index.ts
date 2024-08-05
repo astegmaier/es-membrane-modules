@@ -6,7 +6,7 @@ export type {
   LogLevel,
   MembraneOptions,
   IBuildMappingOptions,
-  IGetHandlerByNameOptions,
+  IGetHandlerByNameOptions
 } from "./Membrane";
 export type { IChainHandlerProtection, IChainHandler, ModifyRulesAPI } from "./ModifyRulesAPI";
 export type { ObjectGraphHandler } from "./ObjectGraphHandler";
@@ -15,5 +15,5 @@ export type {
   ListenerMetadata,
   InvokedListenerMetadata,
   AllListenerMetadata,
-  UseShadowTargetMode,
+  UseShadowTargetMode
 } from "./ProxyNotify";

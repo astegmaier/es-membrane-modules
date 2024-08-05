@@ -56,7 +56,7 @@ export interface IProxyMappingPrototype {
     this: ProxyMapping,
     fieldName: Symbol | string,
     flagName: string,
-    value: boolean,
+    value: boolean
   ): void;
   /**
    * fieldName: {Symbol|String} The object graph's field name.
@@ -68,19 +68,19 @@ export interface IProxyMappingPrototype {
   getLocalDescriptor(
     this: ProxyMapping,
     fieldName: any,
-    propName: any,
+    propName: any
   ): PropertyDescriptor | undefined;
   setLocalDescriptor(
     this: ProxyMapping,
     fieldName: any,
     propName: any,
-    desc: PropertyDescriptor,
+    desc: PropertyDescriptor
   ): void;
   deleteLocalDescriptor(
     this: ProxyMapping,
     fieldName: any,
     propName: any,
-    recordLocalDelete: any,
+    recordLocalDelete: any
   ): void;
   cachedOwnKeys(this: ProxyMapping, fieldName: symbol | string): any;
   setCachedOwnKeys(this: ProxyMapping, fieldName: symbol | string, keys, original): void;

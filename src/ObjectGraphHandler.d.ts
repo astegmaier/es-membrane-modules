@@ -37,7 +37,7 @@ export interface IObjectGraphHandlerPrototype
     shadowTarget: object,
     propName: string | symbol,
     desc: PropertyDescriptor,
-    shouldBeLocal?: boolean,
+    shouldBeLocal?: boolean
   ): boolean;
 
   /**
@@ -50,7 +50,7 @@ export interface IObjectGraphHandlerPrototype
   validateTrapAndShadowTarget(
     this: ObjectGraphHandler,
     trapName: string,
-    shadowTarget: object,
+    shadowTarget: object
   ): void;
 
   /**
@@ -120,7 +120,7 @@ export interface IObjectGraphHandlerPrototype
     trapName: string,
     target: object,
     rvOrExn: any,
-    origin: ObjectGraphHandler,
+    origin: ObjectGraphHandler
   ): void;
 
   /**
@@ -130,7 +130,7 @@ export interface IObjectGraphHandlerPrototype
    */
   externalHandler<T extends (...args: unknown[]) => unknown>(
     this: ObjectGraphHandler,
-    callback: T,
+    callback: T
   ): ReturnType<T>;
 
   /**
@@ -166,7 +166,7 @@ export interface IObjectGraphHandlerPrototype
     this: ObjectGraphHandler,
     source: any,
     shadowTarget: any,
-    propName: string | symbol,
+    propName: string | symbol
   ): boolean;
 
   /**

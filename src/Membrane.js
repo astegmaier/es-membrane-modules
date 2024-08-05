@@ -7,7 +7,7 @@ import {
   NWNCDataDescriptor,
   isDataDescriptor,
   allTraps,
-  Primordials,
+  Primordials
 } from "./sharedUtilities.js";
 import { ProxyNotify } from "./ProxyNotify.js";
 import { ProxyMapping } from "./ProxyMapping.js";
@@ -18,7 +18,7 @@ import {
   NOT_YET_DETERMINED,
   makeRevokeDeleteRefs,
   MembraneMayLog,
-  Constants,
+  Constants
 } from "./moduleUtilities.js";
 import { ChainHandlers, ModifyRulesAPI } from "./ModifyRulesAPI.js";
 
@@ -40,7 +40,7 @@ export function Membrane(options = {}) {
 
         key may be a Proxy, a value associated with a proxy, or an original value.
       */),
-      false,
+      false
     ),
 
     "handlersByFieldName": new NWNCDataDescriptor({}, false),
@@ -53,7 +53,7 @@ export function Membrane(options = {}) {
 
     "modifyRules": new NWNCDataDescriptor(new ModifyRulesAPI(this)),
 
-    "passThroughFilter": new NWNCDataDescriptor(passThrough, false),
+    "passThroughFilter": new NWNCDataDescriptor(passThrough, false)
   });
 
   /* XXX ajvincent Somehow adding this line breaks not only npm test, but the
@@ -66,7 +66,7 @@ export function Membrane(options = {}) {
 Reflect.defineProperty(
   Membrane,
   "Primordials",
-  new NWNCDataDescriptor(Primordials, true), // this should be visible
+  new NWNCDataDescriptor(Primordials, true) // this should be visible
 );
 
 {
@@ -168,7 +168,7 @@ Reflect.defineProperty(
       const isOriginal = mapping.originField === handler.fieldName;
       assert(
         isOriginal || this.ownsHandler(options.originHandler),
-        "Proxy requests must pass in an origin handler",
+        "Proxy requests must pass in an origin handler"
       );
       let shadowTarget = makeShadowTarget(value);
 
@@ -197,7 +197,7 @@ Reflect.defineProperty(
         const notifyOptions = {
           isThis: false,
           originHandler: options.originHandler,
-          targetHandler: handler,
+          targetHandler: handler
         };
         ["trapName", "callable", "isThis", "argIndex"].forEach(function (propName) {
           if (Reflect.has(options, propName)) {
@@ -291,7 +291,7 @@ Reflect.defineProperty(
       assert(argMap instanceof ProxyMapping, "argMap isn't a ProxyMapping?");
       assert(
         argMap.getOriginal() === arg,
-        "wrapArgumentByProxyMapping didn't establish the original?",
+        "wrapArgumentByProxyMapping didn't establish the original?"
       );
     },
 
@@ -336,7 +336,7 @@ Reflect.defineProperty(
         originHandler.fieldName === targetHandler.fieldName
       ) {
         throw new Error(
-          "convertArgumentToProxy requires two different ObjectGraphHandlers in the Membrane instance",
+          "convertArgumentToProxy requires two different ObjectGraphHandlers in the Membrane instance"
         );
       }
 
@@ -352,7 +352,7 @@ Reflect.defineProperty(
         let passOptions;
         if (argMap) {
           passOptions = Object.create(options, {
-            "mapping": new DataDescriptor(argMap),
+            "mapping": new DataDescriptor(argMap)
           });
         } else {
           passOptions = options;
@@ -364,7 +364,7 @@ Reflect.defineProperty(
       if (!this.hasProxyForValue(targetHandler.fieldName, arg)) {
         let argMap = this.map.get(arg);
         let passOptions = Object.create(options, {
-          "originHandler": new DataDescriptor(originHandler),
+          "originHandler": new DataDescriptor(originHandler)
         });
         assert(argMap, "ProxyMapping not created before invoking target handler?");
 
@@ -401,13 +401,13 @@ Reflect.defineProperty(
       function bag(h, v) {
         if (!this.ownsHandler(h)) {
           throw new Error(
-            "bindValuesByHandlers requires two ObjectGraphHandlers from different graphs",
+            "bindValuesByHandlers requires two ObjectGraphHandlers from different graphs"
           );
         }
         let rv = {
           handler: h,
           value: v,
-          type: valueType(v),
+          type: valueType(v)
         };
         if (rv.type !== "primitive") {
           rv.proxyMap = this.map.get(v);
@@ -482,7 +482,7 @@ Reflect.defineProperty(
       if (propBag0.handler.fieldName === propBag1.handler.fieldName) {
         if (propBag0.value !== propBag1.value) {
           throw new Error(
-            "bindValuesByHandlers requires two ObjectGraphHandlers from different graphs",
+            "bindValuesByHandlers requires two ObjectGraphHandlers from different graphs"
           );
         }
         // no-op
@@ -533,7 +533,7 @@ Reflect.defineProperty(
       var keys = Object.keys(desc);
 
       var wrappedDesc = {
-        configurable: Boolean(desc.configurable),
+        configurable: Boolean(desc.configurable)
       };
       if ("enumerable" in desc) {
         wrappedDesc.enumerable = Boolean(desc.enumerable);
@@ -554,7 +554,7 @@ Reflect.defineProperty(
           wrappedDesc[descProp] = this.convertArgumentToProxy(
             originHandler,
             targetHandler,
-            desc[descProp],
+            desc[descProp]
           );
         }
       }, this);
@@ -616,7 +616,7 @@ Reflect.defineProperty(
 
     get constants() {
       return Constants;
-    },
+    }
   });
 } // end Membrane definition
 Object.seal(Membrane);

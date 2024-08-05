@@ -196,7 +196,7 @@ export function ProxyMapping(originField) {
           } else {
             throw new Error("fieldName is neither a symbol nor a string!");
           }
-        },
+        }
       ),
 
       "getLocalFlag": new DataDescriptor(
@@ -225,7 +225,7 @@ export function ProxyMapping(originField) {
           } else {
             throw new Error("fieldName is neither a symbol nor a string!");
           }
-        },
+        }
       ),
 
       "getLocalDescriptor": new DataDescriptor(function (fieldName, propName) {
@@ -252,7 +252,7 @@ export function ProxyMapping(originField) {
       "deleteLocalDescriptor": new DataDescriptor(function (
         fieldName,
         propName,
-        recordLocalDelete,
+        recordLocalDelete
       ) {
         let metadata = this.proxiedFields[fieldName];
         if (recordLocalDelete) {
@@ -286,7 +286,7 @@ export function ProxyMapping(originField) {
       "setCachedOwnKeys": new DataDescriptor(function (fieldName, keys, original) {
         this.proxiedFields[fieldName].cachedOwnKeys = {
           keys: keys,
-          original: original,
+          original: original
         };
       }),
 
@@ -361,8 +361,8 @@ export function ProxyMapping(originField) {
 
       "setTruncateArgList": new DataDescriptor(function (fieldName, value) {
         this.proxiedFields[fieldName].truncateArgList = value;
-      }),
-    }),
+      })
+    })
   );
 
   Object.seal(ProxyMapping.prototype);

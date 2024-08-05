@@ -11,24 +11,24 @@ export function DistortionsListener(membrane) {
       new Map(/*
         object or function.prototype: JSON configuration
       */),
-      false,
+      false
     ),
 
     "instanceMap": new NWNCDataDescriptor(
       new Map(/*
         function: JSON configuration
       */),
-      false,
+      false
     ),
 
     "filterToConfigMap": new NWNCDataDescriptor(
       new Map(/*
         function returning boolean: JSON configuration
       */),
-      false,
+      false
     ),
 
-    "ignorableValues": new NWNCDataDescriptor(new Set(), false),
+    "ignorableValues": new NWNCDataDescriptor(new Set(), false)
   });
 }
 
@@ -89,7 +89,7 @@ Object.defineProperties(
         proxyTraps: allTraps.slice(0),
         storeUnknownAsLocal: false,
         requireLocalDelete: false,
-        useShadowTarget: false,
+        useShadowTarget: false
       };
 
       if (isFunction) {
@@ -196,8 +196,8 @@ Object.defineProperties(
 
     "passThroughFilter": new NWNCDataDescriptor(function (value) {
       return this.ignorableValues.has(value);
-    }, false),
-  }),
+    }, false)
+  })
 );
 
 Object.freeze(DistortionsListener.prototype);

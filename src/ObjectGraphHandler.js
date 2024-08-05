@@ -5,14 +5,14 @@ import {
   DataDescriptor,
   NWNCDataDescriptor,
   isDataDescriptor,
-  isAccessorDescriptor,
+  isAccessorDescriptor
 } from "./sharedUtilities.js";
 import { ProxyMapping } from "./ProxyMapping.js";
 import {
   valueType,
   getRealTarget,
   inGraphHandler,
-  AssertIsPropertyKey,
+  AssertIsPropertyKey
 } from "./moduleUtilities.js";
 
 /* A proxy handler designed to return only primitives and objects in a given
@@ -52,14 +52,14 @@ export function ObjectGraphHandler(membrane, fieldName) {
         return val;
       },
       enumerable: false,
-      configurable: false,
+      configurable: false
     },
 
     "mayReplacePassThrough": {
       get: () => passThroughFilter === returnFalse,
       enumerable: true,
-      configurable: false,
-    },
+      configurable: false
+    }
   });
 
   // private
@@ -74,7 +74,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
     // see .defineLazyGetter, ProxyNotify for details.
     "proxiesInConstruction": new NWNCDataDescriptor(
       new WeakMap(/* original value: [callback() {}, ...]*/),
-      false,
+      false
     ),
 
     // ansteg TODO: this used to be:
@@ -86,7 +86,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
     "__proxyListeners__": new NWNCDataDescriptor([], false),
 
-    "__functionListeners__": new NWNCDataDescriptor([], false),
+    "__functionListeners__": new NWNCDataDescriptor([], false)
   });
 }
 {
@@ -336,7 +336,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
             assert(found, "Original target must be found after calling getRealTarget");
             assert(
               unwrapped === target,
-              "Original target must match getMembraneValue's return value",
+              "Original target must match getMembraneValue's return value"
             );
           }
           var targetMap = this.membrane.map.get(target);
@@ -403,7 +403,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
               let attempt = Reflect.defineProperty(shadowTarget, propName, desc);
               assert(
                 !current || attempt,
-                "Non-configurable descriptors must apply on the actual proxy target.",
+                "Non-configurable descriptors must apply on the actual proxy target."
               );
             }
 
@@ -425,7 +425,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
             }
             throw e;
           }
-        },
+        }
       ),
 
       // ProxyHandler
@@ -471,7 +471,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
             proxy = this.membrane.convertArgumentToProxy(
               this.membrane.getHandlerByName(targetMap.originField),
               this,
-              proto,
+              proto
             );
           } else {
             proxy = proto;
@@ -481,7 +481,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
           if (pMapping && pMapping.originField !== this.fieldName) {
             assert(
               Reflect.setPrototypeOf(shadowTarget, proxy),
-              "shadowTarget could not receive prototype?",
+              "shadowTarget could not receive prototype?"
             );
           }
           return proxy;
@@ -699,7 +699,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
               localFilter = targetMap.getOwnKeysFilter(this.fieldName);
               if (originFilter || localFilter) {
                 this.membrane.warnOnce(
-                  this.membrane.constants.warnings.FILTERED_KEYS_WITHOUT_LOCAL,
+                  this.membrane.constants.warnings.FILTERED_KEYS_WITHOUT_LOCAL
                 );
               }
             }
@@ -770,7 +770,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
             }
             throw e;
           }
-        },
+        }
       ),
 
       // ProxyHandler
@@ -940,9 +940,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
               this.membrane.convertArgumentToProxy(
                 this,
                 this.membrane.getHandlerByName(receiverMap.originField),
-                value,
+                value
               ),
-              true,
+              true
             );
           } else {
             rvProxy = new DataDescriptor(value, true);
@@ -957,7 +957,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
             this.getShadowTarget(receiver),
             propName,
             rvProxy,
-            shouldBeLocal,
+            shouldBeLocal
           );
         }
 
@@ -986,7 +986,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
           let rvProxy = this.membrane.convertArgumentToProxy(
             this,
             this.membrane.getHandlerByName(receiverMap.originField),
-            value,
+            value
           );
           this.apply(this.getShadowTarget(setter), receiver, [rvProxy]);
         } else {
@@ -994,7 +994,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
             this.getShadowTarget(receiver),
             propName,
             new DataDescriptor(value),
-            shouldBeLocal,
+            shouldBeLocal
           );
         }
 
@@ -1016,7 +1016,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
             protoProxy = this.membrane.convertArgumentToProxy(
               this,
               this.membrane.getHandlerByName(targetMap.originField),
-              proto,
+              proto
             );
             [found, wrappedProxy] = this.membrane.getMembraneProxy(this.fieldName, proto);
             assert(found, "Membrane proxy not found immediately after wrapping!");
@@ -1031,7 +1031,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
           if (rv) {
             assert(
               Reflect.setPrototypeOf(shadowTarget, wrappedProxy),
-              "shadowTarget could not receive prototype?",
+              "shadowTarget could not receive prototype?"
             );
           }
 
@@ -1062,8 +1062,8 @@ export function ObjectGraphHandler(membrane, fieldName) {
               "apply originFields: inbound = ",
               argHandler.fieldName,
               ", outbound = ",
-              this.fieldName,
-            ].join(""),
+              this.fieldName
+            ].join("")
           );
         }
 
@@ -1072,7 +1072,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
         // This is where we are "counter-wrapping" an argument.
         const optionsBase = Object.seal({
           callable: target,
-          trapName: "apply",
+          trapName: "apply"
         });
 
         if (targetMap.originField !== this.fieldName) {
@@ -1080,7 +1080,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
             this,
             argHandler,
             thisArg,
-            Object.create(optionsBase, { "isThis": new DataDescriptor(true) }),
+            Object.create(optionsBase, { "isThis": new DataDescriptor(true) })
           );
 
           for (let i = 0; i < argumentsList.length; i++) {
@@ -1089,7 +1089,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
               this,
               argHandler,
               nextArg,
-              Object.create(optionsBase, { "argIndex": new DataDescriptor(i) }),
+              Object.create(optionsBase, { "argIndex": new DataDescriptor(i) })
             );
             args.push(nextArg);
           }
@@ -1154,8 +1154,8 @@ export function ObjectGraphHandler(membrane, fieldName) {
               "construct originFields: inbound = ",
               argHandler.fieldName,
               ", outbound = ",
-              this.fieldName,
-            ].join(""),
+              this.fieldName
+            ].join("")
           );
         }
 
@@ -1164,7 +1164,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
         // This is where we are "counter-wrapping" an argument.
         const optionsBase = Object.seal({
           callable: target,
-          trapName: "construct",
+          trapName: "construct"
         });
 
         for (let i = 0; i < argumentsList.length; i++) {
@@ -1173,13 +1173,13 @@ export function ObjectGraphHandler(membrane, fieldName) {
             this,
             argHandler,
             nextArg,
-            Object.create(optionsBase, { "argIndex": new DataDescriptor(i) }),
+            Object.create(optionsBase, { "argIndex": new DataDescriptor(i) })
           );
           args.push(nextArg);
 
           if (mayLog && valueType(nextArg) != "primitive") {
             this.membrane.logger.debug(
-              "construct argument " + i + "'s membraneGraphName: " + nextArg.membraneGraphName,
+              "construct argument " + i + "'s membraneGraphName: " + nextArg.membraneGraphName
             );
           }
         }
@@ -1401,7 +1401,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
         const proto = this.getPrototypeOf(shadowTarget);
         assert(
           Reflect.setPrototypeOf(shadowTarget, proto),
-          "Failed to set unwrapped prototype on non-extensible?",
+          "Failed to set unwrapped prototype on non-extensible?"
         );
         return Reflect.preventExtensions(shadowTarget);
       },
@@ -1641,7 +1641,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
               sourceDesc = handler.membrane.wrapDescriptor(
                 targetMap.originField,
                 handler.fieldName,
-                sourceDesc,
+                sourceDesc
               );
               sourceDesc.configurable = configurable;
 
@@ -1663,11 +1663,11 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
             assert(
               Reflect.deleteProperty(shadowTarget, propName),
-              "Couldn't delete original descriptor?",
+              "Couldn't delete original descriptor?"
             );
             assert(
               Reflect.defineProperty(this, propName, sourceDesc),
-              "Couldn't redefine shadowTarget with descriptor?",
+              "Couldn't redefine shadowTarget with descriptor?"
             );
 
             // Finally, run the actual getter.
@@ -1715,18 +1715,18 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
             assert(
               Reflect.deleteProperty(shadowTarget, propName),
-              "Couldn't delete original descriptor?",
+              "Couldn't delete original descriptor?"
             );
             assert(
               Reflect.defineProperty(this, propName, desc),
-              "Couldn't redefine shadowTarget with descriptor?",
+              "Couldn't redefine shadowTarget with descriptor?"
             );
 
             return value;
           },
 
           enumerable: true,
-          configurable: true,
+          configurable: true
         };
 
         {
@@ -1839,7 +1839,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
         } else {
           assert(
             Number.isInteger(originCount) && originCount >= 0,
-            "must call slice with a non-negative integer length",
+            "must call slice with a non-negative integer length"
           );
         }
 
@@ -1849,7 +1849,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
         } else {
           assert(
             Number.isInteger(targetCount) && targetCount >= 0,
-            "must call slice with a non-negative integer length",
+            "must call slice with a non-negative integer length"
           );
         }
 
@@ -1918,8 +1918,8 @@ export function ObjectGraphHandler(membrane, fieldName) {
         // if (areAllHandlersRevoked) {
         //   clearShadowKeyMap();
         // }
-      },
-    }),
+      }
+    })
   );
 } // end ObjectGraphHandler definition
 

@@ -51,7 +51,7 @@ export interface IModifyRulesAPIPrototype {
    */
   createChainHandler(
     this: ModifyRulesAPI,
-    existingHandler: ProxyHandler<any> | IChainHandler,
+    existingHandler: ProxyHandler<any> | IChainHandler
   ): IChainHandler;
 
   /**
@@ -77,7 +77,7 @@ export interface IModifyRulesAPIPrototype {
     this: ModifyRulesAPI,
     fieldName: symbol | string,
     proxy: any,
-    methodName: string,
+    methodName: string
   ): void;
 
   /**
@@ -125,7 +125,7 @@ export interface IModifyRulesAPIPrototype {
     fieldName: symbol | string,
     proxy: any,
     filter: (...args: any[]) => any | Set<any> | Array<any>,
-    options?: {},
+    options?: {}
   ): any;
 
   /**
@@ -143,7 +143,7 @@ export interface IModifyRulesAPIPrototype {
     this: ModifyRulesAPI,
     fieldName: symbol | string,
     proxy: any,
-    value: boolean | number,
+    value: boolean | number
   ): void;
 
   /**

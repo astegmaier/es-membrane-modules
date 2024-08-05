@@ -67,7 +67,7 @@ export const ChainHandlerProtection = Object.create(Reflect, {
     },
     false,
     false,
-    false,
+    false
   ),
 
   /**
@@ -79,7 +79,7 @@ export const ChainHandlerProtection = Object.create(Reflect, {
     },
     false,
     false,
-    false,
+    false
   ),
 
   /**
@@ -94,7 +94,7 @@ export const ChainHandlerProtection = Object.create(Reflect, {
     },
     false,
     false,
-    false,
+    false
   ),
 
   /**
@@ -114,7 +114,7 @@ export const ChainHandlerProtection = Object.create(Reflect, {
           inGraphHandler(propName, desc.value),
           desc.writable,
           desc.enumerable,
-          desc.configurable,
+          desc.configurable
         );
       }
 
@@ -122,8 +122,8 @@ export const ChainHandlerProtection = Object.create(Reflect, {
     },
     false,
     false,
-    false,
-  ),
+    false
+  )
 });
 
 export function ModifyRulesAPI(membrane) {
@@ -161,7 +161,7 @@ ModifyRulesAPI.prototype = Object.seal({
       if (!this.membrane.ownsHandler(existingHandler)) {
         // XXX ajvincent Fix this error message!!
         throw new Error(
-          "fieldName must be a string or a symbol representing an ObjectGraphName in the Membrane, or null to represent Reflect",
+          "fieldName must be a string or a symbol representing an ObjectGraphName in the Membrane, or null to represent Reflect"
         );
       }
 
@@ -173,7 +173,7 @@ ModifyRulesAPI.prototype = Object.seal({
     } else if (baseHandler !== Reflect) {
       // XXX ajvincent Fix this error message!!
       throw new Error(
-        "fieldName must be a string or a symbol representing an ObjectGraphName in the Membrane, or null to represent Reflect",
+        "fieldName must be a string or a symbol representing an ObjectGraphName in the Membrane, or null to represent Reflect"
       );
     }
 
@@ -184,7 +184,7 @@ ModifyRulesAPI.prototype = Object.seal({
     var rv = Object.create(existingHandler, {
       "nextHandler": new DataDescriptor(existingHandler, false, false, false),
       "baseHandler": new DataDescriptor(baseHandler, false, false, false),
-      "membrane": new DataDescriptor(this.membrane, false, false, false),
+      "membrane": new DataDescriptor(this.membrane, false, false, false)
     });
 
     rv = new Proxy(rv, ChainHandlerProtection);
@@ -236,7 +236,7 @@ ModifyRulesAPI.prototype = Object.seal({
 
       if (!accepted) {
         throw new Error(
-          "handler neither inherits from Reflect or an ObjectGraphHandler in this membrane",
+          "handler neither inherits from Reflect or an ObjectGraphHandler in this membrane"
         );
       }
     }
@@ -258,7 +258,7 @@ ModifyRulesAPI.prototype = Object.seal({
       cachedField = baseHandler.fieldName;
       if (cachedField == map.originField) {
         throw new Error(
-          "You must replace original values with either Reflect or a ChainHandler inheriting from Reflect",
+          "You must replace original values with either Reflect or a ChainHandler inheriting from Reflect"
         );
       }
     }
@@ -461,6 +461,6 @@ ModifyRulesAPI.prototype = Object.seal({
 
   createDistortionsListener: function () {
     return new DistortionsListener(this.membrane);
-  },
+  }
 });
 Object.seal(ModifyRulesAPI);

@@ -133,7 +133,7 @@ export function makeRevokeDeleteRefs(parts, mapping, field) {
     new DataDescriptor(function () {
       oldRevoke.apply(parts);
       mapping.remove(field);
-    }, true),
+    }, true)
   );
 }
 
@@ -161,8 +161,8 @@ export const Constants = {
     FILTERED_KEYS_WITHOUT_LOCAL:
       "Filtering own keys without allowing local property defines or deletes is dangerous",
     PROTOTYPE_FILTER_MISSING:
-      "Proxy filter specified to inherit from prototype, but prototype provides no filter",
-  },
+      "Proxy filter specified to inherit from prototype, but prototype provides no filter"
+  }
 };
 
 Object.freeze(Constants.warnings);

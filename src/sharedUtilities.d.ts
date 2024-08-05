@@ -18,7 +18,7 @@ export type DataDescriptorsOf<T> = {
 
 export class AccessorDescriptor<
   Getter extends () => any = any,
-  Setter extends (v: any) => void = any,
+  Setter extends (v: any) => void = any
 > {
   constructor(get: Getter, set?: Setter, enumerable?: boolean, configurable?: boolean);
   public get: Getter;

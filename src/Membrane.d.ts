@@ -76,7 +76,7 @@ export interface IMembranePrototype {
   getMembraneValue(
     this: Membrane,
     field: symbol | string,
-    value: any,
+    value: any
   ): [found: boolean, value: any];
 
   /**
@@ -104,7 +104,7 @@ export interface IMembranePrototype {
   getMembraneProxy(
     this: Membrane,
     field: symbol | string,
-    value: any,
+    value: any
   ): [found: boolean, value: any];
 
   /**
@@ -124,7 +124,7 @@ export interface IMembranePrototype {
     this: Membrane,
     handler: ObjectGraphHandler,
     value: any,
-    options?: IBuildMappingOptions,
+    options?: IBuildMappingOptions
   ): ProxyMapping;
 
   hasHandlerByField(this: Membrane, field: symbol | string): boolean;
@@ -141,7 +141,7 @@ export interface IMembranePrototype {
   getHandlerByName(
     this: Membrane,
     field: symbol | string,
-    options?: IGetHandlerByNameOptions,
+    options?: IGetHandlerByNameOptions
   ): ObjectGraphHandler;
 
   /**
@@ -165,7 +165,7 @@ export interface IMembranePrototype {
     this: Membrane,
     mapping: ProxyMapping,
     arg: any,
-    options?: IBuildMappingOptions,
+    options?: IBuildMappingOptions
   ): any;
 
   passThroughFilter: (value: unknown) => boolean;
@@ -188,7 +188,7 @@ export interface IMembranePrototype {
     originHandler: ObjectGraphHandler,
     targetHandler: ObjectGraphHandler,
     arg: any,
-    options?: IBuildMappingOptions,
+    options?: IBuildMappingOptions
   ): any;
 
   /**
@@ -204,7 +204,7 @@ export interface IMembranePrototype {
     handler0: ObjectGraphHandler,
     value0: any,
     handler1: ObjectGraphHandler,
-    value1: any,
+    value1: any
   ): void;
 
   /**
@@ -216,7 +216,7 @@ export interface IMembranePrototype {
     this: Membrane,
     originField: symbol | string,
     targetField: symbol | string,
-    desc: PropertyDescriptor,
+    desc: PropertyDescriptor
   ): PropertyDescriptor;
 
   /**

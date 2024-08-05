@@ -47,7 +47,7 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
         if (!meta.stopped) {
           parts.proxy = val;
         }
-      },
+      }
     ),
 
     /* XXX ajvincent revoke is explicitly NOT exposed, lest a listener call it
@@ -71,7 +71,7 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
         if (!meta.stopped) {
           handler = val;
         }
-      },
+      }
     ),
 
     /**
@@ -99,7 +99,7 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
      */
     "useShadowTarget": new DataDescriptor((mode) => {
       ProxyNotify.useShadowTarget.apply(meta, [parts, handler, mode]);
-    }),
+    })
   });
 
   const callbacks = [];
@@ -151,7 +151,7 @@ ProxyNotify.useShadowTarget = function (parts, handler, mode) {
     };
   } else {
     throw new Error(
-      "useShadowTarget requires its first argument be 'frozen', 'sealed', or 'prepared'",
+      "useShadowTarget requires its first argument be 'frozen', 'sealed', or 'prepared'"
     );
   }
 
@@ -198,7 +198,7 @@ export function invokeProxyListeners(listeners, meta) {
       stopped = true;
       exnFound = true;
       exn = e;
-    }),
+    })
   });
 
   Object.seal(meta);

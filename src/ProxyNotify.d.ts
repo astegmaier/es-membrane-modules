@@ -82,7 +82,7 @@ export function ProxyNotify(
   parts: IProxyParts,
   handler: ObjectGraphHandler,
   isOrigin: boolean,
-  options: any,
+  options: any
 ): void;
 
 export declare module ProxyNotify {
@@ -90,7 +90,7 @@ export declare module ProxyNotify {
     this: AllListenerMetadata,
     parts: any,
     handler: ObjectGraphHandler,
-    mode: UseShadowTargetMode,
+    mode: UseShadowTargetMode
   ): void;
 }
 
