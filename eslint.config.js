@@ -3,4 +3,5 @@ module.exports = {
   "rules": {
     "curly": "error",
   },
+  "files": ["src/**/*"],
 };

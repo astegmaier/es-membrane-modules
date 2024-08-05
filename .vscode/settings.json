@@ -2,8 +2,8 @@
   "jest.nodeEnv": {
     "VS_CODE_JEST": "true"
   },
-  "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
   "files.exclude": {
     "node_modules": true
   }
