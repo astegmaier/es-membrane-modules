@@ -48,7 +48,8 @@
     "copy:dts:esm": "copyfiles -u 1 \"src/**/*.d.ts\" dist/esm",
     "clean": "rimraf dist failing-test-heapsnapshots",
     "format": "prettier --write **/*",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prepublish": "npm run clean && npm run typecheck && npm run lint && npm run format && npm run test && npm run build"
   },
   "dependencies": {},
   "devDependencies": {
