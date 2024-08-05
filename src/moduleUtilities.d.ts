@@ -40,7 +40,7 @@ export function AssertIsPropertyKey(propName: any): propName is string | symbol;
 
 export const Constants: {
   warnings: {
-    FILTERED_KEYS_WITHOUT_LOCAL: string,
-    PROTOTYPE_FILTER_MISSING: string,
-  }
+    FILTERED_KEYS_WITHOUT_LOCAL: string;
+    PROTOTYPE_FILTER_MISSING: string;
+  };
 };

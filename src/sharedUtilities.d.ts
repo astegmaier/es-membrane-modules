@@ -5,12 +5,7 @@ export function returnFalse(): false;
 export function NOT_IMPLEMENTED(): never;
 
 export class DataDescriptor<T = any> {
-  constructor(
-    value: T,
-    writable?: boolean,
-    enumerable?: boolean,
-    configurable?: boolean
-  );
+  constructor(value: T, writable?: boolean, enumerable?: boolean, configurable?: boolean);
   public value: T;
   public writable: boolean;
   public enumerable: boolean;
@@ -23,14 +18,9 @@ export type DataDescriptorsOf<T> = {
 
 export class AccessorDescriptor<
   Getter extends () => any = any,
-  Setter extends (v: any) => void = any
+  Setter extends (v: any) => void = any,
 > {
-  constructor(
-    get: Getter,
-    set?: Setter,
-    enumerable?: boolean,
-    configurable?: boolean
-  );
+  constructor(get: Getter, set?: Setter, enumerable?: boolean, configurable?: boolean);
   public get: Getter;
   public set?: Setter;
   public enumerable: boolean;
@@ -56,9 +46,7 @@ export const NOT_IMPLEMENTED_DESC: AccessorDescriptor<
 
 export function isDataDescriptor(desc: any): desc is DataDescriptor<any>;
 
-export function isAccessorDescriptor(
-  desc: any
-): desc is AccessorDescriptor<any, any>;
+export function isAccessorDescriptor(desc: any): desc is AccessorDescriptor<any, any>;
 
 export function isGenericDescriptor(desc): boolean;
 

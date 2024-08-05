@@ -46,7 +46,8 @@
     "build:esm": "tsc --project src/tsconfig.json --module es6 --outDir dist/esm && npm run copy:dts:esm",
     "copy:dts:cjs": "copyfiles -u 1 \"src/**/*.d.ts\" dist/cjs",
     "copy:dts:esm": "copyfiles -u 1 \"src/**/*.d.ts\" dist/esm",
-    "clean": "rimraf dist failing-test-heapsnapshots"
+    "clean": "rimraf dist failing-test-heapsnapshots",
+    "format": "prettier --write src/**/*"
   },
   "dependencies": {},
   "devDependencies": {
@@ -55,6 +56,7 @@
     "@types/jest": "^29.5.12",
     "copyfiles": "^2.4.1",
     "jest": "^29.7.0",
+    "prettier": "^3.3.3",
     "rimraf": "^6.0.1",
     "typescript": "^5.5.3"
   }

@@ -37,7 +37,7 @@ export interface IObjectGraphHandlerPrototype
     shadowTarget: object,
     propName: string | symbol,
     desc: PropertyDescriptor,
-    shouldBeLocal?: boolean
+    shouldBeLocal?: boolean,
   ): boolean;
 
   /**
@@ -47,7 +47,11 @@ export interface IObjectGraphHandlerPrototype
    * @param {object} shadowTarget The supposed target.
    * @private
    */
-  validateTrapAndShadowTarget(this: ObjectGraphHandler, trapName: string, shadowTarget: object): void;
+  validateTrapAndShadowTarget(
+    this: ObjectGraphHandler,
+    trapName: string,
+    shadowTarget: object,
+  ): void;
 
   /**
    * Get the shadow target associated with a real value.
@@ -116,7 +120,7 @@ export interface IObjectGraphHandlerPrototype
     trapName: string,
     target: object,
     rvOrExn: any,
-    origin: ObjectGraphHandler
+    origin: ObjectGraphHandler,
   ): void;
 
   /**
@@ -124,7 +128,10 @@ export interface IObjectGraphHandlerPrototype
    *
    * @private
    */
-  externalHandler<T extends (...args: unknown[]) => unknown>(this: ObjectGraphHandler, callback: T): ReturnType<T>;
+  externalHandler<T extends (...args: unknown[]) => unknown>(
+    this: ObjectGraphHandler,
+    callback: T,
+  ): ReturnType<T>;
 
   /**
    * Set all properties on a shadow target, including prototype, and seal it.
@@ -155,7 +162,12 @@ export interface IObjectGraphHandlerPrototype
    *
    * @private
    */
-  defineLazyGetter(this: ObjectGraphHandler, source: any, shadowTarget: any, propName: string | symbol): boolean;
+  defineLazyGetter(
+    this: ObjectGraphHandler,
+    source: any,
+    shadowTarget: any,
+    propName: string | symbol,
+  ): boolean;
 
   /**
    * Determine if a target, or any prototype ancestor, has a local-to-the-proxy
