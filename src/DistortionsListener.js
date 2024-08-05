@@ -36,28 +36,39 @@ Object.defineProperties(
   DistortionsListener.prototype,
   /** @type NWNCDataDescriptorsOf<IDistortionsListenerPrototype> */ ({
     "addListener": new NWNCDataDescriptor(function (value, category, config) {
-      if (category === "prototype" || category === "instance") value = value.prototype;
+      if (category === "prototype" || category === "instance") {
+        value = value.prototype;
+      }
 
-      if (category === "prototype" || category === "value")
+      if (category === "prototype" || category === "value") {
         this.valueAndProtoMap.set(value, config);
-      else if (category === "iterable")
+      } else if (category === "iterable") {
         Array.from(value).forEach((item) => this.valueAndProtoMap.set(item, config));
-      else if (category === "instance") this.instanceMap.set(value, config);
-      else if (category === "filter" && typeof value === "function")
+      } else if (category === "instance") {
+        this.instanceMap.set(value, config);
+      } else if (category === "filter" && typeof value === "function") {
         this.filterToConfigMap.set(value, config);
-      else throw new Error(`Unsupported category ${category} for value`);
+      } else {
+        throw new Error(`Unsupported category ${category} for value`);
+      }
     }),
 
     "removeListener": new NWNCDataDescriptor(function (value, category) {
-      if (category === "prototype" || category === "instance") value = value.prototype;
+      if (category === "prototype" || category === "instance") {
+        value = value.prototype;
+      }
 
-      if (category === "prototype" || category === "value") this.valueAndProtoMap.delete(value);
-      else if (category === "iterable")
+      if (category === "prototype" || category === "value") {
+        this.valueAndProtoMap.delete(value);
+      } else if (category === "iterable") {
         Array.from(value).forEach((item) => this.valueAndProtoMap.delete(item));
-      else if (category === "instance") this.instanceMap.delete(value);
-      else if (category === "filter" && typeof value === "function")
+      } else if (category === "instance") {
+        this.instanceMap.delete(value);
+      } else if (category === "filter" && typeof value === "function") {
         this.filterToConfigMap.delete(value);
-      else throw new Error(`Unsupported category ${category} for value`);
+      } else {
+        throw new Error(`Unsupported category ${category} for value`);
+      }
     }),
 
     "listenOnce": new NWNCDataDescriptor(function (meta, config) {
@@ -93,13 +104,16 @@ Object.defineProperties(
       }
       handler.addProxyListener(this.proxyListener);
 
-      if (handler.mayReplacePassThrough)
+      if (handler.mayReplacePassThrough) {
         handler.passThroughFilter = this.passThroughFilter.bind(this);
+      }
     }, true),
 
     "ignorePrimordials": new NWNCDataDescriptor(function () {
       Primordials.forEach(function (p) {
-        if (p) this.ignorableValues.add(p);
+        if (p) {
+          this.ignorableValues.add(p);
+        }
       }, this);
     }, true),
 
@@ -139,25 +153,35 @@ Object.defineProperties(
         const filterOptions = {
           // empty, but preserved on separate lines for git blame
         };
-        if (meta.originHandler) filterOptions.originHandler = meta.originHandler;
-        if (meta.targetHandler) filterOptions.targetHandler = meta.targetHandler;
+        if (meta.originHandler) {
+          filterOptions.originHandler = meta.originHandler;
+        }
+        if (meta.targetHandler) {
+          filterOptions.targetHandler = meta.targetHandler;
+        }
         rules.filterOwnKeys(fieldName, modifyTarget, config.filterOwnKeys, filterOptions);
       }
 
-      if (!meta.isOriginGraph && !Reflect.isExtensible(meta.target))
+      if (!meta.isOriginGraph && !Reflect.isExtensible(meta.target)) {
         Reflect.preventExtensions(meta.proxy);
+      }
 
       const deadTraps = allTraps.filter(function (key) {
         return !config.proxyTraps.includes(key);
       });
       rules.disableTraps(fieldName, modifyTarget, deadTraps);
 
-      if (config.storeUnknownAsLocal) rules.storeUnknownAsLocal(fieldName, modifyTarget);
+      if (config.storeUnknownAsLocal) {
+        rules.storeUnknownAsLocal(fieldName, modifyTarget);
+      }
 
-      if (config.requireLocalDelete) rules.requireLocalDelete(fieldName, modifyTarget);
+      if (config.requireLocalDelete) {
+        rules.requireLocalDelete(fieldName, modifyTarget);
+      }
 
-      if ("truncateArgList" in config && config.truncateArgList !== false)
+      if ("truncateArgList" in config && config.truncateArgList !== false) {
         rules.truncateArgList(fieldName, modifyTarget, config.truncateArgList);
+      }
     }),
 
     /**

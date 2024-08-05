@@ -60,7 +60,9 @@ export const ChainHandlerProtection = Object.create(Reflect, {
       /** @type {(string | symbol) []} */
       let rv = ["nextHandler", "baseHandler", "membrane"];
       let baseHandler = chainHandler.baseHandler;
-      if (baseHandler !== Reflect) rv = rv.concat(Reflect.ownKeys(baseHandler));
+      if (baseHandler !== Reflect) {
+        rv = rv.concat(Reflect.ownKeys(baseHandler));
+      }
       return rv.includes(propName);
     },
     false,
@@ -85,7 +87,9 @@ export const ChainHandlerProtection = Object.create(Reflect, {
    */
   "deleteProperty": new DataDescriptor(
     function (chainHandler, propName) {
-      if (this.isProtectedName(chainHandler, propName)) return false;
+      if (this.isProtectedName(chainHandler, propName)) {
+        return false;
+      }
       return Reflect.deleteProperty(chainHandler, propName);
     },
     false,
@@ -98,10 +102,14 @@ export const ChainHandlerProtection = Object.create(Reflect, {
    */
   "defineProperty": new DataDescriptor(
     function (chainHandler, propName, desc) {
-      if (this.isProtectedName(chainHandler, propName)) return false;
+      if (this.isProtectedName(chainHandler, propName)) {
+        return false;
+      }
 
       if (allTraps.includes(propName)) {
-        if (!isDataDescriptor(desc) || typeof desc.value !== "function") return false;
+        if (!isDataDescriptor(desc) || typeof desc.value !== "function") {
+          return false;
+        }
         desc = new DataDescriptor(
           inGraphHandler(propName, desc.value),
           desc.writable,
@@ -144,9 +152,10 @@ ModifyRulesAPI.prototype = Object.seal({
     /** @type {Reflect | ObjectGraphHandler} */
     let baseHandler = Reflect,
       description = "Reflect";
-    if (ChainHandlers.has(existingHandler))
+    if (ChainHandlers.has(existingHandler)) {
       // @ts-expect-error - if an object is a IChainHandler (with a baseHandler property), it will be in the ChainHandlers WeakMap, but typescript doesn't know about this.
       baseHandler = existingHandler.baseHandler;
+    }
 
     if (existingHandler instanceof ObjectGraphHandler) {
       if (!this.membrane.ownsHandler(existingHandler)) {
@@ -194,7 +203,9 @@ ModifyRulesAPI.prototype = Object.seal({
   replaceProxy: function (oldProxy, handler) {
     if (DogfoodMembrane) {
       const [found, unwrapped] = DogfoodMembrane.getMembraneValue("internal", handler);
-      if (found) handler = unwrapped;
+      if (found) {
+        handler = unwrapped;
+      }
     }
 
     // @ts-expect-error - if an object is a IChainHandler (with a baseHandler property), it will be in the ChainHandlers WeakMap, but typescript doesn't know about this.
@@ -245,15 +256,17 @@ ModifyRulesAPI.prototype = Object.seal({
       cachedField = map.originField;
     } else {
       cachedField = baseHandler.fieldName;
-      if (cachedField == map.originField)
+      if (cachedField == map.originField) {
         throw new Error(
           "You must replace original values with either Reflect or a ChainHandler inheriting from Reflect",
         );
+      }
     }
 
     cachedProxy = map.getProxy(cachedField);
-    if (cachedProxy != oldProxy)
+    if (cachedProxy != oldProxy) {
       throw new Error("You cannot replace the proxy with a handler from a different object graph!");
+    }
 
     // Finally, do the actual proxy replacement.
     let original = map.getOriginal(),
@@ -355,8 +368,9 @@ ModifyRulesAPI.prototype = Object.seal({
       filter = (key) => s.has(key);
     }
 
-    if (typeof filter !== "function" && filter !== null)
+    if (typeof filter !== "function" && filter !== null) {
       throw new Error("filterOwnKeys must be a filter function, array or Set!");
+    }
 
     /* Defining a filter after a proxy's shadow target is not extensible
      * guarantees inconsistency.  So we must disallow that possibility.
@@ -371,15 +385,20 @@ ModifyRulesAPI.prototype = Object.seal({
     if (metadata.originField === fieldName) {
       fieldsToCheck = Reflect.ownKeys(metadata.proxiedFields);
       fieldsToCheck.splice(fieldsToCheck.indexOf(fieldName), 1);
-    } else fieldsToCheck = [fieldName];
+    } else {
+      fieldsToCheck = [fieldName];
+    }
 
     let allowed = fieldsToCheck.every(function (f) {
       let s = metadata.getShadowTarget(f);
       return Reflect.isExtensible(s);
     });
 
-    if (allowed) metadata.setOwnKeysFilter(fieldName, filter);
-    else throw new Error("filterOwnKeys cannot apply to a non-extensible proxy");
+    if (allowed) {
+      metadata.setOwnKeysFilter(fieldName, filter);
+    } else {
+      throw new Error("filterOwnKeys cannot apply to a non-extensible proxy");
+    }
   },
 
   /**
@@ -395,7 +414,9 @@ ModifyRulesAPI.prototype = Object.seal({
    */
   truncateArgList: function (fieldName, proxy, value) {
     this.assertLocalProxy(fieldName, proxy, "truncateArgList");
-    if (typeof proxy !== "function") throw new Error("proxy must be a function!");
+    if (typeof proxy !== "function") {
+      throw new Error("proxy must be a function!");
+    }
     {
       const type = typeof value;
       if (type === "number") {
@@ -427,11 +448,14 @@ ModifyRulesAPI.prototype = Object.seal({
       trapList.some((t) => {
         return typeof t !== "string";
       })
-    )
+    ) {
       throw new Error("Trap list must be an array of strings!");
+    }
     const map = this.membrane.map.get(proxy);
     trapList.forEach(function (t) {
-      if (allTraps.includes(t)) this.setLocalFlag(fieldName, `disableTrap(${t})`, true);
+      if (allTraps.includes(t)) {
+        this.setLocalFlag(fieldName, `disableTrap(${t})`, true);
+      }
     }, map);
   },
 

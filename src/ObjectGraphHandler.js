@@ -21,7 +21,9 @@ import {
 export function ObjectGraphHandler(membrane, fieldName) {
   {
     let t = typeof fieldName;
-    if (t != "string" && t != "symbol") throw new Error("field must be a string or a symbol!");
+    if (t != "string" && t != "symbol") {
+      throw new Error("field must be a string or a symbol!");
+    }
   }
 
   let boundMethods = {};
@@ -40,9 +42,12 @@ export function ObjectGraphHandler(membrane, fieldName) {
     "passThroughFilter": {
       get: () => passThroughFilter,
       set: (val) => {
-        if (passThroughFilter !== returnFalse)
+        if (passThroughFilter !== returnFalse) {
           throw new Error("passThroughFilter has been defined once already!");
-        if (typeof val !== "function") throw new Error("passThroughFilter must be a function");
+        }
+        if (typeof val !== "function") {
+          throw new Error("passThroughFilter must be a function");
+        }
         passThroughFilter = val;
         return val;
       },
@@ -101,7 +106,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
       // ProxyHandler
       ownKeys: inGraphHandler("ownKeys", function (shadowTarget) {
         this.validateTrapAndShadowTarget("ownKeys", shadowTarget);
-        if (!Reflect.isExtensible(shadowTarget)) return Reflect.ownKeys(shadowTarget);
+        if (!Reflect.isExtensible(shadowTarget)) {
+          return Reflect.ownKeys(shadowTarget);
+        }
 
         var target = getRealTarget(shadowTarget);
         var targetMap = this.membrane.map.get(target);
@@ -119,7 +126,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
             check.every(function (elem) {
               return cached.original.includes(elem);
             });
-          if (pass) return cached.keys.slice(0);
+          if (pass) {
+            return cached.keys.slice(0);
+          }
         }
         return this.setOwnKeys(shadowTarget);
       }),
@@ -149,9 +158,13 @@ export function ObjectGraphHandler(membrane, fieldName) {
           let pMapping = this.membrane.map.get(target);
           let shadow = pMapping.getShadowTarget(this.fieldName);
           hasOwn = this.getOwnPropertyDescriptor(shadow, propName);
-          if (typeof hasOwn !== "undefined") return true;
+          if (typeof hasOwn !== "undefined") {
+            return true;
+          }
           target = this.getPrototypeOf(shadow);
-          if (target === null) break;
+          if (target === null) {
+            break;
+          }
           let foundProto;
           [foundProto, target] = this.membrane.getMembraneValue(this.fieldName, target);
           assert(foundProto, "Must find membrane value for prototype");
@@ -205,12 +218,19 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
             if (desc) {
               // Quickly repeating steps 4-8 from above algorithm.
-              if (isDataDescriptor(desc)) return desc.value;
-              if (!isAccessorDescriptor(desc))
+              if (isDataDescriptor(desc)) {
+                return desc.value;
+              }
+              if (!isAccessorDescriptor(desc)) {
                 throw new Error("desc must be a data descriptor or an accessor descriptor!");
+              }
               let type = typeof desc.get;
-              if (type === "undefined") return undefined;
-              if (type !== "function") throw new Error("getter is not a function");
+              if (type === "undefined") {
+                return undefined;
+              }
+              if (type !== "function") {
+                throw new Error("getter is not a function");
+              }
               return Reflect.apply(desc.get, receiver, []);
             }
           }
@@ -229,19 +249,25 @@ export function ObjectGraphHandler(membrane, fieldName) {
             protoLookups++;
 
             let proto = this.getPrototypeOf(shadow);
-            if (proto === null) return undefined;
+            if (proto === null) {
+              return undefined;
+            }
 
             {
               let foundProto, other;
               [foundProto, other] = this.membrane.getMembraneProxy(this.fieldName, proto);
-              if (!foundProto) return Reflect.get(proto, propName, receiver);
+              if (!foundProto) {
+                return Reflect.get(proto, propName, receiver);
+              }
               assert(other === proto, "Retrieved prototypes must match");
             }
 
             if (Reflect.isExtensible(shadow)) {
               let foundProto;
               [foundProto, target] = this.membrane.getMembraneValue(this.fieldName, proto);
-            } else target = proto;
+            } else {
+              target = proto;
+            }
           }
         } while (!desc);
 
@@ -252,14 +278,17 @@ export function ObjectGraphHandler(membrane, fieldName) {
         if (isDataDescriptor(desc)) {
           rv = desc.value;
           found = true;
-          if (!desc.configurable && !desc.writable) return rv;
+          if (!desc.configurable && !desc.writable) {
+            return rv;
+          }
         }
 
         if (!found) {
           // 5. Assert: IsAccessorDescriptor(desc) is true.
 
-          if (!isAccessorDescriptor(desc))
+          if (!isAccessorDescriptor(desc)) {
             throw new Error("desc must be a data descriptor or an accessor descriptor!");
+          }
 
           // 6. Let getter be desc.[[Get]].
           var getter = desc.get;
@@ -270,8 +299,12 @@ export function ObjectGraphHandler(membrane, fieldName) {
        */
           {
             let type = typeof getter;
-            if (type === "undefined") return undefined;
-            if (type !== "function") throw new Error("getter is not a function");
+            if (type === "undefined") {
+              return undefined;
+            }
+            if (type !== "function") {
+              throw new Error("getter is not a function");
+            }
             rv = this.externalHandler(function () {
               return Reflect.apply(getter, receiver, []);
             });
@@ -310,7 +343,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
           if (this.membrane.showGraphName && propName == "membraneGraphName") {
             let checkDesc = Reflect.getOwnPropertyDescriptor(shadowTarget, propName);
-            if (checkDesc && !checkDesc.configurable) return checkDesc;
+            if (checkDesc && !checkDesc.configurable) {
+              return checkDesc;
+            }
             return this.graphNameDescriptor;
           }
 
@@ -324,19 +359,26 @@ export function ObjectGraphHandler(membrane, fieldName) {
             if (
               targetMap.wasDeletedLocally(targetMap.originField, propName) ||
               targetMap.wasDeletedLocally(this.fieldName, propName)
-            )
+            ) {
               return undefined;
+            }
 
             var desc = targetMap.getLocalDescriptor(this.fieldName, propName);
-            if (desc !== undefined) return desc;
+            if (desc !== undefined) {
+              return desc;
+            }
 
             {
               let originFilter = targetMap.getOwnKeysFilter(targetMap.originField);
-              if (originFilter && !originFilter(propName)) return undefined;
+              if (originFilter && !originFilter(propName)) {
+                return undefined;
+              }
             }
             {
               let localFilter = targetMap.getOwnKeysFilter(this.fieldName);
-              if (localFilter && !localFilter(propName)) return undefined;
+              if (localFilter && !localFilter(propName)) {
+                return undefined;
+              }
             }
 
             var _this = targetMap.getOriginal();
@@ -371,7 +413,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
              */
             {
               let shadowDesc = Reflect.getOwnPropertyDescriptor(shadowTarget, propName);
-              if (shadowDesc) return shadowDesc;
+              if (shadowDesc) {
+                return shadowDesc;
+              }
             }
 
             return desc;
@@ -423,13 +467,15 @@ export function ObjectGraphHandler(membrane, fieldName) {
         try {
           const proto = Reflect.getPrototypeOf(target);
           let proxy;
-          if (targetMap.originField !== this.fieldName)
+          if (targetMap.originField !== this.fieldName) {
             proxy = this.membrane.convertArgumentToProxy(
               this.membrane.getHandlerByName(targetMap.originField),
               this,
               proto,
             );
-          else proxy = proto;
+          } else {
+            proxy = proto;
+          }
 
           let pMapping = this.membrane.map.get(proxy);
           if (pMapping && pMapping.originField !== this.fieldName) {
@@ -451,10 +497,14 @@ export function ObjectGraphHandler(membrane, fieldName) {
       isExtensible: inGraphHandler("isExtensible", function (shadowTarget) {
         this.validateTrapAndShadowTarget("isExtensible", shadowTarget);
 
-        if (!Reflect.isExtensible(shadowTarget)) return false;
+        if (!Reflect.isExtensible(shadowTarget)) {
+          return false;
+        }
         var target = getRealTarget(shadowTarget);
         var shouldBeLocal = this.getLocalFlag(target, "storeUnknownAsLocal", true);
-        if (shouldBeLocal) return true;
+        if (shouldBeLocal) {
+          return true;
+        }
 
         var targetMap = this.membrane.map.get(target);
         var _this = targetMap.getOriginal();
@@ -463,9 +513,10 @@ export function ObjectGraphHandler(membrane, fieldName) {
           return Reflect.isExtensible(_this);
         });
 
-        if (!rv)
+        if (!rv) {
           // This is our one and only chance to set properties on the shadow target.
           this.lockShadowTarget(shadowTarget);
+        }
 
         return rv;
       }),
@@ -481,12 +532,16 @@ export function ObjectGraphHandler(membrane, fieldName) {
         // Walk the prototype chain to look for shouldBeLocal.
         var shouldBeLocal = this.getLocalFlag(target, "storeUnknownAsLocal", true);
 
-        if (!shouldBeLocal && !this.isExtensible(shadowTarget)) return true;
+        if (!shouldBeLocal && !this.isExtensible(shadowTarget)) {
+          return true;
+        }
 
         // This is our one and only chance to set properties on the shadow target.
         var rv = this.lockShadowTarget(shadowTarget);
 
-        if (!shouldBeLocal) rv = Reflect.preventExtensions(_this);
+        if (!shouldBeLocal) {
+          rv = Reflect.preventExtensions(_this);
+        }
         return rv;
       }),
 
@@ -528,10 +583,15 @@ export function ObjectGraphHandler(membrane, fieldName) {
              */
             let originFilter = targetMap.getOwnKeysFilter(targetMap.originField);
             let localFilter = targetMap.getOwnKeysFilter(this.fieldName);
-            if (originFilter || localFilter)
+            if (originFilter || localFilter) {
               this.membrane.warnOnce(this.membrane.constants.warnings.FILTERED_KEYS_WITHOUT_LOCAL);
-            if (originFilter && !originFilter(propName)) return true;
-            if (localFilter && !localFilter(propName)) return true;
+            }
+            if (originFilter && !originFilter(propName)) {
+              return true;
+            }
+            if (localFilter && !localFilter(propName)) {
+              return true;
+            }
           }
         } catch (e) {
           if (mayLog) {
@@ -541,9 +601,13 @@ export function ObjectGraphHandler(membrane, fieldName) {
         }
 
         let desc = this.getOwnPropertyDescriptor(shadowTarget, propName);
-        if (!desc) return true;
+        if (!desc) {
+          return true;
+        }
 
-        if (!desc.configurable) return false;
+        if (!desc.configurable) {
+          return false;
+        }
 
         try {
           targetMap.deleteLocalDescriptor(this.fieldName, propName, shouldBeLocal);
@@ -633,40 +697,55 @@ export function ObjectGraphHandler(membrane, fieldName) {
                */
               originFilter = targetMap.getOwnKeysFilter(targetMap.originField);
               localFilter = targetMap.getOwnKeysFilter(this.fieldName);
-              if (originFilter || localFilter)
+              if (originFilter || localFilter) {
                 this.membrane.warnOnce(
                   this.membrane.constants.warnings.FILTERED_KEYS_WITHOUT_LOCAL,
                 );
+              }
             }
 
             if (shouldBeLocal) {
-              if (!Reflect.isExtensible(shadowTarget))
+              if (!Reflect.isExtensible(shadowTarget)) {
                 return Reflect.defineProperty(shadowTarget, propName, desc);
+              }
 
               let hasOwn = true;
 
               // Own-keys filters modify hasOwn.
-              if (hasOwn && originFilter && !originFilter(propName)) hasOwn = false;
-              if (hasOwn && localFilter && !localFilter(propName)) hasOwn = false;
+              if (hasOwn && originFilter && !originFilter(propName)) {
+                hasOwn = false;
+              }
+              if (hasOwn && localFilter && !localFilter(propName)) {
+                hasOwn = false;
+              }
 
               // It's probably more expensive to look up a property than to filter the name.
-              if (hasOwn)
+              if (hasOwn) {
                 hasOwn = this.externalHandler(function () {
                   return Boolean(Reflect.getOwnPropertyDescriptor(_this, propName));
                 });
+              }
 
               if (!hasOwn && desc) {
                 rv = targetMap.setLocalDescriptor(this.fieldName, propName, desc);
-                if (rv) this.setOwnKeys(shadowTarget); // fix up property list
-                if (!desc.configurable) Reflect.defineProperty(shadowTarget, propName, desc);
+                if (rv) {
+                  this.setOwnKeys(shadowTarget);
+                } // fix up property list
+                if (!desc.configurable) {
+                  Reflect.defineProperty(shadowTarget, propName, desc);
+                }
                 return rv;
               } else {
                 targetMap.deleteLocalDescriptor(this.fieldName, propName, false);
                 // fall through to Reflect's defineProperty
               }
             } else {
-              if (originFilter && !originFilter(propName)) return false;
-              if (localFilter && !localFilter(propName)) return false;
+              if (originFilter && !originFilter(propName)) {
+                return false;
+              }
+              if (localFilter && !localFilter(propName)) {
+                return false;
+              }
             }
 
             if (desc !== undefined) {
@@ -680,7 +759,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
               targetMap.unmaskDeletion(this.fieldName, propName);
               this.setOwnKeys(shadowTarget); // fix up property list
 
-              if (!desc.configurable) Reflect.defineProperty(shadowTarget, propName, desc);
+              if (!desc.configurable) {
+                Reflect.defineProperty(shadowTarget, propName, desc);
+              }
             }
             return rv;
           } catch (e) {
@@ -768,7 +849,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
           let pMapping = this.membrane.map.get(target);
           let shadow = pMapping.getShadowTarget(this.fieldName);
           ownDesc = this.getOwnPropertyDescriptor(shadow, propName);
-          if (ownDesc) break;
+          if (ownDesc) {
+            break;
+          }
 
           {
             let parent = this.getPrototypeOf(shadow);
@@ -814,9 +897,12 @@ export function ObjectGraphHandler(membrane, fieldName) {
           }
 
           receiverMap = this.membrane.map.get(receiver);
-          if (!receiverMap) throw new Error("How do we still not have a receiverMap?");
-          if (receiverMap.originField === this.fieldName)
+          if (!receiverMap) {
+            throw new Error("How do we still not have a receiverMap?");
+          }
+          if (receiverMap.originField === this.fieldName) {
             throw new Error("Receiver's field name should not match!");
+          }
         }
 
         /*
@@ -833,14 +919,18 @@ export function ObjectGraphHandler(membrane, fieldName) {
             i.   Return ? CreateDataProperty(Receiver, P, V).
     */
         if (isDataDescriptor(ownDesc)) {
-          if (!ownDesc.writable || valueType(receiver) == "primitive") return false;
+          if (!ownDesc.writable || valueType(receiver) == "primitive") {
+            return false;
+          }
 
           let origReceiver = receiverMap.getOriginal();
           let existingDesc = this.externalHandler(function () {
             return Reflect.getOwnPropertyDescriptor(origReceiver, propName);
           });
           if (existingDesc !== undefined) {
-            if (isAccessorDescriptor(existingDesc) || !existingDesc.writable) return false;
+            if (isAccessorDescriptor(existingDesc) || !existingDesc.writable) {
+              return false;
+            }
           }
 
           let rvProxy;
@@ -872,18 +962,22 @@ export function ObjectGraphHandler(membrane, fieldName) {
         }
 
         // 5. Assert: IsAccessorDescriptor(ownDesc) is true.
-        if (!isAccessorDescriptor(ownDesc))
+        if (!isAccessorDescriptor(ownDesc)) {
           throw new Error("ownDesc must be a data descriptor or an accessor descriptor!");
+        }
 
         /*
     6. Let setter be ownDesc.[[Set]].
     7. If setter is undefined, return false.
     */
         let setter = ownDesc.set;
-        if (typeof setter === "undefined") return false;
+        if (typeof setter === "undefined") {
+          return false;
+        }
 
-        if (!this.membrane.hasProxyForValue(this.fieldName, setter))
+        if (!this.membrane.hasProxyForValue(this.fieldName, setter)) {
           this.membrane.buildMapping(this, setter);
+        }
 
         // 8. Perform ? Call(setter, Receiver, « V »).
 
@@ -934,11 +1028,12 @@ export function ObjectGraphHandler(membrane, fieldName) {
           var rv = this.externalHandler(function () {
             return Reflect.setPrototypeOf(_this, protoProxy);
           });
-          if (rv)
+          if (rv) {
             assert(
               Reflect.setPrototypeOf(shadowTarget, wrappedProxy),
               "shadowTarget could not receive prototype?",
             );
+          }
 
           return rv;
         } catch (e) {
@@ -1023,8 +1118,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
           this.membrane.logger.debug("apply wrapping return value");
         }
 
-        if (targetMap.originField !== this.fieldName)
+        if (targetMap.originField !== this.fieldName) {
           rv = this.membrane.convertArgumentToProxy(argHandler, this, rv);
+        }
 
         /* This is a design decision, to pass the wrapped proxy object instead of
          * the unwrapped value.  There's no particular reason for it, except that I
@@ -1131,8 +1227,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
       validateTrapAndShadowTarget: function (trapName, shadowTarget) {
         const target = getRealTarget(shadowTarget);
         const targetMap = this.membrane.map.get(target);
-        if (!(targetMap instanceof ProxyMapping))
+        if (!(targetMap instanceof ProxyMapping)) {
           throw new Error("No ProxyMapping found for shadow target!");
+        }
         if (!targetMap.isShadowTarget(shadowTarget)) {
           throw new Error("ObjectGraphHandler traps must be called with a shadow target!");
         }
@@ -1140,8 +1237,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
         if (
           targetMap.getLocalFlag(this.fieldName, disableTrapFlag) ||
           targetMap.getLocalFlag(targetMap.originField, disableTrapFlag)
-        )
+        ) {
           throw new Error(`The ${trapName} trap is not executable.`);
+        }
       },
 
       /**
@@ -1160,8 +1258,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
        * @param target {Object} The value to wrap.
        */
       ensureMapping: function (target) {
-        if (!this.membrane.hasProxyForValue(this.fieldName, target))
+        if (!this.membrane.hasProxyForValue(this.fieldName, target)) {
           this.membrane.buildMapping(this, target);
+        }
       },
 
       /**
@@ -1170,8 +1269,12 @@ export function ObjectGraphHandler(membrane, fieldName) {
        * @see ProxyNotify
        */
       addProxyListener: function (listener) {
-        if (typeof listener != "function") throw new Error("listener is not a function!");
-        if (!this.__proxyListeners__.includes(listener)) this.__proxyListeners__.push(listener);
+        if (typeof listener != "function") {
+          throw new Error("listener is not a function!");
+        }
+        if (!this.__proxyListeners__.includes(listener)) {
+          this.__proxyListeners__.push(listener);
+        }
       },
 
       /**
@@ -1181,7 +1284,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
        */
       removeProxyListener: function (listener) {
         let index = this.__proxyListeners__.indexOf(listener);
-        if (index == -1) throw new Error("listener is not registered!");
+        if (index == -1) {
+          throw new Error("listener is not registered!");
+        }
         this.__proxyListeners__.splice(index, 1);
       },
 
@@ -1194,9 +1299,12 @@ export function ObjectGraphHandler(membrane, fieldName) {
        * listener will get for its arguments.
        */
       addFunctionListener: function (listener) {
-        if (typeof listener != "function") throw new Error("listener is not a function!");
-        if (!this.__functionListeners__.includes(listener))
+        if (typeof listener != "function") {
+          throw new Error("listener is not a function!");
+        }
+        if (!this.__functionListeners__.includes(listener)) {
           this.__functionListeners__.push(listener);
+        }
       },
 
       /**
@@ -1206,7 +1314,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
        */
       removeFunctionListener: function (listener) {
         let index = this.__functionListeners__.indexOf(listener);
-        if (index == -1) throw new Error("listener is not registered!");
+        if (index == -1) {
+          throw new Error("listener is not registered!");
+        }
         this.__functionListeners__.splice(index, 1);
       },
 
@@ -1234,7 +1344,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
           let membraneListeners = this.membrane.__functionListeners__.slice(0);
           listeners = ourListeners.concat(nativeListeners, membraneListeners);
         }
-        if (listeners.length === 0) return;
+        if (listeners.length === 0) {
+          return;
+        }
 
         const args = [reason, trapName, this.fieldName, origin.fieldName, target, rvOrExn];
         Object.freeze(args);
@@ -1277,7 +1389,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
           if (this.membrane.showGraphName && propName == "membraneGraphName") {
             // Special case.
             Reflect.defineProperty(shadowTarget, propName, this.graphNameDescriptor);
-          } else this.defineLazyGetter(_this, shadowTarget, propName);
+          } else {
+            this.defineLazyGetter(_this, shadowTarget, propName);
+          }
 
           // We want to trigger the lazy getter so that the property can be sealed.
           void Reflect.get(shadowTarget, propName);
@@ -1321,9 +1435,15 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
           if (mustSkip.size > 0 || originFilter || localFilter) {
             originalKeys = originalKeys.filter(function (elem) {
-              if (mustSkip.has(elem)) return false;
-              if (originFilter && !originFilter.apply(this, arguments)) return false;
-              if (localFilter && !localFilter.apply(this, arguments)) return false;
+              if (mustSkip.has(elem)) {
+                return false;
+              }
+              if (originFilter && !originFilter.apply(this, arguments)) {
+                return false;
+              }
+              if (localFilter && !localFilter.apply(this, arguments)) {
+                return false;
+              }
               return true;
             });
           }
@@ -1336,7 +1456,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
           let targetExtraKeys = targetMap.localOwnKeys(this.fieldName);
           let known = new Set(originalKeys);
           let f = function (key) {
-            if (known.has(key)) return false;
+            if (known.has(key)) {
+              return false;
+            }
             known.add(key);
             return true;
           };
@@ -1373,8 +1495,11 @@ export function ObjectGraphHandler(membrane, fieldName) {
           // step 14
           targetKeys.forEach(function (key) {
             let desc = Reflect.getOwnPropertyDescriptor(shadowTarget, key);
-            if (desc && !desc.configurable) targetNonconfigurableKeys.push(key);
-            else targetConfigurableKeys.push(key);
+            if (desc && !desc.configurable) {
+              targetNonconfigurableKeys.push(key);
+            } else {
+              targetConfigurableKeys.push(key);
+            }
           });
 
           // step 15
@@ -1394,7 +1519,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
           }, this);
 
           // step 18
-          if (extensibleTarget) return rv;
+          if (extensibleTarget) {
+            return rv;
+          }
 
           // step 19
           targetConfigurableKeys.forEach(function (key) {
@@ -1463,17 +1590,21 @@ export function ObjectGraphHandler(membrane, fieldName) {
            */
 
           // This lockState check should be treated as an assertion.
-          if (lockState !== "transient")
+          if (lockState !== "transient") {
             throw new Error("setLockedValue should be callable exactly once!");
+          }
           lockedValue = value;
           lockState = "finalized";
         }
 
         const lazyDesc = {
           get: function () {
-            if (lockState === "finalized") return lockedValue;
-            if (lockState === "transient")
-              return handler.membrane.getMembraneProxy(handler.fieldName, shadowTarget)[0]; // ansteg - this used to be ".proxy" instead of ".[0]", but typescript complained. I'm pretty sure this was a real bug.
+            if (lockState === "finalized") {
+              return lockedValue;
+            }
+            if (lockState === "transient") {
+              return handler.membrane.getMembraneProxy(handler.fieldName, shadowTarget)[0];
+            } // ansteg - this used to be ".proxy" instead of ".[0]", but typescript complained. I'm pretty sure this was a real bug.
 
             /* When the shadow target is sealed, desc.configurable is not updated.
              * But the shadow target's properties all get the [[Configurable]] flag
@@ -1486,8 +1617,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
              * I am deliberately throwing an exception here, before the assert call.
              */
             let current = Reflect.getOwnPropertyDescriptor(shadowTarget, propName);
-            if (!current.configurable)
+            if (!current.configurable) {
               throw new Error("lazy getter descriptor is not configurable -- this is fatal");
+            }
 
             handler.validateTrapAndShadowTarget("defineLazyGetter", shadowTarget);
 
@@ -1539,9 +1671,15 @@ export function ObjectGraphHandler(membrane, fieldName) {
             );
 
             // Finally, run the actual getter.
-            if (sourceDesc === undefined) return undefined;
-            if ("get" in sourceDesc) return sourceDesc.get.apply(this);
-            if ("value" in sourceDesc) return sourceDesc.value;
+            if (sourceDesc === undefined) {
+              return undefined;
+            }
+            if ("get" in sourceDesc) {
+              return sourceDesc.get.apply(this);
+            }
+            if ("value" in sourceDesc) {
+              return sourceDesc.value;
+            }
             return undefined;
           },
 
@@ -1569,8 +1707,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
              * I am deliberately throwing an exception here, before the assert call.
              */
             let current = Reflect.getOwnPropertyDescriptor(shadowTarget, propName);
-            if (!current.configurable)
+            if (!current.configurable) {
               throw new Error("lazy getter descriptor is not configurable -- this is fatal");
+            }
 
             const desc = new DataDescriptor(value, true, current.enumerable, true);
 
@@ -1597,7 +1736,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
         {
           let current = Reflect.getOwnPropertyDescriptor(source, propName);
-          if (current && !current.enumerable) lazyDesc.enumerable = false;
+          if (current && !current.enumerable) {
+            lazyDesc.enumerable = false;
+          }
         }
 
         return Reflect.defineProperty(shadowTarget, propName, lazyDesc);
@@ -1622,8 +1763,12 @@ export function ObjectGraphHandler(membrane, fieldName) {
         while (true) {
           let shouldBeLocal =
             map.getLocalFlag(field, flagName) || map.getLocalFlag(originField, flagName);
-          if (shouldBeLocal) return true;
-          if (!recurse) return false;
+          if (shouldBeLocal) {
+            return true;
+          }
+          if (!recurse) {
+            return false;
+          }
           let shadowTarget = map.getShadowTarget(this.fieldName);
 
           /* XXX ajvincent I suspect this assertion might fail if
@@ -1633,9 +1778,13 @@ export function ObjectGraphHandler(membrane, fieldName) {
           assert(shadowTarget, "getLocalFlag failed to get a shadow target!");
 
           let protoTarget = this.getPrototypeOf(shadowTarget);
-          if (!protoTarget) return false;
+          if (!protoTarget) {
+            return false;
+          }
           map = this.membrane.map.get(protoTarget);
-          if (!map) return false;
+          if (!map) {
+            return false;
+          }
           assert(map instanceof ProxyMapping, "map not found in getLocalFlag?");
         }
       },
@@ -1658,10 +1807,14 @@ export function ObjectGraphHandler(membrane, fieldName) {
           let shouldBeLocal =
             map.getLocalFlag(this.fieldName, "requireLocalDelete") ||
             map.getLocalFlag(originField, "requireLocalDelete");
-          if (shouldBeLocal) return true;
+          if (shouldBeLocal) {
+            return true;
+          }
           let shadowTarget = map.getShadowTarget(this.fieldName);
           protoTarget = this.getPrototypeOf(shadowTarget);
-          if (!protoTarget) return false;
+          if (!protoTarget) {
+            return false;
+          }
           map = this.membrane.map.get(protoTarget);
         }
       },
@@ -1710,7 +1863,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
        * @private
        */
       addRevocable: function (revoke) {
-        if (this.__isDead__) throw new Error("This membrane handler is dead!");
+        if (this.__isDead__) {
+          throw new Error("This membrane handler is dead!");
+        }
         this.__revokeFunctions__.push(revoke);
       },
 
@@ -1731,7 +1886,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
        * Revoke the entire object graph.
        */
       revokeEverything: function () {
-        if (this.__isDead__) throw new Error("This membrane handler is dead!");
+        if (this.__isDead__) {
+          throw new Error("This membrane handler is dead!");
+        }
         Object.defineProperty(this, "__isDead__", new DataDescriptor(true));
         let length = this.__revokeFunctions__.length;
         for (var i = 0; i < length; i++) {
@@ -1743,7 +1900,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
             // if they go out of scope (in non-membrane code) _before_ the membrane is revoked.
             revocable.selfDestruct(this.membrane);
           } // typeof revocable == "function"
-          else revocable();
+          else {
+            revocable();
+          }
         }
         // ansteg: The ___revokeFunctions__ array contains ProxyMappings and/or revoke functions that indirectly retain shadowTargets.
         // This interacts with the ShadowKeyMap, which has shadowTargets as keys, and real targets as values, causing all the "real" values to leak.

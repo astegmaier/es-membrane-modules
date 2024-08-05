@@ -17,11 +17,15 @@ import { makeRevokeDeleteRefs } from "./moduleUtilities.js";
  */
 export function ProxyNotify(parts, handler, isOrigin, options) {
   "use strict";
-  if (typeof options === "undefined") options = {};
+  if (typeof options === "undefined") {
+    options = {};
+  }
 
   // private variables
   const listeners = handler.__proxyListeners__;
-  if (listeners.length === 0) return;
+  if (listeners.length === 0) {
+    return;
+  }
   const modifyRules = handler.membrane.modifyRules;
 
   // the actual metadata object for the listener
@@ -40,7 +44,9 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
     "proxy": new AccessorDescriptor(
       () => parts.proxy,
       (val) => {
-        if (!meta.stopped) parts.proxy = val;
+        if (!meta.stopped) {
+          parts.proxy = val;
+        }
       },
     ),
 
@@ -62,7 +68,9 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
     "handler": new AccessorDescriptor(
       () => handler,
       (val) => {
-        if (!meta.stopped) handler = val;
+        if (!meta.stopped) {
+          handler = val;
+        }
       },
     ),
 
@@ -75,7 +83,9 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
      * Rebuild the proxy object.
      */
     "rebuildProxy": new DataDescriptor(function () {
-      if (!this.stopped) parts.proxy = modifyRules.replaceProxy(parts.proxy, handler);
+      if (!this.stopped) {
+        parts.proxy = modifyRules.replaceProxy(parts.proxy, handler);
+      }
     }),
 
     /**
@@ -116,9 +126,11 @@ ProxyNotify.useShadowTarget = function (parts, handler, mode) {
   "use strict";
   let newHandler = {};
 
-  if (mode === "frozen") Object.freeze(parts.proxy);
-  else if (mode === "sealed") Object.seal(parts.proxy);
-  else if (mode === "prepared") {
+  if (mode === "frozen") {
+    Object.freeze(parts.proxy);
+  } else if (mode === "sealed") {
+    Object.seal(parts.proxy);
+  } else if (mode === "prepared") {
     // Establish the list of own properties.
     const keys = Reflect.ownKeys(parts.proxy);
     keys.forEach(function (key) {
@@ -147,7 +159,9 @@ ProxyNotify.useShadowTarget = function (parts, handler, mode) {
   if (typeof parts.shadowTarget == "function") {
     newHandler.apply = handler.boundMethods.apply;
     newHandler.construct = handler.boundMethods.construct;
-  } else if (Reflect.ownKeys(newHandler).length === 0) newHandler = Reflect; // yay, maximum optimization
+  } else if (Reflect.ownKeys(newHandler).length === 0) {
+    newHandler = Reflect;
+  } // yay, maximum optimization
 
   let newParts = Proxy.revocable(parts.shadowTarget, newHandler);
   parts.proxy = newParts.proxy;
@@ -206,7 +220,9 @@ export function invokeProxyListeners(listeners, meta) {
         }
       }
     }
-    if (exnFound) throw exn;
+    if (exnFound) {
+      throw exn;
+    }
     index++;
   }
 

@@ -151,8 +151,9 @@ Reflect.defineProperty(
      * @private
      */
     buildMapping: function (handler, value, options = {}) {
-      if (!this.ownsHandler(handler))
+      if (!this.ownsHandler(handler)) {
         throw new Error("handler is not an ObjectGraphHandler we own!");
+      }
       let mapping = "mapping" in options ? options.mapping : null;
 
       if (!mapping) {
@@ -199,7 +200,9 @@ Reflect.defineProperty(
           targetHandler: handler,
         };
         ["trapName", "callable", "isThis", "argIndex"].forEach(function (propName) {
-          if (Reflect.has(options, propName)) notifyOptions[propName] = options[propName];
+          if (Reflect.has(options, propName)) {
+            notifyOptions[propName] = options[propName];
+          }
         });
 
         ProxyNotify(parts, options.originHandler, true, notifyOptions);
@@ -221,7 +224,9 @@ Reflect.defineProperty(
     hasHandlerByField: function (field) {
       {
         let t = typeof field;
-        if (t != "string" && t != "symbol") throw new Error("field must be a string or a symbol!");
+        if (t != "string" && t != "symbol") {
+          throw new Error("field must be a string or a symbol!");
+        }
       }
       return Reflect.ownKeys(this.handlersByFieldName).includes(field);
     },
@@ -236,10 +241,13 @@ Reflect.defineProperty(
      * @returns {ObjectGraphHandler} The handler for the object graph.
      */
     getHandlerByName: function (field, options) {
-      if (typeof options === "boolean") throw new Error("fix me!");
+      if (typeof options === "boolean") {
+        throw new Error("fix me!");
+      }
       let mustCreate = typeof options == "object" ? Boolean(options.mustCreate) : false;
-      if (mustCreate && !this.hasHandlerByField(field))
+      if (mustCreate && !this.hasHandlerByField(field)) {
         this.handlersByFieldName[field] = new ObjectGraphHandler(this, field);
+      }
       return this.handlersByFieldName[field];
     },
 
@@ -249,9 +257,10 @@ Reflect.defineProperty(
      * @returns {Boolean} True if the handler is one we own.
      */
     ownsHandler: function (handler) {
-      if (ChainHandlers.has(handler))
+      if (ChainHandlers.has(handler)) {
         // @ts-expect-error - if an object is a IChainHandler (with a baseHandler property), it will be in the ChainHandlers WeakMap, but typescript doesn't know about this.
         handler = handler.baseHandler;
+      }
       return (
         handler instanceof ObjectGraphHandler &&
         this.handlersByFieldName[handler.fieldName] === handler
@@ -270,7 +279,9 @@ Reflect.defineProperty(
      * creates.
      */
     wrapArgumentByProxyMapping: function (mapping, arg, options = {}) {
-      if (this.map.has(arg) || valueType(arg) === "primitive") return;
+      if (this.map.has(arg) || valueType(arg) === "primitive") {
+        return;
+      }
 
       let handler = this.getHandlerByName(mapping.originField);
       this.buildMapping(handler, arg, options);
@@ -315,7 +326,9 @@ Reflect.defineProperty(
 
       let found, rv;
       [found, rv] = this.getMembraneProxy(targetHandler.fieldName, arg);
-      if (found) return rv;
+      if (found) {
+        return rv;
+      }
 
       if (
         !this.ownsHandler(originHandler) ||
@@ -341,7 +354,9 @@ Reflect.defineProperty(
           passOptions = Object.create(options, {
             "mapping": new DataDescriptor(argMap),
           });
-        } else passOptions = options;
+        } else {
+          passOptions = options;
+        }
 
         this.buildMapping(originHandler, arg, passOptions);
       }
@@ -359,7 +374,9 @@ Reflect.defineProperty(
       }
 
       [found, rv] = this.getMembraneProxy(targetHandler.fieldName, arg);
-      if (!found) throw new Error("in convertArgumentToProxy(): proxy not found");
+      if (!found) {
+        throw new Error("in convertArgumentToProxy(): proxy not found");
+      }
       return rv;
     },
 
@@ -382,10 +399,11 @@ Reflect.defineProperty(
        * If we fail, there must be no side-effects.
        */
       function bag(h, v) {
-        if (!this.ownsHandler(h))
+        if (!this.ownsHandler(h)) {
           throw new Error(
             "bindValuesByHandlers requires two ObjectGraphHandlers from different graphs",
           );
+        }
         let rv = {
           handler: h,
           value: v,
@@ -396,8 +414,9 @@ Reflect.defineProperty(
           const field = rv.handler.fieldName;
           const valid =
             !rv.proxyMap || (rv.proxyMap.hasField(field) && rv.proxyMap.getProxy(field) === v);
-          if (!valid)
+          if (!valid) {
             throw new Error("Value argument does not belong to proposed ObjectGraphHandler");
+          }
         }
 
         return rv;
@@ -406,17 +425,25 @@ Reflect.defineProperty(
       function checkField(bag) {
         if (proxyMap.hasField(bag.handler.fieldName)) {
           let check = proxyMap.getProxy(bag.handler.fieldName);
-          if (check !== bag.value)
+          if (check !== bag.value) {
             throw new Error("Value argument does not belong to proposed object graph");
+          }
           bag.maySet = false;
-        } else bag.maySet = true;
+        } else {
+          bag.maySet = true;
+        }
       }
 
       function applyBag(bag) {
-        if (!bag.maySet) return;
+        if (!bag.maySet) {
+          return;
+        }
         let parts = { proxy: bag.value };
-        if (proxyMap.originField === bag.handler.fieldName) parts.value = bag.value;
-        else parts.value = proxyMap.getOriginal();
+        if (proxyMap.originField === bag.handler.fieldName) {
+          parts.value = bag.value;
+        } else {
+          parts.value = proxyMap.getOriginal();
+        }
         proxyMap.set(this, bag.handler.fieldName, parts);
       }
 
@@ -444,17 +471,20 @@ Reflect.defineProperty(
       } else if (!propBag0.proxyMap) {
         if (!propBag1.proxyMap) {
           proxyMap = new ProxyMapping(propBag0.handler.fieldName);
-        } else proxyMap = propBag1.proxyMap;
+        } else {
+          proxyMap = propBag1.proxyMap;
+        }
       }
 
       checkField(propBag0);
       checkField(propBag1);
 
       if (propBag0.handler.fieldName === propBag1.handler.fieldName) {
-        if (propBag0.value !== propBag1.value)
+        if (propBag0.value !== propBag1.value) {
           throw new Error(
             "bindValuesByHandlers requires two ObjectGraphHandlers from different graphs",
           );
+        }
         // no-op
         propBag0.maySet = false;
         propBag1.maySet = false;
@@ -491,20 +521,28 @@ Reflect.defineProperty(
      * This method should NOT be exposed to the public.
      */
     wrapDescriptor: function (originField, targetField, desc) {
-      if (!desc) return desc;
+      if (!desc) {
+        return desc;
+      }
 
       // XXX ajvincent This optimization may need to go away for wrapping primitives.
-      if (isDataDescriptor(desc) && valueType(desc.value) === "primitive") return desc;
+      if (isDataDescriptor(desc) && valueType(desc.value) === "primitive") {
+        return desc;
+      }
 
       var keys = Object.keys(desc);
 
       var wrappedDesc = {
         configurable: Boolean(desc.configurable),
       };
-      if ("enumerable" in desc) wrappedDesc.enumerable = Boolean(desc.enumerable);
+      if ("enumerable" in desc) {
+        wrappedDesc.enumerable = Boolean(desc.enumerable);
+      }
       if (keys.includes("writable")) {
         wrappedDesc.writable = Boolean(desc.writable);
-        if (!wrappedDesc.configurable && !wrappedDesc.writable) return desc;
+        if (!wrappedDesc.configurable && !wrappedDesc.writable) {
+          return desc;
+        }
       }
 
       var originHandler = this.getHandlerByName(originField);
@@ -512,12 +550,13 @@ Reflect.defineProperty(
       var membrane = this;
 
       ["value", "get", "set"].forEach(function (descProp) {
-        if (keys.includes(descProp))
+        if (keys.includes(descProp)) {
           wrappedDesc[descProp] = this.convertArgumentToProxy(
             originHandler,
             targetHandler,
             desc[descProp],
           );
+        }
       }, this);
 
       return wrappedDesc;
@@ -538,8 +577,12 @@ Reflect.defineProperty(
      * listener will get for its arguments.
      */
     addFunctionListener: function (listener) {
-      if (typeof listener != "function") throw new Error("listener is not a function!");
-      if (!this.__functionListeners__.includes(listener)) this.__functionListeners__.push(listener);
+      if (typeof listener != "function") {
+        throw new Error("listener is not a function!");
+      }
+      if (!this.__functionListeners__.includes(listener)) {
+        this.__functionListeners__.push(listener);
+      }
     },
 
     /**
@@ -549,7 +592,9 @@ Reflect.defineProperty(
      */
     removeFunctionListener: function (listener) {
       let index = this.__functionListeners__.indexOf(listener);
-      if (index == -1) throw new Error("listener is not registered!");
+      if (index == -1) {
+        throw new Error("listener is not registered!");
+      }
       this.__functionListeners__.splice(index, 1);
     },
 

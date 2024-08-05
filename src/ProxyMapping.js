@@ -41,8 +41,9 @@ export function ProxyMapping(originField) {
     ProxyMapping.prototype,
     /** @type {DataDescriptorsOf<IProxyMappingPrototype>} */ ({
       "getOriginal": new DataDescriptor(function () {
-        if (this.originalValue === NOT_YET_DETERMINED)
+        if (this.originalValue === NOT_YET_DETERMINED) {
           throw new Error("getOriginal called but the original value hasn't been set!");
+        }
         return this.getProxy(this.originField);
       }),
 
@@ -52,27 +53,35 @@ export function ProxyMapping(originField) {
 
       "getValue": new DataDescriptor(function (field) {
         var rv = this.proxiedFields[field];
-        if (!rv) throw new Error("getValue called for unknown field!");
+        if (!rv) {
+          throw new Error("getValue called for unknown field!");
+        }
         return rv.value;
       }),
 
       "getProxy": new DataDescriptor(function (field) {
         var rv = this.proxiedFields[field];
-        if (!rv) throw new Error("getProxy called for unknown field!");
+        if (!rv) {
+          throw new Error("getProxy called for unknown field!");
+        }
         return !rv.override && field === this.originField ? rv.value : rv.proxy;
       }),
 
       "hasProxy": new DataDescriptor(function (proxy) {
         let fields = Object.getOwnPropertyNames(this.proxiedFields);
         for (let i = 0; i < fields.length; i++) {
-          if (this.getProxy(fields[i]) === proxy) return true;
+          if (this.getProxy(fields[i]) === proxy) {
+            return true;
+          }
         }
         return false;
       }),
 
       "getShadowTarget": new DataDescriptor(function (field) {
         var rv = this.proxiedFields[field];
-        if (!rv) throw new Error("getShadowTarget called for unknown field!");
+        if (!rv) {
+          throw new Error("getShadowTarget called for unknown field!");
+        }
         return rv.shadowTarget;
       }),
 
@@ -97,15 +106,17 @@ export function ProxyMapping(originField) {
        */
       "set": new DataDescriptor(function (membrane, field, parts) {
         let override = typeof parts.override === "boolean" && parts.override;
-        if (!override && this.hasField(field))
+        if (!override && this.hasField(field)) {
           throw new Error("set called for previously defined field!");
+        }
 
         this.proxiedFields[field] = parts;
 
         if (override || field !== this.originField) {
           if (valueType(parts.proxy) !== "primitive") {
-            if (DogfoodMembrane && membrane !== DogfoodMembrane)
+            if (DogfoodMembrane && membrane !== DogfoodMembrane) {
               DogfoodMembrane.ProxyToMembraneMap.add(parts.proxy);
+            }
             membrane.map.set(parts.proxy, this);
           }
         } else if (this.originalValue === NOT_YET_DETERMINED) {
@@ -115,11 +126,16 @@ export function ProxyMapping(originField) {
         }
 
         if (!membrane.map.has(parts.value)) {
-          if (DogfoodMembrane && membrane !== DogfoodMembrane)
+          if (DogfoodMembrane && membrane !== DogfoodMembrane) {
             DogfoodMembrane.ProxyToMembraneMap.add(parts.value);
+          }
 
-          if (valueType(parts.value) !== "primitive") membrane.map.set(parts.value, this);
-        } else assert(this === membrane.map.get(parts.value), "ProxyMapping mismatch?");
+          if (valueType(parts.value) !== "primitive") {
+            membrane.map.set(parts.value, this);
+          }
+        } else {
+          assert(this === membrane.map.get(parts.value), "ProxyMapping mismatch?");
+        }
       }),
 
       "remove": new DataDescriptor(function (field) {
@@ -159,18 +175,27 @@ export function ProxyMapping(originField) {
          */
         function (fieldName, flagName, value) {
           if (typeof fieldName == "string") {
-            if (!this.localFlags) this.localFlags = new Set();
+            if (!this.localFlags) {
+              this.localFlags = new Set();
+            }
 
             let flag = flagName + ":" + fieldName;
-            if (value) this.localFlags.add(flag);
-            else this.localFlags.delete(flag);
+            if (value) {
+              this.localFlags.add(flag);
+            } else {
+              this.localFlags.delete(flag);
+            }
           } else if (typeof fieldName == "symbol") {
             // It's harder to combine symbols and strings into a string...
-            if (!this.localFlagsSymbols) this.localFlagsSymbols = new Map();
+            if (!this.localFlagsSymbols) {
+              this.localFlagsSymbols = new Map();
+            }
             let obj = this.localFlagsSymbols.get(fieldName) || {};
             obj[flagName] = value;
             this.localFlagsSymbols.set(fieldName, obj);
-          } else throw new Error("fieldName is neither a symbol nor a string!");
+          } else {
+            throw new Error("fieldName is neither a symbol nor a string!");
+          }
         },
       ),
 
@@ -183,22 +208,32 @@ export function ProxyMapping(originField) {
          */
         function (fieldName, flagName) {
           if (typeof fieldName == "string") {
-            if (!this.localFlags) return false;
+            if (!this.localFlags) {
+              return false;
+            }
             let flag = flagName + ":" + fieldName;
             return this.localFlags.has(flag);
           } else if (typeof fieldName == "symbol") {
-            if (!this.localFlagsSymbols) return false;
+            if (!this.localFlagsSymbols) {
+              return false;
+            }
             let obj = this.localFlagsSymbols.get(fieldName);
-            if (!obj || !obj[flagName]) return false;
+            if (!obj || !obj[flagName]) {
+              return false;
+            }
             return true;
-          } else throw new Error("fieldName is neither a symbol nor a string!");
+          } else {
+            throw new Error("fieldName is neither a symbol nor a string!");
+          }
         },
       ),
 
       "getLocalDescriptor": new DataDescriptor(function (fieldName, propName) {
         let desc;
         let metadata = this.proxiedFields[fieldName];
-        if (metadata.localDescriptors) desc = metadata.localDescriptors.get(propName);
+        if (metadata.localDescriptors) {
+          desc = metadata.localDescriptors.get(propName);
+        }
         return desc;
       }),
 
@@ -221,20 +256,30 @@ export function ProxyMapping(originField) {
       ) {
         let metadata = this.proxiedFields[fieldName];
         if (recordLocalDelete) {
-          if (!metadata.deletedLocals) metadata.deletedLocals = new Set();
+          if (!metadata.deletedLocals) {
+            metadata.deletedLocals = new Set();
+          }
           metadata.deletedLocals.add(propName);
-        } else this.unmaskDeletion(fieldName, propName);
+        } else {
+          this.unmaskDeletion(fieldName, propName);
+        }
 
         if ("localDescriptors" in metadata) {
           metadata.localDescriptors.delete(propName);
-          if (metadata.localDescriptors.size === 0) delete metadata.localDescriptors;
+          if (metadata.localDescriptors.size === 0) {
+            delete metadata.localDescriptors;
+          }
         }
       }),
 
       "cachedOwnKeys": new DataDescriptor(function (fieldName) {
-        if (!this.hasField(fieldName)) return null;
+        if (!this.hasField(fieldName)) {
+          return null;
+        }
         let metadata = this.proxiedFields[fieldName];
-        if ("cachedOwnKeys" in metadata) return metadata.cachedOwnKeys;
+        if ("cachedOwnKeys" in metadata) {
+          return metadata.cachedOwnKeys;
+        }
         return null;
       }),
 
@@ -248,38 +293,56 @@ export function ProxyMapping(originField) {
       "localOwnKeys": new DataDescriptor(function (fieldName) {
         let metadata = this.proxiedFields[fieldName],
           rv = [];
-        if ("localDescriptors" in metadata) rv = Array.from(metadata.localDescriptors.keys());
+        if ("localDescriptors" in metadata) {
+          rv = Array.from(metadata.localDescriptors.keys());
+        }
         return rv;
       }),
 
       "appendDeletedNames": new DataDescriptor(function (fieldName, set) {
-        if (!this.hasField(fieldName)) return;
+        if (!this.hasField(fieldName)) {
+          return;
+        }
         var locals = this.proxiedFields[fieldName].deletedLocals;
-        if (!locals || !locals.size) return;
+        if (!locals || !locals.size) {
+          return;
+        }
         var iter = locals.values(),
           next;
         do {
           next = iter.next();
-          if (!next.done) set.add(next.value);
+          if (!next.done) {
+            set.add(next.value);
+          }
         } while (!next.done);
       }),
 
       "wasDeletedLocally": new DataDescriptor(function (fieldName, propName) {
-        if (!this.hasField(fieldName)) return false;
+        if (!this.hasField(fieldName)) {
+          return false;
+        }
         var locals = this.proxiedFields[fieldName].deletedLocals;
         return Boolean(locals) && locals.has(propName);
       }),
 
       "unmaskDeletion": new DataDescriptor(function (fieldName, propName) {
-        if (!this.hasField(fieldName)) return;
+        if (!this.hasField(fieldName)) {
+          return;
+        }
         var metadata = this.proxiedFields[fieldName];
-        if (!metadata.deletedLocals) return;
+        if (!metadata.deletedLocals) {
+          return;
+        }
         metadata.deletedLocals.delete(propName);
-        if (metadata.deletedLocals.size === 0) delete metadata.deletedLocals;
+        if (metadata.deletedLocals.size === 0) {
+          delete metadata.deletedLocals;
+        }
       }),
 
       "getOwnKeysFilter": new DataDescriptor(function (fieldName) {
-        if (!this.hasField(fieldName)) return null;
+        if (!this.hasField(fieldName)) {
+          return null;
+        }
         var metadata = this.proxiedFields[fieldName];
         return typeof metadata.ownKeysFilter == "function" ? metadata.ownKeysFilter : null;
       }),
@@ -289,7 +352,9 @@ export function ProxyMapping(originField) {
       }),
 
       "getTruncateArgList": new DataDescriptor(function (fieldName) {
-        if (!this.hasField(fieldName)) return false;
+        if (!this.hasField(fieldName)) {
+          return false;
+        }
         var metadata = this.proxiedFields[fieldName];
         return typeof metadata.truncateArgList !== "undefined" ? metadata.truncateArgList : false;
       }),

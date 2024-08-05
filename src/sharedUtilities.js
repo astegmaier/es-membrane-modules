@@ -34,8 +34,12 @@ Object.freeze(NWNCDataDescriptor.prototype);
 export const NOT_IMPLEMENTED_DESC = new AccessorDescriptor(NOT_IMPLEMENTED, NOT_IMPLEMENTED);
 
 export function isDataDescriptor(desc) {
-  if (typeof desc === "undefined") return false;
-  if (!("value" in desc) && !("writable" in desc)) return false;
+  if (typeof desc === "undefined") {
+    return false;
+  }
+  if (!("value" in desc) && !("writable" in desc)) {
+    return false;
+  }
   return true;
 }
 
@@ -43,12 +47,16 @@ export function isAccessorDescriptor(desc) {
   if (typeof desc === "undefined") {
     return false;
   }
-  if (!("get" in desc) && !("set" in desc)) return false;
+  if (!("get" in desc) && !("set" in desc)) {
+    return false;
+  }
   return true;
 }
 
 export function isGenericDescriptor(desc) {
-  if (typeof desc === "undefined") return false;
+  if (typeof desc === "undefined") {
+    return false;
+  }
   return !isAccessorDescriptor(desc) && !isDataDescriptor(desc);
 }
 
@@ -125,7 +133,9 @@ export const Primordials = Object.freeze(
     return p.concat(
       p
         .filter((/** @type {any} */ i) => {
-          if (!i.name) return false;
+          if (!i.name) {
+            return false;
+          }
           let j = i.name[0];
           return j.toUpperCase() === j;
         })

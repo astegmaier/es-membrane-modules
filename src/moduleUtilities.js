@@ -1,9 +1,13 @@
 import { DataDescriptor } from "./sharedUtilities.js";
 
 export function valueType(value) {
-  if (value === null) return "primitive";
+  if (value === null) {
+    return "primitive";
+  }
   const type = typeof value;
-  if (type != "function" && type != "object") return "primitive";
+  if (type != "function" && type != "object") {
+    return "primitive";
+  }
   return type;
 }
 
@@ -21,10 +25,15 @@ export var ShadowKeyMap = new WeakMap();
 export function makeShadowTarget(value) {
   "use strict";
   var rv;
-  if (Array.isArray(value)) rv = [];
-  else if (typeof value == "object") rv = {};
-  else if (typeof value == "function") rv = function () {};
-  else throw new Error("Unknown value for makeShadowTarget");
+  if (Array.isArray(value)) {
+    rv = [];
+  } else if (typeof value == "object") {
+    rv = {};
+  } else if (typeof value == "function") {
+    rv = function () {};
+  } else {
+    throw new Error("Unknown value for makeShadowTarget");
+  }
   ShadowKeyMap.set(rv, value);
   return rv;
 }
@@ -34,13 +43,23 @@ export function getRealTarget(target) {
 }
 
 export function stringifyArg(arg) {
-  if (arg === null) return "null";
-  if (arg === undefined) return "undefined";
-  if (Array.isArray(arg)) return "[" + arg.map(stringifyArg).join(", ") + "]";
+  if (arg === null) {
+    return "null";
+  }
+  if (arg === undefined) {
+    return "undefined";
+  }
+  if (Array.isArray(arg)) {
+    return "[" + arg.map(stringifyArg).join(", ") + "]";
+  }
 
   let type = valueType(arg);
-  if (type == "primitive") return arg.toString();
-  if (type == "function") return "()";
+  if (type == "primitive") {
+    return arg.toString();
+  }
+  if (type == "function") {
+    return "()";
+  }
   return "{}";
 }
 
@@ -103,7 +122,9 @@ Object.defineProperty(NOT_YET_DETERMINED, "not_yet_determined", new DataDescript
 
 export function makeRevokeDeleteRefs(parts, mapping, field) {
   let oldRevoke = parts.revoke;
-  if (!oldRevoke) return;
+  if (!oldRevoke) {
+    return;
+  }
 
   // necessary: in OverriddenProxyParts, revoke is inherited and read-only.
   Reflect.defineProperty(
@@ -129,8 +150,9 @@ export function MembraneMayLog() {
 
 export function AssertIsPropertyKey(propName) {
   var type = typeof propName;
-  if (type != "string" && type != "symbol")
+  if (type != "string" && type != "symbol") {
     throw new Error("propName is not a symbol or a string!");
+  }
   return true;
 }
 
