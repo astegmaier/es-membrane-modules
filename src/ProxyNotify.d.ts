@@ -78,7 +78,12 @@ export type UseShadowTargetMode = "frozen" | "sealed" | "prepared";
  *q
  * @private
  */
-export function ProxyNotify(parts: IProxyParts, handler: ObjectGraphHandler, isOrigin: boolean, options: any): void;
+export function ProxyNotify(
+  parts: IProxyParts,
+  handler: ObjectGraphHandler,
+  isOrigin: boolean,
+  options: any
+): void;
 
 export declare module ProxyNotify {
   function useShadowTarget(

@@ -2,5 +2,9 @@
   "jest.nodeEnv": {
     "VS_CODE_JEST": "true"
   },
-  "prettier.printWidth": 120
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "files.exclude": {
+    "node_modules": true
+  }
 }

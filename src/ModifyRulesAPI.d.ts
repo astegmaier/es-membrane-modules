@@ -19,11 +19,7 @@ export interface IChainHandlerProtection {
   /**
    * Proxy/handler trap restricting which properties may be redefined.
    */
-  defineProperty(
-    chainHandler: any,
-    propName: any,
-    desc: PropertyDescriptor
-  ): any;
+  defineProperty(chainHandler: any, propName: any, desc: PropertyDescriptor): any;
 }
 
 export const ChainHandlerProtection: IChainHandlerProtection;
@@ -53,7 +49,10 @@ export interface IModifyRulesAPIPrototype {
    *
    * @param existingHandler {ProxyHandler} The prototype of the new handler.
    */
-  createChainHandler(this: ModifyRulesAPI, existingHandler: ProxyHandler<any> | IChainHandler): IChainHandler;
+  createChainHandler(
+    this: ModifyRulesAPI,
+    existingHandler: ProxyHandler<any> | IChainHandler
+  ): IChainHandler;
 
   /**
    * Replace a proxy in the membrane.
@@ -75,7 +74,7 @@ export interface IModifyRulesAPIPrototype {
    * @private
    */
   assertLocalProxy(
-    this: ModifyRulesAPI, 
+    this: ModifyRulesAPI,
     fieldName: symbol | string,
     proxy: any,
     methodName: string
@@ -122,7 +121,7 @@ export interface IModifyRulesAPIPrototype {
    * @see Array.prototype.filter.
    */
   filterOwnKeys(
-    this: ModifyRulesAPI, 
+    this: ModifyRulesAPI,
     fieldName: symbol | string,
     proxy: any,
     filter: (...args: any[]) => any | Set<any> | Array<any>,
@@ -141,7 +140,7 @@ export interface IModifyRulesAPIPrototype {
    *   - if a non-negative integer, limit to that number.
    */
   truncateArgList(
-    this: ModifyRulesAPI, 
+    this: ModifyRulesAPI,
     fieldName: symbol | string,
     proxy: any,
     value: boolean | number
@@ -160,9 +159,7 @@ export interface IModifyRulesAPIPrototype {
   createDistortionsListener(this: ModifyRulesAPI): DistortionsListener;
 }
 
-export interface ModifyRulesAPI
-  extends IModifyRulesAPIOwn,
-    IModifyRulesAPIPrototype {}
+export interface ModifyRulesAPI extends IModifyRulesAPIOwn, IModifyRulesAPIPrototype {}
 
 export class ModifyRulesAPI {
   constructor(membrane: Membrane);

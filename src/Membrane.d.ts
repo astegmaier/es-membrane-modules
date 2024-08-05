@@ -73,7 +73,11 @@ export interface IMembranePrototype {
    * code to assert that we have the right values stored.  Therefore you really
    * shouldn't use it in Production.
    */
-  getMembraneValue(this: Membrane, field: symbol | string, value: any): [found: boolean, value: any];
+  getMembraneValue(
+    this: Membrane,
+    field: symbol | string,
+    value: any
+  ): [found: boolean, value: any];
 
   /**
    * Get the proxy associated with a field name and another known value.
@@ -97,7 +101,11 @@ export interface IMembranePrototype {
    *    {Object}  NOT_YET_DETERMINED
    * ]
    */
-  getMembraneProxy(this: Membrane, field: symbol | string, value: any): [found: boolean, value: any];
+  getMembraneProxy(
+    this: Membrane,
+    field: symbol | string,
+    value: any
+  ): [found: boolean, value: any];
 
   /**
    * Assign a value to an object graph.
@@ -112,7 +120,12 @@ export interface IMembranePrototype {
    *
    * @private
    */
-  buildMapping(this: Membrane, handler: ObjectGraphHandler, value: any, options?: IBuildMappingOptions): ProxyMapping;
+  buildMapping(
+    this: Membrane,
+    handler: ObjectGraphHandler,
+    value: any,
+    options?: IBuildMappingOptions
+  ): ProxyMapping;
 
   hasHandlerByField(this: Membrane, field: symbol | string): boolean;
 
@@ -125,7 +138,11 @@ export interface IMembranePrototype {
    *
    * @returns {ObjectGraphHandler} The handler for the object graph.
    */
-  getHandlerByName(this: Membrane, field: symbol | string, options?: IGetHandlerByNameOptions): ObjectGraphHandler;
+  getHandlerByName(
+    this: Membrane,
+    field: symbol | string,
+    options?: IGetHandlerByNameOptions
+  ): ObjectGraphHandler;
 
   /**
    * Determine if the handler is a ObjectGraphHandler for this object graph.
@@ -144,7 +161,12 @@ export interface IMembranePrototype {
    * @note This marks the value as the "original" in the new ProxyMapping it
    * creates.
    */
-  wrapArgumentByProxyMapping(this: Membrane, mapping: ProxyMapping, arg: any, options?: IBuildMappingOptions): any;
+  wrapArgumentByProxyMapping(
+    this: Membrane,
+    mapping: ProxyMapping,
+    arg: any,
+    options?: IBuildMappingOptions
+  ): any;
 
   passThroughFilter: (value: unknown) => boolean;
 

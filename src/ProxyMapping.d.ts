@@ -4,11 +4,11 @@ import type { Membrane } from "./Membrane";
 export interface IProxyParts {
   value?: object;
   shadowTarget?: object;
-  proxy?: object
+  proxy?: object;
   revoke?: () => void;
   localDescriptors?: Map<symbol | string, PropertyDescriptor>;
   deletedLocals?: Set<symbol | string>;
-  cachedOwnKeys?: { keys: any, original: any };
+  cachedOwnKeys?: { keys: any; original: any };
   ownKeysFilter?: () => boolean;
   truncateArgList?: any;
   override?: boolean;
@@ -53,7 +53,7 @@ export interface IProxyMappingPrototype {
    * @param value:     {Boolean} The value to set.
    */
   setLocalFlag(
-    this: ProxyMapping, 
+    this: ProxyMapping,
     fieldName: Symbol | string,
     flagName: string,
     value: boolean
@@ -65,15 +65,19 @@ export interface IProxyMappingPrototype {
    * @returns {Boolean} The value to set.
    */
   getLocalFlag(this: ProxyMapping, fieldName: symbol | string, flagName: string): boolean;
-  getLocalDescriptor(this: ProxyMapping, fieldName: any, propName: any): PropertyDescriptor | undefined;
+  getLocalDescriptor(
+    this: ProxyMapping,
+    fieldName: any,
+    propName: any
+  ): PropertyDescriptor | undefined;
   setLocalDescriptor(
-    this: ProxyMapping, 
+    this: ProxyMapping,
     fieldName: any,
     propName: any,
     desc: PropertyDescriptor
   ): void;
   deleteLocalDescriptor(
-    this: ProxyMapping, 
+    this: ProxyMapping,
     fieldName: any,
     propName: any,
     recordLocalDelete: any
@@ -90,7 +94,7 @@ export interface IProxyMappingPrototype {
   setTruncateArgList(this: ProxyMapping, fieldName: symbol | string, value: any): void;
 }
 
-export interface ProxyMapping extends IProxyMappingOwn, IProxyMappingPrototype { }
+export interface ProxyMapping extends IProxyMappingOwn, IProxyMappingPrototype {}
 
 export class ProxyMapping {
   constructor(originField: any);

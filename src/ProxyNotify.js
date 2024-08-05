@@ -17,13 +17,15 @@ import { makeRevokeDeleteRefs } from "./moduleUtilities.js";
  */
 export function ProxyNotify(parts, handler, isOrigin, options) {
   "use strict";
-  if (typeof options === "undefined")
+  if (typeof options === "undefined") {
     options = {};
+  }
 
   // private variables
   const listeners = handler.__proxyListeners__;
-  if (listeners.length === 0)
+  if (listeners.length === 0) {
     return;
+  }
   const modifyRules = handler.membrane.modifyRules;
 
   // the actual metadata object for the listener
@@ -41,10 +43,14 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
      */
     "proxy": new AccessorDescriptor(
       () => parts.proxy,
-      (val) => { if (!meta.stopped) parts.proxy = val; }
+      (val) => {
+        if (!meta.stopped) {
+          parts.proxy = val;
+        }
+      }
     ),
 
-    /* XXX ajvincent revoke is explicitly NOT exposed, lest a listener call it 
+    /* XXX ajvincent revoke is explicitly NOT exposed, lest a listener call it
      * and cause chaos for any new proxy trying to rely on the existing one.  If
      * you really have a problem, use throwException() below.
      */
@@ -61,7 +67,11 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
      */
     "handler": new AccessorDescriptor(
       () => handler,
-      (val) => { if (!meta.stopped) handler = val; }
+      (val) => {
+        if (!meta.stopped) {
+          handler = val;
+        }
+      }
     ),
 
     /**
@@ -72,12 +82,11 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
     /**
      * Rebuild the proxy object.
      */
-    "rebuildProxy": new DataDescriptor(
-      function() {
-        if (!this.stopped)
-          parts.proxy = modifyRules.replaceProxy(parts.proxy, handler);
+    "rebuildProxy": new DataDescriptor(function () {
+      if (!this.stopped) {
+        parts.proxy = modifyRules.replaceProxy(parts.proxy, handler);
       }
-    ),
+    }),
 
     /**
      * Direct the membrane to use the shadow target instead of the full proxy.
@@ -88,11 +97,9 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
      *   - "prepared" means return a shadow target with lazy getters for all
      *     available properties and for its prototype.
      */
-    "useShadowTarget": new DataDescriptor(
-      (mode) => {
-        ProxyNotify.useShadowTarget.apply(meta, [parts, handler, mode]);
-      }
-    ),
+    "useShadowTarget": new DataDescriptor((mode) => {
+      ProxyNotify.useShadowTarget.apply(meta, [parts, handler, mode]);
+    })
   });
 
   const callbacks = [];
@@ -101,13 +108,11 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
 
   try {
     invokeProxyListeners(listeners, meta);
-  }
-  finally {
-    callbacks.forEach(function(c) {
+  } finally {
+    callbacks.forEach(function (c) {
       try {
         c(parts.proxy);
-      }
-      catch (e) {
+      } catch (e) {
         // do nothing
       }
     });
@@ -117,18 +122,18 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
 }
 
 /** @type {import("./ProxyNotify").ProxyNotify.useShadowTarget} */
-ProxyNotify.useShadowTarget = function(parts, handler, mode) {
+ProxyNotify.useShadowTarget = function (parts, handler, mode) {
   "use strict";
   let newHandler = {};
 
-  if (mode === "frozen")
+  if (mode === "frozen") {
     Object.freeze(parts.proxy);
-  else if (mode === "sealed")
+  } else if (mode === "sealed") {
     Object.seal(parts.proxy);
-  else if (mode === "prepared") {
+  } else if (mode === "prepared") {
     // Establish the list of own properties.
     const keys = Reflect.ownKeys(parts.proxy);
-    keys.forEach(function(key) {
+    keys.forEach(function (key) {
       handler.defineLazyGetter(parts.value, parts.shadowTarget, key);
     });
 
@@ -139,23 +144,24 @@ ProxyNotify.useShadowTarget = function(parts, handler, mode) {
     Reflect.setPrototypeOf(parts.shadowTarget, proto);
 
     // Lazy preventExtensions.
-    newHandler.preventExtensions = function(st) {
+    newHandler.preventExtensions = function (st) {
       var rv = handler.preventExtensions.apply(handler, [st]);
       delete newHandler.preventExtensions;
       return rv;
     };
-  }
-  else {
-    throw new Error("useShadowTarget requires its first argument be 'frozen', 'sealed', or 'prepared'");
+  } else {
+    throw new Error(
+      "useShadowTarget requires its first argument be 'frozen', 'sealed', or 'prepared'"
+    );
   }
 
   this.stopIteration();
   if (typeof parts.shadowTarget == "function") {
-    newHandler.apply     = handler.boundMethods.apply;
+    newHandler.apply = handler.boundMethods.apply;
     newHandler.construct = handler.boundMethods.construct;
-  }
-  else if (Reflect.ownKeys(newHandler).length === 0)
-    newHandler = Reflect; // yay, maximum optimization
+  } else if (Reflect.ownKeys(newHandler).length === 0) {
+    newHandler = Reflect;
+  } // yay, maximum optimization
 
   let newParts = Proxy.revocable(parts.shadowTarget, newHandler);
   parts.proxy = newParts.proxy;
@@ -163,43 +169,44 @@ ProxyNotify.useShadowTarget = function(parts, handler, mode) {
 
   const masterMap = handler.membrane.map;
   let map = masterMap.get(parts.value);
-  assert(map instanceof ProxyMapping,
-         "Didn't get a ProxyMapping for an existing value?");
+  assert(map instanceof ProxyMapping, "Didn't get a ProxyMapping for an existing value?");
   masterMap.set(parts.proxy, map);
   makeRevokeDeleteRefs(parts, map, handler.fieldName);
 };
 
 export function invokeProxyListeners(listeners, meta) {
   listeners = listeners.slice(0);
-  var index = 0, exn = null, exnFound = false, stopped = false;
+  var index = 0,
+    exn = null,
+    exnFound = false,
+    stopped = false;
 
   Object.defineProperties(meta, {
     /**
      * Notify no more listeners.
      */
-    "stopIteration": new DataDescriptor(
-      () => { stopped = true; }
-    ),
+    "stopIteration": new DataDescriptor(() => {
+      stopped = true;
+    }),
 
-    "stopped": new AccessorDescriptor(
-      () => stopped
-    ),
+    "stopped": new AccessorDescriptor(() => stopped),
 
     /**
      * Explicitly throw an exception from the listener, through the membrane.
      */
-    "throwException": new DataDescriptor(
-      function(e) { stopped = true; exnFound = true; exn = e; }
-    )
+    "throwException": new DataDescriptor(function (e) {
+      stopped = true;
+      exnFound = true;
+      exn = e;
+    })
   });
 
   Object.seal(meta);
 
-  while (!stopped && (index < listeners.length)) {
+  while (!stopped && index < listeners.length) {
     try {
       listeners[index](meta);
-    }
-    catch (e) {
+    } catch (e) {
       if (meta.logger) {
         /* We don't want an accidental exception to break the iteration.
         That's why the throwException() method exists:  a deliberate call means
@@ -208,14 +215,14 @@ export function invokeProxyListeners(listeners, meta) {
         */
         try {
           meta.logger.error(e);
-        }
-        catch (f) {
+        } catch (f) {
           // really do nothing, there's no point
         }
       }
     }
-    if (exnFound)
+    if (exnFound) {
       throw exn;
+    }
     index++;
   }
 

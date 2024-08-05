@@ -1,11 +1,13 @@
 import { DataDescriptor } from "./sharedUtilities.js";
 
 export function valueType(value) {
-  if (value === null)
+  if (value === null) {
     return "primitive";
+  }
   const type = typeof value;
-  if ((type != "function") && (type != "object"))
+  if (type != "function" && type != "object") {
     return "primitive";
+  }
   return type;
 }
 
@@ -23,14 +25,15 @@ export var ShadowKeyMap = new WeakMap();
 export function makeShadowTarget(value) {
   "use strict";
   var rv;
-  if (Array.isArray(value))
+  if (Array.isArray(value)) {
     rv = [];
-  else if (typeof value == "object")
+  } else if (typeof value == "object") {
     rv = {};
-  else if (typeof value == "function")
-    rv = function() {};
-  else
+  } else if (typeof value == "function") {
+    rv = function () {};
+  } else {
     throw new Error("Unknown value for makeShadowTarget");
+  }
   ShadowKeyMap.set(rv, value);
   return rv;
 }
@@ -40,18 +43,23 @@ export function getRealTarget(target) {
 }
 
 export function stringifyArg(arg) {
-  if (arg === null)
+  if (arg === null) {
     return "null";
-  if (arg === undefined)
+  }
+  if (arg === undefined) {
     return "undefined";
-  if (Array.isArray(arg))
+  }
+  if (Array.isArray(arg)) {
     return "[" + arg.map(stringifyArg).join(", ") + "]";
+  }
 
   let type = valueType(arg);
-  if (type == "primitive")
+  if (type == "primitive") {
     return arg.toString();
-  if (type == "function")
+  }
+  if (type == "function") {
     return "()";
+  }
   return "{}";
 }
 
@@ -110,22 +118,23 @@ export function inGraphHandler(trapName, callback) {
 }
 
 export const NOT_YET_DETERMINED = {};
-Object.defineProperty(
-  NOT_YET_DETERMINED,
-  "not_yet_determined",
-  new DataDescriptor(true)
-);
+Object.defineProperty(NOT_YET_DETERMINED, "not_yet_determined", new DataDescriptor(true));
 
 export function makeRevokeDeleteRefs(parts, mapping, field) {
   let oldRevoke = parts.revoke;
-  if (!oldRevoke)
+  if (!oldRevoke) {
     return;
+  }
 
   // necessary: in OverriddenProxyParts, revoke is inherited and read-only.
-  Reflect.defineProperty(parts, "revoke", new DataDescriptor(function() {
-    oldRevoke.apply(parts);
-    mapping.remove(field);
-  }, true));
+  Reflect.defineProperty(
+    parts,
+    "revoke",
+    new DataDescriptor(function () {
+      oldRevoke.apply(parts);
+      mapping.remove(field);
+    }, true)
+  );
 }
 
 /**
@@ -136,20 +145,23 @@ export function makeRevokeDeleteRefs(parts, mapping, field) {
  */
 // This function is here because I can blacklist moduleUtilities during debugging.
 export function MembraneMayLog() {
-  return (typeof this.logger == "object") && Boolean(this.logger);
+  return typeof this.logger == "object" && Boolean(this.logger);
 }
 
 export function AssertIsPropertyKey(propName) {
   var type = typeof propName;
-  if ((type != "string") && (type != "symbol"))
+  if (type != "string" && type != "symbol") {
     throw new Error("propName is not a symbol or a string!");
+  }
   return true;
 }
 
 export const Constants = {
   warnings: {
-    FILTERED_KEYS_WITHOUT_LOCAL: "Filtering own keys without allowing local property defines or deletes is dangerous",
-    PROTOTYPE_FILTER_MISSING: "Proxy filter specified to inherit from prototype, but prototype provides no filter",
+    FILTERED_KEYS_WITHOUT_LOCAL:
+      "Filtering own keys without allowing local property defines or deletes is dangerous",
+    PROTOTYPE_FILTER_MISSING:
+      "Proxy filter specified to inherit from prototype, but prototype provides no filter"
   }
 };
 
