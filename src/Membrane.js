@@ -21,6 +21,7 @@ import {
   Constants
 } from "./moduleUtilities.js";
 import { ChainHandlers, ModifyRulesAPI } from "./ModifyRulesAPI.js";
+import { throwAndLog } from "./throwAndLog";
 
 /* Reference:  http://soft.vub.ac.be/~tvcutsem/invokedynamic/js-membranes
  * Definitions:
@@ -152,7 +153,7 @@ Reflect.defineProperty(
      */
     buildMapping: function (handler, value, options = {}) {
       if (!this.ownsHandler(handler)) {
-        throw new Error("handler is not an ObjectGraphHandler we own!");
+        throwAndLog("handler is not an ObjectGraphHandler we own!", this.logger);
       }
       let mapping = "mapping" in options ? options.mapping : null;
 
@@ -160,7 +161,7 @@ Reflect.defineProperty(
         if (this.map.has(value)) {
           mapping = this.map.get(value);
         } else {
-          mapping = new ProxyMapping(handler.fieldName);
+          mapping = new ProxyMapping(handler.fieldName, this.logger);
         }
       }
       assert(mapping instanceof ProxyMapping, "buildMapping requires a ProxyMapping object!");
@@ -170,7 +171,7 @@ Reflect.defineProperty(
         isOriginal || this.ownsHandler(options.originHandler),
         "Proxy requests must pass in an origin handler"
       );
-      let shadowTarget = makeShadowTarget(value);
+      let shadowTarget = makeShadowTarget(value, this.logger);
 
       /** @type {IProxyParts}  */
       var parts;
@@ -225,7 +226,7 @@ Reflect.defineProperty(
       {
         let t = typeof field;
         if (t != "string" && t != "symbol") {
-          throw new Error("field must be a string or a symbol!");
+          throwAndLog("field must be a string or a symbol!", this.logger);
         }
       }
       return Reflect.ownKeys(this.handlersByFieldName).includes(field);
@@ -242,7 +243,7 @@ Reflect.defineProperty(
      */
     getHandlerByName: function (field, options) {
       if (typeof options === "boolean") {
-        throw new Error("fix me!");
+        throwAndLog("fix me!", this.logger);
       }
       let mustCreate = typeof options == "object" ? Boolean(options.mustCreate) : false;
       if (mustCreate && !this.hasHandlerByField(field)) {
@@ -335,8 +336,9 @@ Reflect.defineProperty(
         !this.ownsHandler(targetHandler) ||
         originHandler.fieldName === targetHandler.fieldName
       ) {
-        throw new Error(
-          "convertArgumentToProxy requires two different ObjectGraphHandlers in the Membrane instance"
+        throwAndLog(
+          "convertArgumentToProxy requires two different ObjectGraphHandlers in the Membrane instance",
+          this.logger
         );
       }
 
@@ -375,7 +377,7 @@ Reflect.defineProperty(
 
       [found, rv] = this.getMembraneProxy(targetHandler.fieldName, arg);
       if (!found) {
-        throw new Error("in convertArgumentToProxy(): proxy not found");
+        throwAndLog("in convertArgumentToProxy(): proxy not found", this.logger);
       }
       return rv;
     },
@@ -400,8 +402,9 @@ Reflect.defineProperty(
        */
       function bag(h, v) {
         if (!this.ownsHandler(h)) {
-          throw new Error(
-            "bindValuesByHandlers requires two ObjectGraphHandlers from different graphs"
+          throwAndLog(
+            "bindValuesByHandlers requires two ObjectGraphHandlers from different graphs",
+            this.logger
           );
         }
         let rv = {
@@ -415,7 +418,10 @@ Reflect.defineProperty(
           const valid =
             !rv.proxyMap || (rv.proxyMap.hasField(field) && rv.proxyMap.getProxy(field) === v);
           if (!valid) {
-            throw new Error("Value argument does not belong to proposed ObjectGraphHandler");
+            throwAndLog(
+              "Value argument does not belong to proposed ObjectGraphHandler",
+              this.logger
+            );
           }
         }
 
@@ -426,7 +432,7 @@ Reflect.defineProperty(
         if (proxyMap.hasField(bag.handler.fieldName)) {
           let check = proxyMap.getProxy(bag.handler.fieldName);
           if (check !== bag.value) {
-            throw new Error("Value argument does not belong to proposed object graph");
+            throwAndLog("Value argument does not belong to proposed object graph", this.logger);
           }
           bag.maySet = false;
         } else {
@@ -453,7 +459,7 @@ Reflect.defineProperty(
 
       if (propBag0.type === "primitive") {
         if (propBag1.type === "primitive") {
-          throw new Error("bindValuesByHandlers requires two non-primitive values");
+          throwAndLog("bindValuesByHandlers requires two non-primitive values", this.logger);
         }
 
         proxyMap = propBag1.proxyMap;
@@ -466,11 +472,11 @@ Reflect.defineProperty(
       if (propBag0.proxyMap && propBag1.proxyMap) {
         if (propBag0.proxyMap !== propBag1.proxyMap) {
           // See https://github.com/ajvincent/es-membrane/issues/77 .
-          throw new Error("Linking two ObjectGraphHandlers in this way is not safe.");
+          throwAndLog("Linking two ObjectGraphHandlers in this way is not safe.", this.logger);
         }
       } else if (!propBag0.proxyMap) {
         if (!propBag1.proxyMap) {
-          proxyMap = new ProxyMapping(propBag0.handler.fieldName);
+          proxyMap = new ProxyMapping(propBag0.handler.fieldName, this.logger);
         } else {
           proxyMap = propBag1.proxyMap;
         }
@@ -481,8 +487,9 @@ Reflect.defineProperty(
 
       if (propBag0.handler.fieldName === propBag1.handler.fieldName) {
         if (propBag0.value !== propBag1.value) {
-          throw new Error(
-            "bindValuesByHandlers requires two ObjectGraphHandlers from different graphs"
+          throwAndLog(
+            "bindValuesByHandlers requires two ObjectGraphHandlers from different graphs",
+            this.logger
           );
         }
         // no-op
@@ -578,7 +585,7 @@ Reflect.defineProperty(
      */
     addFunctionListener: function (listener) {
       if (typeof listener != "function") {
-        throw new Error("listener is not a function!");
+        throwAndLog("listener is not a function!", this.logger);
       }
       if (!this.__functionListeners__.includes(listener)) {
         this.__functionListeners__.push(listener);
@@ -593,7 +600,7 @@ Reflect.defineProperty(
     removeFunctionListener: function (listener) {
       let index = this.__functionListeners__.indexOf(listener);
       if (index == -1) {
-        throw new Error("listener is not registered!");
+        throwAndLog("listener is not registered!", this.logger);
       }
       this.__functionListeners__.splice(index, 1);
     },

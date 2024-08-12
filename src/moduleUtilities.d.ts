@@ -1,3 +1,4 @@
+import { ILogger } from "./Membrane";
 import { IProxyParts } from "./ProxyMapping";
 
 export function valueType(value: any): "function" | "object" | "primitive";
@@ -9,11 +10,12 @@ export var ShadowKeyMap: WeakMap<any, any>;
  * original target.
  *
  * @argument value {Object} The original target.
+ * @argument logger {ILogger | undefined} a logger to use in case of errors.
  *
  * @returns {Object} A shadow target to minimally emulate the real one.
  * @private
  */
-export function makeShadowTarget(value: any): any;
+export function makeShadowTarget(value: any, logger: ILogger | undefined): any;
 
 export function getRealTarget(target: any): any;
 
@@ -36,7 +38,10 @@ export function makeRevokeDeleteRefs(parts: IProxyParts, mapping: any, field: an
  */
 export function MembraneMayLog(): boolean;
 
-export function AssertIsPropertyKey(propName: any): propName is string | symbol;
+export function AssertIsPropertyKey(
+  propName: string | symbol,
+  logger: ILogger | undefined
+): propName is string | symbol;
 
 export const Constants: {
   warnings: {

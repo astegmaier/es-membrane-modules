@@ -42,7 +42,7 @@ export interface IMembraneOwn {
    */
   map: WeakMap<any, ProxyMapping>;
   handlersByFieldName: { [fieldName: string | symbol]: any };
-  logger: ILogger;
+  logger?: ILogger;
   __functionListeners__: any[];
   warnOnceSet: Set<any> | null;
   modifyRules: ModifyRulesAPI;

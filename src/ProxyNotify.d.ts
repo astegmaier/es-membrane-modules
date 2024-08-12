@@ -94,4 +94,4 @@ export declare module ProxyNotify {
   ): void;
 }
 
-export function invokeProxyListeners(listeners, meta): void;
+export function invokeProxyListeners(listeners: any[], meta: ListenerMetadata): void;

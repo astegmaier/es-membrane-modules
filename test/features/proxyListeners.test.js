@@ -681,7 +681,10 @@ describe("An object graph handler's proxy listeners", function() {
         }).toThrow();
         logger.info("leaving logTest with argument");
         let messages = appender.getMessages();
-        expect(messages.length).toBe(2);
+        expect(messages.length).toBe(3);
+        expect(messages[0]).toBe("entering logTest with argument");
+        expect(messages[1].message).toBe("The apply trap is not executable.");
+        expect(messages[2]).toBe("leaving logTest with argument");
       }
 
       // testing the construct trap

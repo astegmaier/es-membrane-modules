@@ -1,6 +1,7 @@
 /** @import {IDistortionsListenerPrototype} from "./DistortionsListener" */
 /** @import {NWNCDataDescriptorsOf} from "./sharedUtilities" */
 import { NWNCDataDescriptor, allTraps, Primordials } from "./sharedUtilities.js";
+import { throwAndLog } from "./throwAndLog";
 
 export function DistortionsListener(membrane) {
   // private
@@ -49,7 +50,7 @@ Object.defineProperties(
       } else if (category === "filter" && typeof value === "function") {
         this.filterToConfigMap.set(value, config);
       } else {
-        throw new Error(`Unsupported category ${category} for value`);
+        throwAndLog(`Unsupported category ${category} for value`, this.membrane?.logger);
       }
     }),
 
@@ -67,7 +68,7 @@ Object.defineProperties(
       } else if (category === "filter" && typeof value === "function") {
         this.filterToConfigMap.delete(value);
       } else {
-        throw new Error(`Unsupported category ${category} for value`);
+        throwAndLog(`Unsupported category ${category} for value`, this.membrane?.logger);
       }
     }),
 
@@ -100,7 +101,10 @@ Object.defineProperties(
 
     "bindToHandler": new NWNCDataDescriptor(function (handler) {
       if (!this.membrane.ownsHandler(handler)) {
-        throw new Error("Membrane must own the first argument as an object graph handler!");
+        throwAndLog(
+          "Membrane must own the first argument as an object graph handler!",
+          this.membrane?.logger
+        );
       }
       handler.addProxyListener(this.proxyListener);
 

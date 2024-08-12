@@ -1,4 +1,6 @@
+/** @import {ILogger} from "./Membrane"  */
 import { DataDescriptor } from "./sharedUtilities.js";
+import { throwAndLog } from "./throwAndLog";
 
 export function valueType(value) {
   if (value === null) {
@@ -18,11 +20,12 @@ export var ShadowKeyMap = new WeakMap();
  * original target.
  *
  * @argument value {Object} The original target.
+ * @argument logger {ILogger | undefined} a logger to use in case of errors.
  *
  * @returns {Object} A shadow target to minimally emulate the real one.
  * @private
  */
-export function makeShadowTarget(value) {
+export function makeShadowTarget(value, logger) {
   "use strict";
   var rv;
   if (Array.isArray(value)) {
@@ -32,7 +35,7 @@ export function makeShadowTarget(value) {
   } else if (typeof value == "function") {
     rv = function () {};
   } else {
-    throw new Error("Unknown value for makeShadowTarget");
+    throwAndLog("Unknown value for makeShadowTarget", logger);
   }
   ShadowKeyMap.set(rv, value);
   return rv;
@@ -148,10 +151,10 @@ export function MembraneMayLog() {
   return typeof this.logger == "object" && Boolean(this.logger);
 }
 
-export function AssertIsPropertyKey(propName) {
+export function AssertIsPropertyKey(propName, logger) {
   var type = typeof propName;
   if (type != "string" && type != "symbol") {
-    throw new Error("propName is not a symbol or a string!");
+    throwAndLog("propName is not a symbol or a string!", logger);
   }
   return true;
 }

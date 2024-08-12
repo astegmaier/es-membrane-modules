@@ -1,4 +1,4 @@
-import type { Membrane } from "./Membrane";
+import type { ILogger, Membrane } from "./Membrane";
 
 // TODO: clarify which of these are required v. optional
 export interface IProxyParts {
@@ -20,6 +20,7 @@ export interface IProxyMappingOwn {
   originalValue: object;
   localFlags?: Set<any>;
   localFlagsSymbols?: Map<any, any>;
+  loggerWeakRef?: WeakRef<ILogger>;
 }
 
 export interface IProxyMappingPrototype {
@@ -97,5 +98,5 @@ export interface IProxyMappingPrototype {
 export interface ProxyMapping extends IProxyMappingOwn, IProxyMappingPrototype {}
 
 export class ProxyMapping {
-  constructor(originField: any);
+  constructor(originField: any, logger: ILogger | undefined);
 }

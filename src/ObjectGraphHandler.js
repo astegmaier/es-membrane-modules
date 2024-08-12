@@ -14,6 +14,7 @@ import {
   inGraphHandler,
   AssertIsPropertyKey
 } from "./moduleUtilities.js";
+import { throwAndLog } from "./throwAndLog";
 
 /* A proxy handler designed to return only primitives and objects in a given
  * object graph, defined by the fieldName.
@@ -22,7 +23,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
   {
     let t = typeof fieldName;
     if (t != "string" && t != "symbol") {
-      throw new Error("field must be a string or a symbol!");
+      throwAndLog("field must be a string or a symbol!", membrane?.logger);
     }
   }
 
@@ -34,6 +35,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
   var passThroughFilter = returnFalse;
 
+  // ansteg: to avoid leaking the logger, we are being defensive about introducing new hard references to the logger or the membrane.
+  let loggerWeakRef = membrane.logger ? new WeakRef(membrane.logger) : undefined;
+
   // private
   Object.defineProperties(this, {
     "membrane": new NWNCDataDescriptor(membrane, false),
@@ -43,10 +47,14 @@ export function ObjectGraphHandler(membrane, fieldName) {
       get: () => passThroughFilter,
       set: (val) => {
         if (passThroughFilter !== returnFalse) {
-          throw new Error("passThroughFilter has been defined once already!");
+          throwAndLog(
+            "passThroughFilter has been defined once already!",
+            // membrane.logger
+            loggerWeakRef?.deref().logger
+          );
         }
         if (typeof val !== "function") {
-          throw new Error("passThroughFilter must be a function");
+          throwAndLog("passThroughFilter must be a function", loggerWeakRef?.deref().logger);
         }
         passThroughFilter = val;
         return val;
@@ -151,7 +159,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
     */
 
         // 1. Assert: IsPropertyKey(P) is true.
-        AssertIsPropertyKey(propName);
+        AssertIsPropertyKey(propName, this.membrane?.logger);
 
         var hasOwn;
         while (target !== null) {
@@ -201,7 +209,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
         // 1. Assert: IsPropertyKey(P) is true.
         // Optimization:  do this once!
-        AssertIsPropertyKey(propName);
+        AssertIsPropertyKey(propName, this.membrane?.logger);
 
         /* Optimization:  Recursively calling this.get() is a pain in the neck,
          * especially for the stack trace.  So let's use a do...while loop to reset
@@ -222,14 +230,17 @@ export function ObjectGraphHandler(membrane, fieldName) {
                 return desc.value;
               }
               if (!isAccessorDescriptor(desc)) {
-                throw new Error("desc must be a data descriptor or an accessor descriptor!");
+                throwAndLog(
+                  "desc must be a data descriptor or an accessor descriptor!",
+                  this.membrane?.logger
+                );
               }
               let type = typeof desc.get;
               if (type === "undefined") {
                 return undefined;
               }
               if (type !== "function") {
-                throw new Error("getter is not a function");
+                throwAndLog("getter is not a function", this.membrane?.logger);
               }
               return Reflect.apply(desc.get, receiver, []);
             }
@@ -287,7 +298,10 @@ export function ObjectGraphHandler(membrane, fieldName) {
           // 5. Assert: IsAccessorDescriptor(desc) is true.
 
           if (!isAccessorDescriptor(desc)) {
-            throw new Error("desc must be a data descriptor or an accessor descriptor!");
+            throwAndLog(
+              "desc must be a data descriptor or an accessor descriptor!",
+              this.membrane?.logger
+            );
           }
 
           // 6. Let getter be desc.[[Get]].
@@ -303,7 +317,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
               return undefined;
             }
             if (type !== "function") {
-              throw new Error("getter is not a function");
+              throwAndLog("getter is not a function", this.membrane?.logger);
             }
             rv = this.externalHandler(function () {
               return Reflect.apply(getter, receiver, []);
@@ -314,7 +328,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
         if (!found) {
           // end of the algorithm
-          throw new Error("Membrane fall-through: we should not get here");
+          throwAndLog("Membrane fall-through: we should not get here", this.membrane?.logger);
         }
 
         return rv;
@@ -568,7 +582,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
     */
 
         // 1. Assert: IsPropertyKey(P) is true.
-        AssertIsPropertyKey(propName);
+        AssertIsPropertyKey(propName, this.membrane?.logger);
         var targetMap, shouldBeLocal;
 
         try {
@@ -825,7 +839,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
          */
 
         // 1. Assert: IsPropertyKey(P) is true.
-        AssertIsPropertyKey(propName);
+        AssertIsPropertyKey(propName, this.membrane?.logger);
 
         var ownDesc,
           shouldBeLocal = this.getLocalFlag(target, "storeUnknownAsLocal", true);
@@ -898,10 +912,10 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
           receiverMap = this.membrane.map.get(receiver);
           if (!receiverMap) {
-            throw new Error("How do we still not have a receiverMap?");
+            throwAndLog("How do we still not have a receiverMap?", this.membrane?.logger);
           }
           if (receiverMap.originField === this.fieldName) {
-            throw new Error("Receiver's field name should not match!");
+            throwAndLog("Receiver's field name should not match!", this.membrane?.logger);
           }
         }
 
@@ -963,7 +977,10 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
         // 5. Assert: IsAccessorDescriptor(ownDesc) is true.
         if (!isAccessorDescriptor(ownDesc)) {
-          throw new Error("ownDesc must be a data descriptor or an accessor descriptor!");
+          throwAndLog(
+            "ownDesc must be a data descriptor or an accessor descriptor!",
+            this.membrane?.logger
+          );
         }
 
         /*
@@ -1228,17 +1245,20 @@ export function ObjectGraphHandler(membrane, fieldName) {
         const target = getRealTarget(shadowTarget);
         const targetMap = this.membrane.map.get(target);
         if (!(targetMap instanceof ProxyMapping)) {
-          throw new Error("No ProxyMapping found for shadow target!");
+          throwAndLog("No ProxyMapping found for shadow target!", this.membrane?.logger);
         }
         if (!targetMap.isShadowTarget(shadowTarget)) {
-          throw new Error("ObjectGraphHandler traps must be called with a shadow target!");
+          throwAndLog(
+            "ObjectGraphHandler traps must be called with a shadow target!",
+            this.membrane?.logger
+          );
         }
         const disableTrapFlag = `disableTrap(${trapName})`;
         if (
           targetMap.getLocalFlag(this.fieldName, disableTrapFlag) ||
           targetMap.getLocalFlag(targetMap.originField, disableTrapFlag)
         ) {
-          throw new Error(`The ${trapName} trap is not executable.`);
+          throwAndLog(`The ${trapName} trap is not executable.`, this.membrane?.logger);
         }
       },
 
@@ -1270,7 +1290,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
        */
       addProxyListener: function (listener) {
         if (typeof listener != "function") {
-          throw new Error("listener is not a function!");
+          throwAndLog("listener is not a function!", this.membrane?.logger);
         }
         if (!this.__proxyListeners__.includes(listener)) {
           this.__proxyListeners__.push(listener);
@@ -1285,7 +1305,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
       removeProxyListener: function (listener) {
         let index = this.__proxyListeners__.indexOf(listener);
         if (index == -1) {
-          throw new Error("listener is not registered!");
+          throwAndLog("listener is not registered!", this.membrane?.logger);
         }
         this.__proxyListeners__.splice(index, 1);
       },
@@ -1300,7 +1320,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
        */
       addFunctionListener: function (listener) {
         if (typeof listener != "function") {
-          throw new Error("listener is not a function!");
+          throwAndLog("listener is not a function!", this.membrane?.logger);
         }
         if (!this.__functionListeners__.includes(listener)) {
           this.__functionListeners__.push(listener);
@@ -1315,7 +1335,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
       removeFunctionListener: function (listener) {
         let index = this.__functionListeners__.indexOf(listener);
         if (index == -1) {
-          throw new Error("listener is not registered!");
+          throwAndLog("listener is not registered!", this.membrane?.logger);
         }
         this.__functionListeners__.splice(index, 1);
       },
@@ -1555,6 +1575,9 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
         let lockState = "none",
           lockedValue;
+        // ansteg: We're being defensive here around potential memory leaks
+        //         The idea is to prevent setLockedValue and lazyDesc from capturing a hard reference to the logger in its closure.
+        let loggerRef = this.membrane?.logger ? new WeakRef(this.membrane?.logger) : undefined;
         function setLockedValue(value) {
           /* XXX ajvincent The intent is to mark this accessor descriptor as one
            * that can safely be converted to (new DataDescriptor(value)).
@@ -1591,7 +1614,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
 
           // This lockState check should be treated as an assertion.
           if (lockState !== "transient") {
-            throw new Error("setLockedValue should be callable exactly once!");
+            throwAndLog("setLockedValue should be callable exactly once!", loggerRef?.deref());
           }
           lockedValue = value;
           lockState = "finalized";
@@ -1618,7 +1641,10 @@ export function ObjectGraphHandler(membrane, fieldName) {
              */
             let current = Reflect.getOwnPropertyDescriptor(shadowTarget, propName);
             if (!current.configurable) {
-              throw new Error("lazy getter descriptor is not configurable -- this is fatal");
+              throwAndLog(
+                "lazy getter descriptor is not configurable -- this is fatal",
+                loggerRef?.deref()
+              );
             }
 
             handler.validateTrapAndShadowTarget("defineLazyGetter", shadowTarget);
@@ -1708,7 +1734,10 @@ export function ObjectGraphHandler(membrane, fieldName) {
              */
             let current = Reflect.getOwnPropertyDescriptor(shadowTarget, propName);
             if (!current.configurable) {
-              throw new Error("lazy getter descriptor is not configurable -- this is fatal");
+              throwAndLog(
+                "lazy getter descriptor is not configurable -- this is fatal",
+                loggerRef?.deref()
+              );
             }
 
             const desc = new DataDescriptor(value, true, current.enumerable, true);
@@ -1864,7 +1893,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
        */
       addRevocable: function (revoke) {
         if (this.__isDead__) {
-          throw new Error("This membrane handler is dead!");
+          throwAndLog("This membrane handler is dead!", this.membrane?.logger);
         }
         this.__revokeFunctions__.push(revoke);
       },
@@ -1877,7 +1906,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
       removeRevocable: function (revoke) {
         let index = this.__revokeFunctions__.indexOf(revoke);
         if (index == -1) {
-          throw new Error("Unknown revoke function!");
+          throwAndLog("Unknown revoke function!", this.membrane?.logger);
         }
         this.__revokeFunctions__.splice(index, 1);
       },
@@ -1887,7 +1916,7 @@ export function ObjectGraphHandler(membrane, fieldName) {
        */
       revokeEverything: function () {
         if (this.__isDead__) {
-          throw new Error("This membrane handler is dead!");
+          throwAndLog("This membrane handler is dead!", this.membrane?.logger);
         }
         Object.defineProperty(this, "__isDead__", new DataDescriptor(true));
         let length = this.__revokeFunctions__.length;
@@ -1911,7 +1940,13 @@ export function ObjectGraphHandler(membrane, fieldName) {
         // But merely clearing this cache on revoke won't solve this problem - we'll probably need a solution similar to RevokeFnsCache or RevokerManagement
         this.__revokeFunctions__ = [];
 
+        // ansteg: we might also want to consider breaking the reference to the membrane when the handler is revoked.
+        // this.membrane = undefined;
+
         // ansteg: the ShadowKeyMap was creating a linkage between shadowTargets and real targets, causing the real targets to leak.
+        //         The commented code below is a "heavy hammer" technique to clear the ShadowKeyMap,
+        //         but it's more elegant to just prevent retainers for the shadowTargets
+        //         (which allows the values of the ShadowKeyMap WeakMap to be cleaned up).
         // const areAllHandlersRevoked = Reflect.ownKeys(this.membrane.handlersByFieldName).every(fieldName => {
         //   return this.membrane.handlersByFieldName[fieldName].__isDead__;
         // });

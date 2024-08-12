@@ -4,6 +4,7 @@ import { DataDescriptor, AccessorDescriptor } from "./sharedUtilities.js";
 import { ProxyMapping } from "./ProxyMapping.js";
 import { ObjectGraphHandler } from "./ObjectGraphHandler.js";
 import { makeRevokeDeleteRefs } from "./moduleUtilities.js";
+import { throwAndLog } from "./throwAndLog";
 
 /**
  * Notify all proxy listeners of a new proxy.
@@ -150,8 +151,9 @@ ProxyNotify.useShadowTarget = function (parts, handler, mode) {
       return rv;
     };
   } else {
-    throw new Error(
-      "useShadowTarget requires its first argument be 'frozen', 'sealed', or 'prepared'"
+    throwAndLog(
+      "useShadowTarget requires its first argument be 'frozen', 'sealed', or 'prepared'",
+      this.logger
     );
   }
 
@@ -174,6 +176,7 @@ ProxyNotify.useShadowTarget = function (parts, handler, mode) {
   makeRevokeDeleteRefs(parts, map, handler.fieldName);
 };
 
+/** @type {import("./ProxyNotify").invokeProxyListeners} */
 export function invokeProxyListeners(listeners, meta) {
   listeners = listeners.slice(0);
   var index = 0,

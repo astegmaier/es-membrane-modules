@@ -4,6 +4,7 @@ import { DataDescriptor, isDataDescriptor, allTraps } from "./sharedUtilities.js
 import { ObjectGraphHandler } from "./ObjectGraphHandler.js";
 import { getRealTarget, inGraphHandler, makeRevokeDeleteRefs } from "./moduleUtilities.js";
 import { DistortionsListener } from "./DistortionsListener.js";
+import { throwAndLog } from "./throwAndLog";
 
 const DogfoodMembrane = undefined;
 
@@ -160,8 +161,9 @@ ModifyRulesAPI.prototype = Object.seal({
     if (existingHandler instanceof ObjectGraphHandler) {
       if (!this.membrane.ownsHandler(existingHandler)) {
         // XXX ajvincent Fix this error message!!
-        throw new Error(
-          "fieldName must be a string or a symbol representing an ObjectGraphName in the Membrane, or null to represent Reflect"
+        throwAndLog(
+          "fieldName must be a string or a symbol representing an ObjectGraphName in the Membrane, or null to represent Reflect",
+          this.membrane?.logger
         );
       }
 
@@ -172,13 +174,17 @@ ModifyRulesAPI.prototype = Object.seal({
         " ObjectGraphHandler";
     } else if (baseHandler !== Reflect) {
       // XXX ajvincent Fix this error message!!
-      throw new Error(
-        "fieldName must be a string or a symbol representing an ObjectGraphName in the Membrane, or null to represent Reflect"
+      throwAndLog(
+        "fieldName must be a string or a symbol representing an ObjectGraphName in the Membrane, or null to represent Reflect",
+        this.membrane?.logger
       );
     }
 
     if (baseHandler !== existingHandler && !ChainHandlers.has(existingHandler)) {
-      throw new Error("Existing handler neither is " + description + " nor inherits from it");
+      throwAndLog(
+        "Existing handler neither is " + description + " nor inherits from it",
+        this.membrane?.logger
+      );
     }
 
     var rv = Object.create(existingHandler, {
@@ -235,8 +241,9 @@ ModifyRulesAPI.prototype = Object.seal({
       }
 
       if (!accepted) {
-        throw new Error(
-          "handler neither inherits from Reflect or an ObjectGraphHandler in this membrane"
+        throwAndLog(
+          "handler neither inherits from Reflect or an ObjectGraphHandler in this membrane",
+          this.membrane?.logger
         );
       }
     }
@@ -246,7 +253,7 @@ ModifyRulesAPI.prototype = Object.seal({
      * represents.
      */
     if (!this.membrane.map.has(oldProxy)) {
-      throw new Error("This membrane does not own the proxy!");
+      throwAndLog("This membrane does not own the proxy!", this.membrane?.logger);
     }
 
     let map = this.membrane.map.get(oldProxy),
@@ -257,15 +264,19 @@ ModifyRulesAPI.prototype = Object.seal({
     } else {
       cachedField = baseHandler.fieldName;
       if (cachedField == map.originField) {
-        throw new Error(
-          "You must replace original values with either Reflect or a ChainHandler inheriting from Reflect"
+        throwAndLog(
+          "You must replace original values with either Reflect or a ChainHandler inheriting from Reflect",
+          this.membrane?.logger
         );
       }
     }
 
     cachedProxy = map.getProxy(cachedField);
     if (cachedProxy != oldProxy) {
-      throw new Error("You cannot replace the proxy with a handler from a different object graph!");
+      throwAndLog(
+        "You cannot replace the proxy with a handler from a different object graph!",
+        this.membrane?.logger
+      );
     }
 
     // Finally, do the actual proxy replacement.
@@ -302,7 +313,7 @@ ModifyRulesAPI.prototype = Object.seal({
   assertLocalProxy: function (fieldName, proxy, methodName) {
     let [found, match] = this.membrane.getMembraneProxy(fieldName, proxy);
     if (!found || proxy !== match) {
-      throw new Error(methodName + " requires a known proxy!");
+      throwAndLog(methodName + " requires a known proxy!", this.membrane?.logger);
     }
   },
 
@@ -369,7 +380,7 @@ ModifyRulesAPI.prototype = Object.seal({
     }
 
     if (typeof filter !== "function" && filter !== null) {
-      throw new Error("filterOwnKeys must be a filter function, array or Set!");
+      throwAndLog("filterOwnKeys must be a filter function, array or Set!", this.membrane?.logger);
     }
 
     /* Defining a filter after a proxy's shadow target is not extensible
@@ -397,7 +408,7 @@ ModifyRulesAPI.prototype = Object.seal({
     if (allowed) {
       metadata.setOwnKeysFilter(fieldName, filter);
     } else {
-      throw new Error("filterOwnKeys cannot apply to a non-extensible proxy");
+      throwAndLog("filterOwnKeys cannot apply to a non-extensible proxy", this.membrane?.logger);
     }
   },
 
@@ -415,17 +426,17 @@ ModifyRulesAPI.prototype = Object.seal({
   truncateArgList: function (fieldName, proxy, value) {
     this.assertLocalProxy(fieldName, proxy, "truncateArgList");
     if (typeof proxy !== "function") {
-      throw new Error("proxy must be a function!");
+      throwAndLog("proxy must be a function!", this.membrane?.logger);
     }
     {
       const type = typeof value;
       if (type === "number") {
         // @ts-expect-error - typescript can't follow the logic here and thinks that value might still be a boolean.
         if (!Number.isInteger(value) || value < 0) {
-          throw new Error("value must be a non-negative integer or a boolean!");
+          throwAndLog("value must be a non-negative integer or a boolean!", this.membrane?.logger);
         }
       } else if (type !== "boolean") {
-        throw new Error("value must be a non-negative integer or a boolean!");
+        throwAndLog("value must be a non-negative integer or a boolean!", this.membrane?.logger);
       }
     }
 
@@ -449,7 +460,7 @@ ModifyRulesAPI.prototype = Object.seal({
         return typeof t !== "string";
       })
     ) {
-      throw new Error("Trap list must be an array of strings!");
+      throwAndLog("Trap list must be an array of strings!", this.membrane?.logger);
     }
     const map = this.membrane.map.get(proxy);
     trapList.forEach(function (t) {
