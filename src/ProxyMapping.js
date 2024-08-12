@@ -141,7 +141,11 @@ export function ProxyMapping(originField, logger) {
             membrane.map.set(parts.value, this);
           }
         } else {
-          assert(this === membrane.map.get(parts.value), "ProxyMapping mismatch?");
+          assert(
+            this === membrane.map.get(parts.value),
+            "ProxyMapping mismatch?",
+            membrane?.logger
+          );
         }
       }),
 

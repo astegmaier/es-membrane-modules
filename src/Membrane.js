@@ -164,12 +164,17 @@ Reflect.defineProperty(
           mapping = new ProxyMapping(handler.fieldName, this.logger);
         }
       }
-      assert(mapping instanceof ProxyMapping, "buildMapping requires a ProxyMapping object!");
+      assert(
+        mapping instanceof ProxyMapping,
+        "buildMapping requires a ProxyMapping object!",
+        this.logger
+      );
 
       const isOriginal = mapping.originField === handler.fieldName;
       assert(
         isOriginal || this.ownsHandler(options.originHandler),
-        "Proxy requests must pass in an origin handler"
+        "Proxy requests must pass in an origin handler",
+        this.logger
       );
       let shadowTarget = makeShadowTarget(value, this.logger);
 
@@ -287,12 +292,17 @@ Reflect.defineProperty(
       let handler = this.getHandlerByName(mapping.originField);
       this.buildMapping(handler, arg, options);
 
-      assert(this.map.has(arg), "wrapArgumentByProxyMapping should define a ProxyMapping for arg");
+      assert(
+        this.map.has(arg),
+        "wrapArgumentByProxyMapping should define a ProxyMapping for arg",
+        this.logger
+      );
       let argMap = this.map.get(arg);
-      assert(argMap instanceof ProxyMapping, "argMap isn't a ProxyMapping?");
+      assert(argMap instanceof ProxyMapping, "argMap isn't a ProxyMapping?", this.logger);
       assert(
         argMap.getOriginal() === arg,
-        "wrapArgumentByProxyMapping didn't establish the original?"
+        "wrapArgumentByProxyMapping didn't establish the original?",
+        this.logger
       );
     },
 
@@ -368,7 +378,7 @@ Reflect.defineProperty(
         let passOptions = Object.create(options, {
           "originHandler": new DataDescriptor(originHandler)
         });
-        assert(argMap, "ProxyMapping not created before invoking target handler?");
+        assert(argMap, "ProxyMapping not created before invoking target handler?", this.logger);
 
         Reflect.defineProperty(passOptions, "mapping", new DataDescriptor(argMap));
 
@@ -503,22 +513,22 @@ Reflect.defineProperty(
       // Postconditions
       if (propBag0.type !== "primitive") {
         let [found, check] = this.getMembraneProxy(propBag0.handler.fieldName, propBag0.value);
-        assert(found, "value0 mapping not found?");
-        assert(check === propBag0.value, "value0 not found in handler0 field name?");
+        assert(found, "value0 mapping not found?", this.logger);
+        assert(check === propBag0.value, "value0 not found in handler0 field name?", this.logger);
 
         [found, check] = this.getMembraneProxy(propBag1.handler.fieldName, propBag0.value);
-        assert(found, "value0 mapping not found?");
-        assert(check === propBag1.value, "value0 not found in handler0 field name?");
+        assert(found, "value0 mapping not found?", this.logger);
+        assert(check === propBag1.value, "value0 not found in handler0 field name?", this.logger);
       }
 
       if (propBag1.type !== "primitive") {
         let [found, check] = this.getMembraneProxy(propBag0.handler.fieldName, propBag1.value);
-        assert(found, "value1 mapping not found?");
-        assert(check === propBag0.value, "value0 not found in handler0 field name?");
+        assert(found, "value1 mapping not found?", this.logger);
+        assert(check === propBag0.value, "value0 not found in handler0 field name?", this.logger);
 
         [found, check] = this.getMembraneProxy(propBag1.handler.fieldName, propBag1.value);
-        assert(found, "value1 mapping not found?");
-        assert(check === propBag1.value, "value1 not found in handler1 field name?");
+        assert(found, "value1 mapping not found?", this.logger);
+        assert(check === propBag1.value, "value1 not found in handler1 field name?", this.logger);
       }
     },
 

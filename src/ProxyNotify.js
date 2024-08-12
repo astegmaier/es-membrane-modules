@@ -171,7 +171,11 @@ ProxyNotify.useShadowTarget = function (parts, handler, mode) {
 
   const masterMap = handler.membrane.map;
   let map = masterMap.get(parts.value);
-  assert(map instanceof ProxyMapping, "Didn't get a ProxyMapping for an existing value?");
+  assert(
+    map instanceof ProxyMapping,
+    "Didn't get a ProxyMapping for an existing value?",
+    this.logger
+  );
   masterMap.set(parts.proxy, map);
   makeRevokeDeleteRefs(parts, map, handler.fieldName);
 };
