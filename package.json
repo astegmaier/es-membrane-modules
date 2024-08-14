@@ -1,6 +1,6 @@
 {
   "name": "@microsoft-loop/es-membrane",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "A fork of es-membrane that uses modules and provides typescript definitions.",
   "license": "ISC",
   "author": "Andrew Stegmaier",
@@ -25,7 +25,6 @@
   "exports": {
     ".": {
       "types": "./dist/cjs/index.d.ts",
-      "source": "./src/index.ts",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js",
       "default": "./dist/cjs/index.js"
