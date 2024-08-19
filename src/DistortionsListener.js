@@ -50,7 +50,11 @@ Object.defineProperties(
       } else if (category === "filter" && typeof value === "function") {
         this.filterToConfigMap.set(value, config);
       } else {
-        throwAndLog(`Unsupported category ${category} for value`, this.membrane?.logger);
+        throwAndLog(
+          `Unsupported category ${category} for value`,
+          "DistortionsListener:addListener",
+          this.membrane?.logger
+        );
       }
     }),
 
@@ -68,7 +72,11 @@ Object.defineProperties(
       } else if (category === "filter" && typeof value === "function") {
         this.filterToConfigMap.delete(value);
       } else {
-        throwAndLog(`Unsupported category ${category} for value`, this.membrane?.logger);
+        throwAndLog(
+          `Unsupported category ${category} for value`,
+          "DistortionsListener:removeListener",
+          this.membrane?.logger
+        );
       }
     }),
 
@@ -103,6 +111,7 @@ Object.defineProperties(
       if (!this.membrane.ownsHandler(handler)) {
         throwAndLog(
           "Membrane must own the first argument as an object graph handler!",
+          "DistortionsListener:bindToHandler",
           this.membrane?.logger
         );
       }

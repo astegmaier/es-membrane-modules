@@ -153,6 +153,7 @@ ProxyNotify.useShadowTarget = function (parts, handler, mode) {
   } else {
     throwAndLog(
       "useShadowTarget requires its first argument be 'frozen', 'sealed', or 'prepared'",
+      "ProxyNotify:useShadowTarget",
       this.logger
     );
   }
@@ -174,6 +175,7 @@ ProxyNotify.useShadowTarget = function (parts, handler, mode) {
   assert(
     map instanceof ProxyMapping,
     "Didn't get a ProxyMapping for an existing value?",
+    "ProxyNotify:useShadowTarget",
     this.logger
   );
   masterMap.set(parts.proxy, map);
@@ -221,7 +223,11 @@ export function invokeProxyListeners(listeners, meta) {
         still nasty when you consider what a membrane is for.
         */
         try {
-          meta.logger.error(e);
+          meta.logger.error(
+            typeof e === "object" && e !== null ? e.message : "unknown error",
+            "invokeProxyListeners",
+            e
+          );
         } catch (f) {
           // really do nothing, there's no point
         }

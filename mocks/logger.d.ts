@@ -15,7 +15,7 @@ export interface IBasicAppender extends IBasicAppenderPrototype {
 }
 
 export interface IBasicLoggerPrototype {
-  log(this: IBasicLogger, level: LogLevel, message: unknown, stack?: unknown): void;
+  log(this: IBasicLogger, level: LogLevel, message: string, codeLocation?: string, error?: unknown): void;
   levels: LogLevel[];
   addAppender(appender: IAppender): void;
   removeAppender(appender: IAppender): void;

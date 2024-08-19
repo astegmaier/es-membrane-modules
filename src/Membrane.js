@@ -153,7 +153,11 @@ Reflect.defineProperty(
      */
     buildMapping: function (handler, value, options = {}) {
       if (!this.ownsHandler(handler)) {
-        throwAndLog("handler is not an ObjectGraphHandler we own!", this.logger);
+        throwAndLog(
+          "handler is not an ObjectGraphHandler we own!",
+          "Membrane:buildMapping",
+          this.logger
+        );
       }
       let mapping = "mapping" in options ? options.mapping : null;
 
@@ -167,6 +171,7 @@ Reflect.defineProperty(
       assert(
         mapping instanceof ProxyMapping,
         "buildMapping requires a ProxyMapping object!",
+        "Membrane:buildMapping",
         this.logger
       );
 
@@ -174,9 +179,10 @@ Reflect.defineProperty(
       assert(
         isOriginal || this.ownsHandler(options.originHandler),
         "Proxy requests must pass in an origin handler",
+        "Membrane:buildMapping",
         this.logger
       );
-      let shadowTarget = makeShadowTarget(value, this.logger);
+      let shadowTarget = makeShadowTarget(value, "Membrane:buildMapping", this.logger);
 
       /** @type {IProxyParts}  */
       var parts;
@@ -231,7 +237,11 @@ Reflect.defineProperty(
       {
         let t = typeof field;
         if (t != "string" && t != "symbol") {
-          throwAndLog("field must be a string or a symbol!", this.logger);
+          throwAndLog(
+            "field must be a string or a symbol!",
+            "Membrane:hasHandlerByField",
+            this.logger
+          );
         }
       }
       return Reflect.ownKeys(this.handlersByFieldName).includes(field);
@@ -248,7 +258,7 @@ Reflect.defineProperty(
      */
     getHandlerByName: function (field, options) {
       if (typeof options === "boolean") {
-        throwAndLog("fix me!", this.logger);
+        throwAndLog("fix me!", "Membrane:getHandlerByName", this.logger);
       }
       let mustCreate = typeof options == "object" ? Boolean(options.mustCreate) : false;
       if (mustCreate && !this.hasHandlerByField(field)) {
@@ -295,13 +305,20 @@ Reflect.defineProperty(
       assert(
         this.map.has(arg),
         "wrapArgumentByProxyMapping should define a ProxyMapping for arg",
+        "Membrane:wrapArgumentByProxyMapping",
         this.logger
       );
       let argMap = this.map.get(arg);
-      assert(argMap instanceof ProxyMapping, "argMap isn't a ProxyMapping?", this.logger);
+      assert(
+        argMap instanceof ProxyMapping,
+        "argMap isn't a ProxyMapping?",
+        "Membrane:wrapArgumentByProxyMapping",
+        this.logger
+      );
       assert(
         argMap.getOriginal() === arg,
         "wrapArgumentByProxyMapping didn't establish the original?",
+        "Membrane:wrapArgumentByProxyMapping",
         this.logger
       );
     },
@@ -348,6 +365,7 @@ Reflect.defineProperty(
       ) {
         throwAndLog(
           "convertArgumentToProxy requires two different ObjectGraphHandlers in the Membrane instance",
+          "Membrane:convertArgumentToProxy",
           this.logger
         );
       }
@@ -378,7 +396,12 @@ Reflect.defineProperty(
         let passOptions = Object.create(options, {
           "originHandler": new DataDescriptor(originHandler)
         });
-        assert(argMap, "ProxyMapping not created before invoking target handler?", this.logger);
+        assert(
+          argMap,
+          "ProxyMapping not created before invoking target handler?",
+          "Membrane:convertArgumentToProxy",
+          this.logger
+        );
 
         Reflect.defineProperty(passOptions, "mapping", new DataDescriptor(argMap));
 
@@ -387,7 +410,11 @@ Reflect.defineProperty(
 
       [found, rv] = this.getMembraneProxy(targetHandler.fieldName, arg);
       if (!found) {
-        throwAndLog("in convertArgumentToProxy(): proxy not found", this.logger);
+        throwAndLog(
+          "in convertArgumentToProxy(): proxy not found",
+          "Membrane:convertArgumentToProxy",
+          this.logger
+        );
       }
       return rv;
     },
@@ -414,6 +441,7 @@ Reflect.defineProperty(
         if (!this.ownsHandler(h)) {
           throwAndLog(
             "bindValuesByHandlers requires two ObjectGraphHandlers from different graphs",
+            "Membrane:bindValuesByHandlers",
             this.logger
           );
         }
@@ -430,6 +458,7 @@ Reflect.defineProperty(
           if (!valid) {
             throwAndLog(
               "Value argument does not belong to proposed ObjectGraphHandler",
+              "Membrane:bindValuesByHandlers:bag",
               this.logger
             );
           }
@@ -442,7 +471,11 @@ Reflect.defineProperty(
         if (proxyMap.hasField(bag.handler.fieldName)) {
           let check = proxyMap.getProxy(bag.handler.fieldName);
           if (check !== bag.value) {
-            throwAndLog("Value argument does not belong to proposed object graph", this.logger);
+            throwAndLog(
+              "Value argument does not belong to proposed object graph",
+              "Membrane:bindValuesByHandlers:checkField",
+              this.logger
+            );
           }
           bag.maySet = false;
         } else {
@@ -469,7 +502,11 @@ Reflect.defineProperty(
 
       if (propBag0.type === "primitive") {
         if (propBag1.type === "primitive") {
-          throwAndLog("bindValuesByHandlers requires two non-primitive values", this.logger);
+          throwAndLog(
+            "bindValuesByHandlers requires two non-primitive values",
+            "Membrane:bindValuesByHandlers",
+            this.logger
+          );
         }
 
         proxyMap = propBag1.proxyMap;
@@ -482,7 +519,11 @@ Reflect.defineProperty(
       if (propBag0.proxyMap && propBag1.proxyMap) {
         if (propBag0.proxyMap !== propBag1.proxyMap) {
           // See https://github.com/ajvincent/es-membrane/issues/77 .
-          throwAndLog("Linking two ObjectGraphHandlers in this way is not safe.", this.logger);
+          throwAndLog(
+            "Linking two ObjectGraphHandlers in this way is not safe.",
+            "Membrane:bindValuesByHandlers",
+            this.logger
+          );
         }
       } else if (!propBag0.proxyMap) {
         if (!propBag1.proxyMap) {
@@ -499,6 +540,7 @@ Reflect.defineProperty(
         if (propBag0.value !== propBag1.value) {
           throwAndLog(
             "bindValuesByHandlers requires two ObjectGraphHandlers from different graphs",
+            "Membrane:bindValuesByHandlers",
             this.logger
           );
         }
@@ -513,22 +555,42 @@ Reflect.defineProperty(
       // Postconditions
       if (propBag0.type !== "primitive") {
         let [found, check] = this.getMembraneProxy(propBag0.handler.fieldName, propBag0.value);
-        assert(found, "value0 mapping not found?", this.logger);
-        assert(check === propBag0.value, "value0 not found in handler0 field name?", this.logger);
+        assert(found, "value0 mapping not found?", "Membrane:bindValuesByHandlers", this.logger);
+        assert(
+          check === propBag0.value,
+          "value0 not found in handler0 field name?",
+          "Membrane:bindValuesByHandlers",
+          this.logger
+        );
 
         [found, check] = this.getMembraneProxy(propBag1.handler.fieldName, propBag0.value);
-        assert(found, "value0 mapping not found?", this.logger);
-        assert(check === propBag1.value, "value0 not found in handler0 field name?", this.logger);
+        assert(found, "value0 mapping not found?", "Membrane:bindValuesByHandlers", this.logger);
+        assert(
+          check === propBag1.value,
+          "value0 not found in handler0 field name?",
+          "Membrane:bindValuesByHandlers",
+          this.logger
+        );
       }
 
       if (propBag1.type !== "primitive") {
         let [found, check] = this.getMembraneProxy(propBag0.handler.fieldName, propBag1.value);
-        assert(found, "value1 mapping not found?", this.logger);
-        assert(check === propBag0.value, "value0 not found in handler0 field name?", this.logger);
+        assert(found, "value1 mapping not found?", "Membrane:bindValuesByHandlers", this.logger);
+        assert(
+          check === propBag0.value,
+          "value0 not found in handler0 field name?",
+          "Membrane:bindValuesByHandlers",
+          this.logger
+        );
 
         [found, check] = this.getMembraneProxy(propBag1.handler.fieldName, propBag1.value);
-        assert(found, "value1 mapping not found?", this.logger);
-        assert(check === propBag1.value, "value1 not found in handler1 field name?", this.logger);
+        assert(found, "value1 mapping not found?", "Membrane:bindValuesByHandlers", this.logger);
+        assert(
+          check === propBag1.value,
+          "value1 not found in handler1 field name?",
+          "Membrane:bindValuesByHandlers",
+          this.logger
+        );
       }
     },
 
@@ -595,7 +657,7 @@ Reflect.defineProperty(
      */
     addFunctionListener: function (listener) {
       if (typeof listener != "function") {
-        throwAndLog("listener is not a function!", this.logger);
+        throwAndLog("listener is not a function!", "Membrane:addFunctionListener", this.logger);
       }
       if (!this.__functionListeners__.includes(listener)) {
         this.__functionListeners__.push(listener);
@@ -610,7 +672,7 @@ Reflect.defineProperty(
     removeFunctionListener: function (listener) {
       let index = this.__functionListeners__.indexOf(listener);
       if (index == -1) {
-        throwAndLog("listener is not registered!", this.logger);
+        throwAndLog("listener is not registered!", "Membrane:removeFunctionListener", this.logger);
       }
       this.__functionListeners__.splice(index, 1);
     },
@@ -624,10 +686,10 @@ Reflect.defineProperty(
 
     __mayLog__: MembraneMayLog,
 
-    warnOnce: function (message) {
+    warnOnce: function (message, codeLocation) {
       if (this.logger && !this.warnOnceSet.has(message)) {
         this.warnOnceSet.add(message);
-        this.logger.warn(message);
+        this.logger.warn(message, codeLocation);
       }
     },
 

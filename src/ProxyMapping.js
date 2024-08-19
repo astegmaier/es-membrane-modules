@@ -48,6 +48,7 @@ export function ProxyMapping(originField, logger) {
         if (this.originalValue === NOT_YET_DETERMINED) {
           throwAndLog(
             "getOriginal called but the original value hasn't been set!",
+            "ProxyMapping:getOriginal",
             this.loggerWeakRef?.deref()
           );
         }
@@ -61,7 +62,11 @@ export function ProxyMapping(originField, logger) {
       "getValue": new DataDescriptor(function (field) {
         var rv = this.proxiedFields[field];
         if (!rv) {
-          throwAndLog("getValue called for unknown field!", this.loggerWeakRef?.deref());
+          throwAndLog(
+            "getValue called for unknown field!",
+            "ProxyMapping:getValue",
+            this.loggerWeakRef?.deref()
+          );
         }
         return rv.value;
       }),
@@ -69,7 +74,11 @@ export function ProxyMapping(originField, logger) {
       "getProxy": new DataDescriptor(function (field) {
         var rv = this.proxiedFields[field];
         if (!rv) {
-          throwAndLog("getProxy called for unknown field!", this.loggerWeakRef?.deref());
+          throwAndLog(
+            "getProxy called for unknown field!",
+            "ProxyMapping:getProxy",
+            this.loggerWeakRef?.deref()
+          );
         }
         return !rv.override && field === this.originField ? rv.value : rv.proxy;
       }),
@@ -87,7 +96,11 @@ export function ProxyMapping(originField, logger) {
       "getShadowTarget": new DataDescriptor(function (field) {
         var rv = this.proxiedFields[field];
         if (!rv) {
-          throwAndLog("getShadowTarget called for unknown field!", this.loggerWeakRef?.deref());
+          throwAndLog(
+            "getShadowTarget called for unknown field!",
+            "ProxyMapping:getShadowTarget",
+            this.loggerWeakRef?.deref()
+          );
         }
         return rv.shadowTarget;
       }),
@@ -114,7 +127,11 @@ export function ProxyMapping(originField, logger) {
       "set": new DataDescriptor(function (membrane, field, parts) {
         let override = typeof parts.override === "boolean" && parts.override;
         if (!override && this.hasField(field)) {
-          throwAndLog("set called for previously defined field!", membrane?.logger);
+          throwAndLog(
+            "set called for previously defined field!",
+            "ProxyMapping:set",
+            membrane?.logger
+          );
         }
 
         this.proxiedFields[field] = parts;
@@ -144,6 +161,7 @@ export function ProxyMapping(originField, logger) {
           assert(
             this === membrane.map.get(parts.value),
             "ProxyMapping mismatch?",
+            "ProxyMapping:set",
             membrane?.logger
           );
         }
@@ -205,7 +223,11 @@ export function ProxyMapping(originField, logger) {
             obj[flagName] = value;
             this.localFlagsSymbols.set(fieldName, obj);
           } else {
-            throwAndLog("fieldName is neither a symbol nor a string!", this.loggerWeakRef?.deref());
+            throwAndLog(
+              "fieldName is neither a symbol nor a string!",
+              "ProxyMapping:setLocalFlag",
+              this.loggerWeakRef?.deref()
+            );
           }
         }
       ),
@@ -234,7 +256,11 @@ export function ProxyMapping(originField, logger) {
             }
             return true;
           } else {
-            throwAndLog("fieldName is neither a symbol nor a string!", this.loggerWeakRef?.deref());
+            throwAndLog(
+              "fieldName is neither a symbol nor a string!",
+              "ProxyMapping:getLocalFlag",
+              this.loggerWeakRef?.deref()
+            );
           }
         }
       ),

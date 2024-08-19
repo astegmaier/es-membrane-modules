@@ -20,12 +20,13 @@ export var ShadowKeyMap = new WeakMap();
  * original target.
  *
  * @argument value {Object} The original target.
+ * @argument codeLocation {String} A string to identify the location of the error.
  * @argument logger {ILogger | undefined} a logger to use in case of errors.
  *
  * @returns {Object} A shadow target to minimally emulate the real one.
  * @private
  */
-export function makeShadowTarget(value, logger) {
+export function makeShadowTarget(value, codeLocation, logger) {
   "use strict";
   var rv;
   if (Array.isArray(value)) {
@@ -35,7 +36,7 @@ export function makeShadowTarget(value, logger) {
   } else if (typeof value == "function") {
     rv = function () {};
   } else {
-    throwAndLog("Unknown value for makeShadowTarget", logger);
+    throwAndLog("Unknown value for makeShadowTarget", codeLocation, logger);
   }
   ShadowKeyMap.set(rv, value);
   return rv;
@@ -151,10 +152,10 @@ export function MembraneMayLog() {
   return typeof this.logger == "object" && Boolean(this.logger);
 }
 
-export function AssertIsPropertyKey(propName, logger) {
+export function AssertIsPropertyKey(propName, codeLocation, logger) {
   var type = typeof propName;
   if (type != "string" && type != "symbol") {
-    throwAndLog("propName is not a symbol or a string!", logger);
+    throwAndLog("propName is not a symbol or a string!", codeLocation, logger);
   }
   return true;
 }

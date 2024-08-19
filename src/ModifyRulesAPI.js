@@ -163,6 +163,7 @@ ModifyRulesAPI.prototype = Object.seal({
         // XXX ajvincent Fix this error message!!
         throwAndLog(
           "fieldName must be a string or a symbol representing an ObjectGraphName in the Membrane, or null to represent Reflect",
+          "ModifyRulesAPI:createChainHandler",
           this.membrane?.logger
         );
       }
@@ -176,6 +177,7 @@ ModifyRulesAPI.prototype = Object.seal({
       // XXX ajvincent Fix this error message!!
       throwAndLog(
         "fieldName must be a string or a symbol representing an ObjectGraphName in the Membrane, or null to represent Reflect",
+        "ModifyRulesAPI:createChainHandler",
         this.membrane?.logger
       );
     }
@@ -183,6 +185,7 @@ ModifyRulesAPI.prototype = Object.seal({
     if (baseHandler !== existingHandler && !ChainHandlers.has(existingHandler)) {
       throwAndLog(
         "Existing handler neither is " + description + " nor inherits from it",
+        "ModifyRulesAPI:createChainHandler",
         this.membrane?.logger
       );
     }
@@ -243,6 +246,7 @@ ModifyRulesAPI.prototype = Object.seal({
       if (!accepted) {
         throwAndLog(
           "handler neither inherits from Reflect or an ObjectGraphHandler in this membrane",
+          "ModifyRulesAPI:replaceProxy",
           this.membrane?.logger
         );
       }
@@ -253,7 +257,11 @@ ModifyRulesAPI.prototype = Object.seal({
      * represents.
      */
     if (!this.membrane.map.has(oldProxy)) {
-      throwAndLog("This membrane does not own the proxy!", this.membrane?.logger);
+      throwAndLog(
+        "This membrane does not own the proxy!",
+        "ModifyRulesAPI:replaceProxy",
+        this.membrane?.logger
+      );
     }
 
     let map = this.membrane.map.get(oldProxy),
@@ -266,6 +274,7 @@ ModifyRulesAPI.prototype = Object.seal({
       if (cachedField == map.originField) {
         throwAndLog(
           "You must replace original values with either Reflect or a ChainHandler inheriting from Reflect",
+          "ModifyRulesAPI:replaceProxy",
           this.membrane?.logger
         );
       }
@@ -275,6 +284,7 @@ ModifyRulesAPI.prototype = Object.seal({
     if (cachedProxy != oldProxy) {
       throwAndLog(
         "You cannot replace the proxy with a handler from a different object graph!",
+        "ModifyRulesAPI:replaceProxy",
         this.membrane?.logger
       );
     }
@@ -313,7 +323,11 @@ ModifyRulesAPI.prototype = Object.seal({
   assertLocalProxy: function (fieldName, proxy, methodName) {
     let [found, match] = this.membrane.getMembraneProxy(fieldName, proxy);
     if (!found || proxy !== match) {
-      throwAndLog(methodName + " requires a known proxy!", this.membrane?.logger);
+      throwAndLog(
+        methodName + " requires a known proxy!",
+        "ModifyRulesAPI:assertLocalProxy",
+        this.membrane?.logger
+      );
     }
   },
 
@@ -380,7 +394,11 @@ ModifyRulesAPI.prototype = Object.seal({
     }
 
     if (typeof filter !== "function" && filter !== null) {
-      throwAndLog("filterOwnKeys must be a filter function, array or Set!", this.membrane?.logger);
+      throwAndLog(
+        "filterOwnKeys must be a filter function, array or Set!",
+        "ModifyRulesAPI:filterOwnKeys",
+        this.membrane?.logger
+      );
     }
 
     /* Defining a filter after a proxy's shadow target is not extensible
@@ -408,7 +426,11 @@ ModifyRulesAPI.prototype = Object.seal({
     if (allowed) {
       metadata.setOwnKeysFilter(fieldName, filter);
     } else {
-      throwAndLog("filterOwnKeys cannot apply to a non-extensible proxy", this.membrane?.logger);
+      throwAndLog(
+        "filterOwnKeys cannot apply to a non-extensible proxy",
+        "ModifyRulesAPI:filterOwnKeys",
+        this.membrane?.logger
+      );
     }
   },
 
@@ -426,17 +448,29 @@ ModifyRulesAPI.prototype = Object.seal({
   truncateArgList: function (fieldName, proxy, value) {
     this.assertLocalProxy(fieldName, proxy, "truncateArgList");
     if (typeof proxy !== "function") {
-      throwAndLog("proxy must be a function!", this.membrane?.logger);
+      throwAndLog(
+        "proxy must be a function!",
+        "ModifyRulesAPI:truncateArgList",
+        this.membrane?.logger
+      );
     }
     {
       const type = typeof value;
       if (type === "number") {
         // @ts-expect-error - typescript can't follow the logic here and thinks that value might still be a boolean.
         if (!Number.isInteger(value) || value < 0) {
-          throwAndLog("value must be a non-negative integer or a boolean!", this.membrane?.logger);
+          throwAndLog(
+            "value must be a non-negative integer or a boolean!",
+            "ModifyRulesAPI:truncateArgList",
+            this.membrane?.logger
+          );
         }
       } else if (type !== "boolean") {
-        throwAndLog("value must be a non-negative integer or a boolean!", this.membrane?.logger);
+        throwAndLog(
+          "value must be a non-negative integer or a boolean!",
+          "ModifyRulesAPI:truncateArgList",
+          this.membrane?.logger
+        );
       }
     }
 
@@ -460,7 +494,11 @@ ModifyRulesAPI.prototype = Object.seal({
         return typeof t !== "string";
       })
     ) {
-      throwAndLog("Trap list must be an array of strings!", this.membrane?.logger);
+      throwAndLog(
+        "Trap list must be an array of strings!",
+        "ModifyRulesAPI:disableTraps",
+        this.membrane?.logger
+      );
     }
     const map = this.membrane.map.get(proxy);
     trapList.forEach(function (t) {

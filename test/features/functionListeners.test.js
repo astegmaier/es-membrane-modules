@@ -374,7 +374,7 @@ describe("Function listeners", function() {
       expect(mAppender.events.length).toBe(1);
       if (mAppender.events.length >= 1) {
         expect(mAppender.events[0].level).toBe("ERROR");
-        expect(mAppender.events[0].message).toBe(staticException);
+        expect(mAppender.events[0].message).toBe(staticException.message);
       }
     }
   );

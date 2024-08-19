@@ -683,7 +683,7 @@ describe("An object graph handler's proxy listeners", function() {
         let messages = appender.getMessages();
         expect(messages.length).toBe(3);
         expect(messages[0]).toBe("entering logTest with argument");
-        expect(messages[1].message).toBe("The apply trap is not executable.");
+        expect(messages[1]).toBe("The apply trap is not executable.");
         expect(messages[2]).toBe("leaving logTest with argument");
       }
 
@@ -1115,7 +1115,7 @@ describe("An object graph handler's proxy listeners", function() {
     });
 
     it("but not by accidentally triggering an exception", function() {
-      const dummyExn = {};
+      const dummyExn = new Error('dummy exception');
       function listener1(meta) {
         if (mustSkip(meta.target))
           return;
@@ -1149,7 +1149,7 @@ describe("An object graph handler's proxy listeners", function() {
       expect(messages.length).toBe(5);
       expect(messages[0]).toBe("x created");
       expect(messages[1]).toBe("listener1: stopped = false");
-      expect(messages[2]).toBe(dummyExn);
+      expect(messages[2]).toBe("dummy exception");
       expect(messages[3]).toBe("listener2: stopped = false");
       expect(messages[4]).toBe("dry(x) created");
 

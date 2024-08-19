@@ -1,5 +1,5 @@
 import { DAMP } from "./dampSymbol";
-import assert from "../src/assert";
+import assert from "./assert";
 import { NOT_IMPLEMENTED_DESC, DataDescriptor, AccessorDescriptor } from "../src/sharedUtilities";
 
 import { Membrane } from "../src";

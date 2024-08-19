@@ -7,13 +7,13 @@ import { ObjectGraphHandler } from "./ObjectGraphHandler";
 export type LogLevel = "FATAL" | "ERROR" | "WARN" | "INFO" | "DEBUG" | "TRACE";
 
 export interface ILogger {
-  fatal(message: unknown, stack?: unknown): void;
-  error(message: unknown, stack?: unknown): void;
-  warn(message: unknown, stack?: unknown): void;
-  info(message: unknown, stack?: unknown): void;
-  debug(message: unknown, stack?: unknown): void;
-  trace(message: unknown, stack?: unknown): void;
-  log(level: LogLevel, message: unknown, stack?: unknown): void;
+  fatal(message: string, codeLocation?: string, error?: unknown): void;
+  error(message: string, codeLocation?: string, error?: unknown): void;
+  warn(message: string, codeLocation?: string): void;
+  info(message: string, codeLocation?: string): void;
+  debug(message: string, codeLocation?: string): void;
+  trace(message: string, codeLocation?: string): void;
+  log(level: LogLevel, message: string, codeLocation?: string, error?: unknown): void;
 }
 
 export interface MembraneOptions {
@@ -245,7 +245,7 @@ export interface IMembranePrototype {
 
   __mayLog__: () => boolean;
 
-  warnOnce(this: Membrane, message: string): void;
+  warnOnce(this: Membrane, message: string, codeLocation: string): void;
 
   readonly constants: typeof Constants;
 }
