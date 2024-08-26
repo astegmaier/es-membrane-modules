@@ -17,11 +17,13 @@ export interface IMocks {
     doc: IDocument;
     Node: INode;
     Element: IElement;
+    root?: IElement;
   };
   dry: {
     doc: IDocument;
     Node: INode;
     Element: IElement;
+    root?: IElement;
   };
   handlers: {
     dry: ObjectGraphHandler;
@@ -37,9 +39,9 @@ export interface IMockOptions {
 }
 
 export function MembraneMocks(
-  includeDamp: boolean,
-  logger: ILogger,
-  mockOptions: IMockOptions
+  includeDamp?: boolean,
+  logger?: ILogger,
+  mockOptions?: IMockOptions
 ): IMocks {
   includeDamp = Boolean(includeDamp);
   if (!mockOptions) {

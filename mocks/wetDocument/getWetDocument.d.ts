@@ -3,6 +3,7 @@ import { IElement } from "./getElementWet";
 import { INode } from "./getNodeWet";
 
 interface IDocument extends IEventTarget {
+  [key: string]: any;
   ownerDocument: any;
   childNodes: any[];
   nodeType: number;
