@@ -1,19 +1,52 @@
 import { DAMP } from "./dampSymbol";
 import assert from "./assert";
-import { getNodeWet } from "./wetDocument/getNodeWet";
-import { getElementWet } from "./wetDocument/getElementWet";
-import { getWetDocument } from "./wetDocument/getWetDocument";
+import { getNodeWet, type INodeWet } from "./wetDocument/getNodeWet";
+import { getElementWet, type IElementWet } from "./wetDocument/getElementWet";
+import { getWetDocument, type IWetDocument } from "./wetDocument/getWetDocument";
 
-import { Membrane } from "../src";
+import { Membrane, type ObjectGraphHandler, type ILogger } from "../src";
 
-export function MembraneMocks(includeDamp, logger, mockOptions) {
-  "use strict";
+type DeepPartial<T> = T extends object
+  ? {
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
+  : T;
+
+export interface IMocks {
+  wet: {
+    doc: IWetDocument;
+    Node: INodeWet;
+    Element: IElementWet;
+  };
+  dry: {
+    doc: IWetDocument;
+    Node: INodeWet;
+    Element: INodeWet;
+  };
+  handlers: {
+    dry: ObjectGraphHandler;
+    wet: ObjectGraphHandler;
+  };
+  membrane: Membrane;
+}
+
+export interface IMockOptions {
+  wetHandlerCreated?: (handler: ObjectGraphHandler, mocks: IMocks) => void;
+  dryHandlerCreated?: (handler: ObjectGraphHandler, mocks: IMocks) => void;
+  dampHandlerCreated?: (handler: ObjectGraphHandler, mocks: IMocks) => void;
+}
+
+export function MembraneMocks(
+  includeDamp: boolean,
+  logger: ILogger,
+  mockOptions: IMockOptions
+): IMocks {
   includeDamp = Boolean(includeDamp);
   if (!mockOptions) {
     mockOptions = {};
   }
 
-  var Mocks = {};
+  const Mocks: DeepPartial<IMocks> = {};
 
   //////////////////////////////////////////
   // Originally from mocks/wetDocument.js //
@@ -34,8 +67,8 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
   ///////////////////////////////////////
 
   // First, set up the membrane, and register the "wet" form of "the document".
-  var docMap, wetHandler;
-  var dryWetMB = new Membrane({
+  let wetHandler: ObjectGraphHandler;
+  const dryWetMB = new Membrane({
     showGraphName: true,
     logger: typeof logger == "object" ? logger : null
   });
@@ -50,7 +83,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
     // Mocks.wet is established in wetDocument.js
 
     if (typeof mockOptions.wetHandlerCreated == "function") {
-      mockOptions.wetHandlerCreated(wetHandler, Mocks);
+      mockOptions.wetHandlerCreated(wetHandler, Mocks as IMocks);
     }
   }
 
@@ -67,7 +100,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
     Mocks.dry = {};
 
     if (typeof mockOptions.dryHandlerCreated == "function") {
-      mockOptions.dryHandlerCreated(dryHandler, Mocks);
+      mockOptions.dryHandlerCreated(dryHandler, Mocks as IMocks);
     }
 
     let found, doc;
@@ -172,5 +205,5 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
     dampObjectGraph(Mocks);
   }
 
-  return Mocks;
+  return Mocks as IMocks;
 }
