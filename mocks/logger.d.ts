@@ -36,5 +36,5 @@ export declare module loggerLib {
   interface BasicAppender extends IBasicAppender {}
   class BasicAppender {}
   function getLogger(name: string): IBasicLogger;
-  const Appender: BasicAppender;
+  const Appender: typeof BasicAppender;
 }
