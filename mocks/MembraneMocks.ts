@@ -1,8 +1,8 @@
-import { DAMP } from "./dampSymbol";
 import assert from "./assert";
 import { getNodeWet, type INodeWet } from "./wetDocument/getNodeWet";
 import { getElementWet, type IElementWet } from "./wetDocument/getElementWet";
 import { getWetDocument, type IWetDocument } from "./wetDocument/getWetDocument";
+import { dampObjectGraph } from "./dampObjectGraph";
 
 import { Membrane, type ObjectGraphHandler, type ILogger } from "../src";
 
@@ -92,7 +92,7 @@ export function MembraneMocks(
   //////////////////////////////////////////
 
   // The "dry" part of the membrane's wet document.
-  var ElementDry, NodeDry, dryDocument;
+  let ElementDry, NodeDry, dryDocument;
   {
     // Establish proxy handler for "dry" mode.
     let dryHandler = dryWetMB.getHandlerByName("dry", { mustCreate: true });
@@ -154,31 +154,6 @@ export function MembraneMocks(
     Mocks.dry.Node = NodeDry;
   }
 
-  //////////////////////////////////////////////
-  // Originally from mocks/dampObjectGraph.js //
-  //////////////////////////////////////////////
-
-  function dampObjectGraph(parts) {
-    parts.handlers[DAMP] = parts.membrane.getHandlerByName(DAMP, {
-      mustCreate: true
-    });
-
-    if (typeof mockOptions.dampHandlerCreated == "function") {
-      mockOptions.dampHandlerCreated(parts.handlers[DAMP], parts);
-    }
-
-    let keys = Object.getOwnPropertyNames(parts.wet);
-    parts[DAMP] = {};
-    for (let i = 0; i < keys.length; i++) {
-      let key = keys[i];
-      parts[DAMP][key] = parts.membrane.convertArgumentToProxy(
-        parts.handlers.wet,
-        parts.handlers[DAMP],
-        parts.wet[key]
-      );
-    }
-  }
-
   /////////////////////////////////////
   // Originally from mocks/return.js //
   /////////////////////////////////////
@@ -202,7 +177,7 @@ export function MembraneMocks(
   */
 
   if (includeDamp) {
-    dampObjectGraph(Mocks);
+    dampObjectGraph(Mocks as IMocks, mockOptions);
   }
 
   return Mocks as IMocks;
