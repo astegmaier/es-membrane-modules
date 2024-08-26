@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { DAMP } from "./dampSymbol";
 import assert from "./assert";
 import { NOT_IMPLEMENTED_DESC, DataDescriptor, AccessorDescriptor } from "../src/sharedUtilities";
@@ -14,15 +15,12 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
   //////////////////////////////////////////
   // Originally from mocks/wetDocument.js //
   //////////////////////////////////////////
-  
+
   function EventTargetWet() {
     this.__events__ = [];
   }
-  EventTargetWet.prototype.addEventListener = function (
-    type,
-    listener,
-    isBubbling
-  ) {
+
+  EventTargetWet.prototype.addEventListener = function (type, listener, isBubbling) {
     if (typeof listener == "function") {
       listener = { handleEvent: listener };
     }
@@ -35,7 +33,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
     this.__events__.push({
       type: type,
       listener: listener,
-      isBubbling: Boolean(isBubbling),
+      isBubbling: Boolean(isBubbling)
     });
   };
 
@@ -49,7 +47,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
 
     let event = {
       type: eventType,
-      currentPhase: 1,
+      currentPhase: 1
     };
 
     for (let i = 0; i < chain.length; i++) chain[i].handleEventAtTarget(event);
@@ -79,7 +77,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
   };
 
   const wetMarker = {
-    marker: "true",
+    marker: "true"
   };
 
   function NodeWet(ownerDoc) {
@@ -127,7 +125,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
       return null;
     }),
 
-    shouldNotBeAmongKeys: new DataDescriptor(false),
+    shouldNotBeAmongKeys: new DataDescriptor(false)
   });
 
   function ElementWet(ownerDoc, name) {
@@ -185,7 +183,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
 
     shouldNotBeAmongKeys: false,
 
-    membraneGraphName: "wet", // faking it for now
+    membraneGraphName: "wet" // faking it for now
   };
 
   Object.defineProperty(wetDocument, "createElement", {
@@ -197,7 +195,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
     },
     writable: false,
     enumerable: true,
-    configurable: true,
+    configurable: true
   });
 
   Object.defineProperty(wetDocument, "insertBefore", {
@@ -225,7 +223,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
     },
     writable: false,
     enumerable: true,
-    configurable: true,
+    configurable: true
   });
   /* We can get away with a var declaration here because everything is inside a
          closure.
@@ -237,7 +235,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
     writable: false,
     enumerable: true,
     // "non-configurable objects cannot gain or lose properties"
-    configurable: true,
+    configurable: true
   });
 
   assert(
@@ -248,7 +246,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
   Mocks.wet = {
     doc: wetDocument,
     Node: NodeWet,
-    Element: ElementWet,
+    Element: ElementWet
   };
 
   ///////////////////////////////////////
@@ -259,7 +257,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
   var docMap, wetHandler;
   var dryWetMB = new Membrane({
     showGraphName: true,
-    logger: typeof logger == "object" ? logger : null,
+    logger: typeof logger == "object" ? logger : null
   });
 
   Mocks.membrane = dryWetMB;
@@ -295,22 +293,13 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
     dryWetMB.convertArgumentToProxy(wetHandler, dryHandler, wetDocument);
 
     [found, doc] = dryWetMB.getMembraneValue("dry", wetDocument);
-    assert(
-      found,
-      "Must find dryDocument from membrane wrapping of wetDocument"
-    );
+    assert(found, "Must find dryDocument from membrane wrapping of wetDocument");
     assert(doc === wetDocument, "Expected to get back the wet document");
 
     [found, doc] = dryWetMB.getMembraneProxy("dry", wetDocument);
-    assert(
-      found,
-      "Must find dryDocument from membrane wrapping of wetDocument"
-    );
+    assert(found, "Must find dryDocument from membrane wrapping of wetDocument");
     assert(doc, "Expected to get back a proxy");
-    assert(
-      doc !== wetDocument,
-      "Expected to get back the proxy for the wet document"
-    );
+    assert(doc !== wetDocument, "Expected to get back the proxy for the wet document");
     dryDocument = doc;
 
     dryDocument.addEventListener(
@@ -354,7 +343,7 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
 
   function dampObjectGraph(parts) {
     parts.handlers[DAMP] = parts.membrane.getHandlerByName(DAMP, {
-      mustCreate: true,
+      mustCreate: true
     });
 
     if (typeof mockOptions.dampHandlerCreated == "function")

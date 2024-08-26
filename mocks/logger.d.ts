@@ -7,7 +7,8 @@ export interface IAppender {
   setThreshold(level: LogLevel): void;
 }
 
-export interface IBasicAppenderPrototype extends WithThisValueForMethods<IAppender, IBasicAppender> {}
+export interface IBasicAppenderPrototype
+  extends WithThisValueForMethods<IAppender, IBasicAppender> {}
 
 export interface IBasicAppender extends IBasicAppenderPrototype {
   events: Array<{ level: any; message: any }>;
@@ -15,7 +16,13 @@ export interface IBasicAppender extends IBasicAppenderPrototype {
 }
 
 export interface IBasicLoggerPrototype {
-  log(this: IBasicLogger, level: LogLevel, message: string, codeLocation?: string, error?: unknown): void;
+  log(
+    this: IBasicLogger,
+    level: LogLevel,
+    message: string,
+    codeLocation?: string,
+    error?: unknown
+  ): void;
   levels: LogLevel[];
   addAppender(appender: IAppender): void;
   removeAppender(appender: IAppender): void;

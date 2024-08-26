@@ -1,3 +1,5 @@
 /*
 !/src/
 !/src/**
+!/mocks/
+!/mocks/**
