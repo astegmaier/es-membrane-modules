@@ -1,8 +1,8 @@
-import { IEventTargetWet } from "./EventTargetWet";
-import { IElementWet } from "./getElementWet";
-import { INodeWet } from "./getNodeWet";
+import { IEventTarget } from "./EventTargetWet";
+import { IElement } from "./getElementWet";
+import { INode } from "./getNodeWet";
 
-interface IWetDocument extends IEventTargetWet {
+interface IDocument extends IEventTarget {
   ownerDocument: any;
   childNodes: any[];
   nodeType: number;
@@ -12,9 +12,9 @@ interface IWetDocument extends IEventTargetWet {
   baseUrl: string;
   shouldNotBeAmongKeys: boolean;
   membraneGraphName: string;
-  createElement(name: string): IElementWet;
-  insertBefore(newChild: INodeWet, refChild: INodeWet): INodeWet;
-  rootElement: IElementWet;
+  createElement(name: string): IElement;
+  insertBefore(newChild: INode, refChild: INode): INode;
+  rootElement: IElement;
 }
 
-export function getWetDocument(NodeWet: INodeWet, ElementWet: IElementWet): IWetDocument;
+export function getWetDocument(NodeWet: INode, ElementWet: IElement): IDocument;

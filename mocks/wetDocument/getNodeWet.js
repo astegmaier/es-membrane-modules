@@ -26,7 +26,7 @@ export function getNodeWet() {
     nodeType: NOT_IMPLEMENTED_DESC,
     parentNode: NOT_IMPLEMENTED_DESC,
     insertBefore: new DataDescriptor(function (
-      /** @type {import('./getNodeWet').INodeWet} */ newChild,
+      /** @type {import('./getNodeWet').INode} */ newChild,
       refChild
     ) {
       if (!(newChild instanceof NodeWet)) {

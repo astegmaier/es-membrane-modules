@@ -1,7 +1,7 @@
 import assert from "./assert";
-import { getNodeWet, type INodeWet } from "./wetDocument/getNodeWet";
-import { getElementWet, type IElementWet } from "./wetDocument/getElementWet";
-import { getWetDocument, type IWetDocument } from "./wetDocument/getWetDocument";
+import { getNodeWet, type INode } from "./wetDocument/getNodeWet";
+import { getElementWet, type IElement } from "./wetDocument/getElementWet";
+import { getWetDocument, type IDocument } from "./wetDocument/getWetDocument";
 import { dampObjectGraph } from "./dampObjectGraph";
 
 import { Membrane, type ObjectGraphHandler, type ILogger } from "../src";
@@ -14,14 +14,14 @@ type DeepPartial<T> = T extends object
 
 export interface IMocks {
   wet: {
-    doc: IWetDocument;
-    Node: INodeWet;
-    Element: IElementWet;
+    doc: IDocument;
+    Node: INode;
+    Element: IElement;
   };
   dry: {
-    doc: IWetDocument;
-    Node: INodeWet;
-    Element: INodeWet;
+    doc: IDocument;
+    Node: INode;
+    Element: IElement;
   };
   handlers: {
     dry: ObjectGraphHandler;

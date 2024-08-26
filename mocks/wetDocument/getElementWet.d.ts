@@ -1,9 +1,9 @@
-import { INodeWet } from "./getNodeWet";
+import { INode } from "./getNodeWet";
 
-interface IElementWet extends INodeWet {
+export interface IElement extends INode {
   new (ownerDoc: any, name: any);
   nodeType: 1;
   nodeName: string;
 }
 
-export function getElementWet(NodeWet: INodeWet): IElementWet;
+export function getElementWet(NodeWet: INode): IElement;

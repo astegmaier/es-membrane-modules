@@ -8,19 +8,19 @@ interface IEvent {
   isBubbling: boolean;
 }
 
-export interface IEventTargetWetOwn {
+interface IEventTargetOwn {
   __events__: IEvent[];
   parentNode: any;
 }
 
-export interface IEventTargetWetPrototype {
+interface IEventTargetPrototype {
   addEventListener(type: any, listener: (...args: unknown[]) => void, isBubbling: boolean): void;
   dispatchEvent(eventType: any): void;
   handleEventAtTarget(eventType: any): void;
 }
 
-export interface IEventTargetWet extends IEventTargetWetOwn, IEventTargetWetPrototype {}
+export interface IEventTarget extends IEventTargetOwn, IEventTargetPrototype {}
 
-export interface EventTargetWet extends IEventTargetWet {}
+export interface EventTargetWet extends IEventTarget {}
 
 export class EventTargetWet {}

@@ -21,7 +21,7 @@ EventTargetWet.prototype.addEventListener = function (type, listener, isBubbling
 };
 
 EventTargetWet.prototype.dispatchEvent =
-  /** @this {import('./EventTargetWet').EventTargetWet} */ function (eventType) {
+  /** @this {import('./EventTargetWet').IEventTarget} */ function (eventType) {
     let current = this.parentNode;
     let chain = [];
     while (current) {

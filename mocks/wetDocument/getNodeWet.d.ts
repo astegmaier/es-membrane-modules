@@ -1,19 +1,19 @@
-export interface INodeWetOwn {
+interface INodeOwn {
   childNodes: any[];
   ownerDocument: any;
   parentNode: any;
   wetMarker: { marker: string };
 }
 
-export interface INodeWetPrototype {
+interface INodePrototype {
   nodeType: any;
-  insertBefore(newChild: INodeWet, refChild: INodeWet): any;
+  insertBefore(newChild: INode, refChild: INode): any;
   firstChild: any;
   shouldNotBeAmongKeys: boolean;
 }
 
-export interface INodeWet extends INodeWetOwn, INodeWetPrototype {
-  new (ownerDoc: any): INodeWet;
+export interface INode extends INodeOwn, INodePrototype {
+  new (ownerDoc: any): INode;
 }
 
-export function getNodeWet(): INodeWet;
+export function getNodeWet(): INode;
