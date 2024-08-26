@@ -26,7 +26,9 @@ export var loggerLib = (function () {
           }
         }
       });
-      if (exnFound) throw exn;
+      if (exnFound) {
+        throw exn;
+      }
     },
 
     addAppender: function (appender) {
@@ -35,7 +37,9 @@ export var loggerLib = (function () {
 
     removeAppender: function (appender) {
       let index = this.appenders.indexOf(appender);
-      if (index != -1) this.appenders.splice(index, 1);
+      if (index != -1) {
+        this.appenders.splice(index, 1);
+      }
     },
 
     levels: ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
@@ -59,11 +63,14 @@ export var loggerLib = (function () {
       if (
         BasicLogger.prototype.levels.indexOf(level) <=
         BasicLogger.prototype.levels.indexOf(this.threshold)
-      )
+      ) {
         this.events.push({ level, message });
+      }
     },
     setThreshold: function (level) {
-      if (BasicLogger.prototype.levels.includes(level)) this.threshold = level;
+      if (BasicLogger.prototype.levels.includes(level)) {
+        this.threshold = level;
+      }
     }
   };
 
@@ -71,7 +78,9 @@ export var loggerLib = (function () {
 
   var loggerLib = {
     getLogger: function (name) {
-      if (!loggerMap.has(name)) loggerMap.set(name, new BasicLogger());
+      if (!loggerMap.has(name)) {
+        loggerMap.set(name, new BasicLogger());
+      }
       return loggerMap.get(name);
     },
 

@@ -8,7 +8,9 @@ import { Membrane } from "../src";
 export function MembraneMocks(includeDamp, logger, mockOptions) {
   "use strict";
   includeDamp = Boolean(includeDamp);
-  if (!mockOptions) mockOptions = {};
+  if (!mockOptions) {
+    mockOptions = {};
+  }
 
   var Mocks = {};
 
@@ -28,8 +30,9 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
       typeof listener !== "object" ||
       listener === null ||
       typeof listener.handleEvent !== "function"
-    )
+    ) {
       throw new Error("Invalid event listener!");
+    }
     this.__events__.push({
       type: type,
       listener: listener,
@@ -50,14 +53,18 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
       currentPhase: 1
     };
 
-    for (let i = 0; i < chain.length; i++) chain[i].handleEventAtTarget(event);
+    for (let i = 0; i < chain.length; i++) {
+      chain[i].handleEventAtTarget(event);
+    }
 
     event.currentPhase = 2;
     this.handleEventAtTarget(event);
 
     chain = chain.reverse();
     event.currentPhase = 3;
-    for (let i = 0; i < chain.length; i++) chain[i].handleEventAtTarget(event);
+    for (let i = 0; i < chain.length; i++) {
+      chain[i].handleEventAtTarget(event);
+    }
   };
 
   EventTargetWet.prototype.handleEventAtTarget = function (event) {
@@ -65,9 +72,13 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
     let length = handlers.length;
     for (let i = 0; i < length; i++) {
       let h = handlers[i];
-      if (h.type !== event.type) continue;
+      if (h.type !== event.type) {
+        continue;
+      }
       let hCode = h.isBubbling ? 4 - event.currentPhase : event.currentPhase;
-      if (hCode === 3) continue;
+      if (hCode === 3) {
+        continue;
+      }
       try {
         h.listener.handleEvent(event);
       } catch (e) {
@@ -171,7 +182,9 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
       return docBaseURL;
     },
     set baseURL(val) {
-      if (typeof val != "string") throw new Error("baseURL must be a string");
+      if (typeof val != "string") {
+        throw new Error("baseURL must be a string");
+      }
       docBaseURL = val;
     },
 
@@ -269,8 +282,9 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
     Mocks.handlers.wet = wetHandler;
     // Mocks.wet is established in wetDocument.js
 
-    if (typeof mockOptions.wetHandlerCreated == "function")
+    if (typeof mockOptions.wetHandlerCreated == "function") {
       mockOptions.wetHandlerCreated(wetHandler, Mocks);
+    }
   }
 
   //////////////////////////////////////////
@@ -285,8 +299,9 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
     Mocks.handlers.dry = dryHandler;
     Mocks.dry = {};
 
-    if (typeof mockOptions.dryHandlerCreated == "function")
+    if (typeof mockOptions.dryHandlerCreated == "function") {
       mockOptions.dryHandlerCreated(dryHandler, Mocks);
+    }
 
     let found, doc;
 
@@ -305,11 +320,13 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
     dryDocument.addEventListener(
       "unload",
       function () {
-        if (typeof logger == "object" && logger !== null)
+        if (typeof logger == "object" && logger !== null) {
           logger.debug("Revoking all proxies in dry object graph");
+        }
         dryHandler.revokeEverything();
-        if (typeof logger == "object" && logger !== null)
+        if (typeof logger == "object" && logger !== null) {
           logger.debug("Revoked all proxies in dry object graph");
+        }
       },
       true
     );
@@ -346,8 +363,9 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
       mustCreate: true
     });
 
-    if (typeof mockOptions.dampHandlerCreated == "function")
+    if (typeof mockOptions.dampHandlerCreated == "function") {
       mockOptions.dampHandlerCreated(parts.handlers[DAMP], parts);
+    }
 
     let keys = Object.getOwnPropertyNames(parts.wet);
     parts[DAMP] = {};
@@ -383,7 +401,9 @@ export function MembraneMocks(includeDamp, logger, mockOptions) {
   };
   */
 
-  if (includeDamp) dampObjectGraph(Mocks);
+  if (includeDamp) {
+    dampObjectGraph(Mocks);
+  }
 
   return Mocks;
 }
