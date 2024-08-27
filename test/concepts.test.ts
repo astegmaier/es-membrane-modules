@@ -2,11 +2,6 @@ import { MembraneMocks, loggerLib, DAMP } from "../mocks";
 import type { IMockElement, IDocument, IMocks } from "../mocks";
 import type { Membrane } from "../src";
 
-interface ITraceMap extends Map<object, string> {
-  addMember(value: object | null, name: string): void;
-  getPrototypeChain(value: object): string[];
-}
-
 describe("basic concepts: ", function() {
   let wetDocument: IDocument, dryDocument: IDocument, membrane: Membrane;
   
@@ -495,6 +490,11 @@ describe("basic concepts: ", function() {
     };
     let eProto = ElementDry.prototype;
 
+    interface ITraceMap extends Map<object, string> {
+      addMember(value: object | null, name: string): void;
+      getPrototypeChain(value: object): string[];
+    }
+    
     const traceMap = new Map(/* value: name */) as ITraceMap;
     {
       traceMap.addMember = function(value: object, name: string) {
