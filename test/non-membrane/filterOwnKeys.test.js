@@ -39,11 +39,15 @@ describe("Proxy with filtering on .ownKeys:  ", function () {
 
       desc = Reflect.getOwnPropertyDescriptor(outer, "blacklisted");
       expect(desc).not.toBe(undefined);
-      if (desc) expect(desc.value).toBe(2);
+      if (desc) {
+        expect(desc.value).toBe(2);
+      }
 
       desc = Reflect.getOwnPropertyDescriptor(inner, "blacklisted");
       expect(desc).not.toBe(undefined);
-      if (desc) expect(desc.value).toBe(2);
+      if (desc) {
+        expect(desc.value).toBe(2);
+      }
     }
 
     it("a data descriptor the first time returns true", function () {
@@ -87,11 +91,15 @@ describe("Proxy with filtering on .ownKeys:  ", function () {
 
       let desc = Reflect.getOwnPropertyDescriptor(outer, "blacklisted");
       expect(desc).not.toBe(undefined);
-      if (desc) expect(desc.value).toBe(2);
+      if (desc) {
+        expect(desc.value).toBe(2);
+      }
 
       desc = Reflect.getOwnPropertyDescriptor(inner, "blacklisted");
       expect(desc).not.toBe(undefined);
-      if (desc) expect(desc.value).toBe(2);
+      if (desc) {
+        expect(desc.value).toBe(2);
+      }
     });
   });
 
@@ -132,11 +140,15 @@ describe("Proxy with filtering on .ownKeys:  ", function () {
 
     let desc = Reflect.getOwnPropertyDescriptor(outer, "blacklisted");
     expect(desc).not.toBe(undefined);
-    if (desc) expect(desc.value).toBe(2);
+    if (desc) {
+      expect(desc.value).toBe(2);
+    }
 
     desc = Reflect.getOwnPropertyDescriptor(inner, "blacklisted");
     expect(desc).not.toBe(undefined);
-    if (desc) expect(desc.value).toBe(2);
+    if (desc) {
+      expect(desc.value).toBe(2);
+    }
   });
 
   it("Deleting a non-existent blacklisted property returns true", function () {

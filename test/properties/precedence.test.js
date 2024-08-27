@@ -53,12 +53,16 @@ describe("storeUnknownAsLocal overrides filterOwnKeys for .defineProperty()", fu
     {
       let desc = Reflect.getOwnPropertyDescriptor(dryDocument, propName);
       expect(desc).not.toBe(undefined);
-      if (desc) expect(desc.value).toBe(1);
+      if (desc) {
+        expect(desc.value).toBe(1);
+      }
     }
 
     {
       let desc = Reflect.getOwnPropertyDescriptor(wetDocument, propName);
-      if (desc) desc = desc.value;
+      if (desc) {
+        desc = desc.value;
+      }
       expect(desc).toBe(wetValue);
     }
   }
@@ -165,7 +169,9 @@ describe("requireLocalDelete overrides filterOwnKeys for .deleteProperty()", fun
 
     {
       let desc = Reflect.getOwnPropertyDescriptor(wetDocument, propName);
-      if (desc) desc = desc.value;
+      if (desc) {
+        desc = desc.value;
+      }
       expect(desc).toBe(wetValue);
     }
   }

@@ -6,8 +6,12 @@ it("Array.prototype.splice generates reasonable results with a proxy", function 
   Reflect.ownKeys(Reflect).forEach(function (trap) {
     handler[trap] = function () {
       let msg = trap + " called";
-      if (typeof arguments[1] == "string") msg += ` for property "${arguments[1]}"`;
-      if (trap === "set") msg += ` and value "${arguments[2]}"`;
+      if (typeof arguments[1] == "string") {
+        msg += ` for property "${arguments[1]}"`;
+      }
+      if (trap === "set") {
+        msg += ` and value "${arguments[2]}"`;
+      }
       events.push("enter: " + msg);
       const rv = Reflect[trap].apply(Reflect, arguments);
       events.push("exit:  " + msg + ` and return value ${JSON.stringify(rv)}`);
@@ -118,8 +122,11 @@ it("Setting a prototype on a proxy to an array doesn't affect directly modifying
   {
     const desc = Reflect.getOwnPropertyDescriptor(proto, "splice");
     expect(desc).not.toBe(undefined);
-    if (desc) spliceValue = desc.value;
-    else spliceValue = undefined;
+    if (desc) {
+      spliceValue = desc.value;
+    } else {
+      spliceValue = undefined;
+    }
   }
   expect(Reflect.get(x, "splice")).toBe(spliceValue);
 

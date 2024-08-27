@@ -45,9 +45,15 @@ it("Set instances by default in a membrane work like they do without a membrane"
         expect(this).toBe(thisArg);
         expect(s).toBe(s);
 
-        if (v == value) foundValue++;
-        if (k == value) foundKey++;
-        if (v == value && k == value) foundAll++;
+        if (v == value) {
+          foundValue++;
+        }
+        if (k == value) {
+          foundKey++;
+        }
+        if (v == value && k == value) {
+          foundAll++;
+        }
       }, thisArg);
       expect(foundValue).toBe(shouldHave ? 1 : 0);
       expect(foundKey).toBe(shouldHave ? 1 : 0);

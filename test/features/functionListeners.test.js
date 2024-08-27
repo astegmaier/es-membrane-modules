@@ -51,7 +51,9 @@ describe("Function listeners", function () {
   TestMessage.prototype.expectEquals = function (other /*, index*/) {
     let pass = other instanceof TestMessage;
     expect(pass).toBe(true);
-    if (!pass) return;
+    if (!pass) {
+      return;
+    }
 
     Reflect.ownKeys(this).forEach((key) => {
       let t = this[key],
@@ -360,7 +362,9 @@ describe("Function listeners", function () {
     parts.handlers.wet.addFunctionListener(TestListeners.wet0);
 
     parts.handlers.dry.addFunctionListener(function (reason) {
-      if (reason !== "enter") return;
+      if (reason !== "enter") {
+        return;
+      }
       throw staticException;
     });
 

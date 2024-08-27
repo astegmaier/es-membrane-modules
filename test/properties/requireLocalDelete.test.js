@@ -36,17 +36,25 @@ describe("Deleting properties locally", function () {
     {
       let desc = Reflect.getOwnPropertyDescriptor(dryRoot, "extra");
       let expectation = expect(desc);
-      if (extraDryAsBool) expectation = expectation.not;
+      if (extraDryAsBool) {
+        expectation = expectation.not;
+      }
       expectation.toBe(undefined);
-      if (extraDryAsBool && desc) expect(desc.value).toBe(expectedDryExtra);
+      if (extraDryAsBool && desc) {
+        expect(desc.value).toBe(expectedDryExtra);
+      }
     }
 
     {
       let desc = Reflect.getOwnPropertyDescriptor(wetRoot, "extra");
       let expectation = expect(desc);
-      if (extraWetAsBool) expectation = expectation.not;
+      if (extraWetAsBool) {
+        expectation = expectation.not;
+      }
       expectation.toBe(undefined);
-      if (extraWetAsBool && desc) expect(desc.value).toBe(expectedWetExtra);
+      if (extraWetAsBool && desc) {
+        expect(desc.value).toBe(expectedWetExtra);
+      }
     }
 
     {

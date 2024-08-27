@@ -6,7 +6,9 @@ import { MembraneMocks } from "../../mocks";
 (function () {
   {
     let parts = MembraneMocks(false);
-    if (typeof parts.handlers.dry.defineLazyGetter === "undefined") return;
+    if (typeof parts.handlers.dry.defineLazyGetter === "undefined") {
+      return;
+    }
     parts = null;
   }
   describe("Internal API:  Defining a lazy getter", function () {

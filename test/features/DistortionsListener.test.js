@@ -18,7 +18,9 @@ describe("DistortionsListener", function () {
       updateKeys: function () {
         let keys = Reflect.ownKeys(this.wet);
         keys.forEach(function (k) {
-          if (k in this.dry) return;
+          if (k in this.dry) {
+            return;
+          }
           this.dry[k] = this.membrane.convertArgumentToProxy(
             this.handlers.wet,
             this.handlers.dry,

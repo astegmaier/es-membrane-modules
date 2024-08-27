@@ -21,7 +21,9 @@ describe("A lazy getter can define a property before it is needed", function () 
         callCount++;
         expect(Reflect.deleteProperty(target, propName)).toBe(true);
         expect(Reflect.defineProperty(target, propName, sourceDesc)).toBe(true);
-        if (sourceDesc !== undefined && "get" in sourceDesc) return sourceDesc.get.apply(target);
+        if (sourceDesc !== undefined && "get" in sourceDesc) {
+          return sourceDesc.get.apply(target);
+        }
         return undefined;
       },
 
@@ -163,8 +165,12 @@ describe("A lazy getter can define a property before it is needed", function () 
 
       const lazyDesc = {
         get: function () {
-          if (lockState === "finalized") return lockedValue;
-          if (lockState === "transient") return masterMap.get(shadowTarget).proxy;
+          if (lockState === "finalized") {
+            return lockedValue;
+          }
+          if (lockState === "transient") {
+            return masterMap.get(shadowTarget).proxy;
+          }
 
           /* When the shadow target is sealed, desc.configurable is not
                  updated.  But the shadow target's properties all get the
@@ -172,7 +178,9 @@ describe("A lazy getter can define a property before it is needed", function () 
                  property will fail...
                */
           let current = Reflect.getOwnPropertyDescriptor(shadowTarget, propName);
-          if (!current.configurable) throw new Error("lazy getter descriptor is not configurable");
+          if (!current.configurable) {
+            throw new Error("lazy getter descriptor is not configurable");
+          }
 
           let sourceDesc = Reflect.getOwnPropertyDescriptor(realTarget, propName);
 
@@ -186,9 +194,11 @@ describe("A lazy getter can define a property before it is needed", function () 
               sourceDesc = lazyDesc;
               delete lazyDesc.set;
               lockState = "transient";
-            } else if (masterMap.has(sourceDesc.value))
+            } else if (masterMap.has(sourceDesc.value)) {
               sourceDesc.value = masterMap.get(sourceDesc.value).proxy;
-            else sourceDesc.value = buildSealedProxy(sourceDesc.value);
+            } else {
+              sourceDesc.value = buildSealedProxy(sourceDesc.value);
+            }
           }
 
           setLockedValue = undefined;
@@ -205,12 +215,18 @@ describe("A lazy getter can define a property before it is needed", function () 
                  property will fail...
                */
           let current = Reflect.getOwnPropertyDescriptor(shadowTarget, propName);
-          if (!current.configurable) throw new Error("lazy getter descriptor is not configurable");
+          if (!current.configurable) {
+            throw new Error("lazy getter descriptor is not configurable");
+          }
 
           let sourceDesc = Reflect.getOwnPropertyDescriptor(realTarget, propName);
-          if (typeof newValue !== "object") sourceDesc.value = newValue;
-          else if (masterMap.has(newValue)) sourceDesc.value = masterMap.get(value).proxy;
-          else sourceDesc.value = buildSealedProxy(newValue);
+          if (typeof newValue !== "object") {
+            sourceDesc.value = newValue;
+          } else if (masterMap.has(newValue)) {
+            sourceDesc.value = masterMap.get(value).proxy;
+          } else {
+            sourceDesc.value = buildSealedProxy(newValue);
+          }
           Reflect.deleteProperty(shadowTarget, propName);
           Reflect.defineProperty(shadowTarget, propName, sourceDesc);
           setLockedValue = undefined;

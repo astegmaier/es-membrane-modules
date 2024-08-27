@@ -71,17 +71,23 @@ describe("An object graph handler's proxy listeners", function () {
 
     var meta0, meta1, meta2;
     function listener1(meta) {
-      if (mustSkip(meta.target)) return;
+      if (mustSkip(meta.target)) {
+        return;
+      }
       meta1 = meta;
       logger.info("listener1");
     }
     function listener2(meta) {
-      if (mustSkip(meta.target)) return;
+      if (mustSkip(meta.target)) {
+        return;
+      }
       meta2 = meta;
       logger.info("listener2");
     }
     function listener0(meta) {
-      if (mustSkip(meta.target)) return;
+      if (mustSkip(meta.target)) {
+        return;
+      }
       meta0 = meta;
       logger.info("listener0");
     }
@@ -213,7 +219,9 @@ describe("An object graph handler's proxy listeners", function () {
       expect(cbVal).not.toBe(undefined);
       expect(cbVal).not.toBe(null);
       expect(typeof cbVal).toBe("object");
-      if (cbVal) expect(cbVal.argIndex).toBe(0);
+      if (cbVal) {
+        expect(cbVal.argIndex).toBe(0);
+      }
 
       let messages = appender.getMessages();
       expect(messages.length).toBe(16);
@@ -253,7 +261,9 @@ describe("An object graph handler's proxy listeners", function () {
       expect(K).not.toBe(undefined);
       expect(K).not.toBe(null);
       expect(typeof K).toBe("object");
-      if (K) expect(K.isRV).toBe(true);
+      if (K) {
+        expect(K.isRV).toBe(true);
+      }
     });
 
     it("via counter-wrapping a primitive argument", function () {
@@ -335,7 +345,9 @@ describe("An object graph handler's proxy listeners", function () {
       };
 
       handler2.getOwnPropertyDescriptor = function (target, propName) {
-        if (propName == "extra") return extraDesc;
+        if (propName == "extra") {
+          return extraDesc;
+        }
         return this.nextHandler.getOwnPropertyDescriptor(target, propName);
       };
       dryHandler.addProxyListener(function (meta) {
@@ -369,7 +381,9 @@ describe("An object graph handler's proxy listeners", function () {
 
       var handler2 = {};
       handler2.getOwnPropertyDescriptor = function (target, propName) {
-        if (propName == "extra") return extraDesc;
+        if (propName == "extra") {
+          return extraDesc;
+        }
         return Reflect.getOwnPropertyDescriptor(target, propName);
       };
 
@@ -434,13 +448,19 @@ describe("An object graph handler's proxy listeners", function () {
 
         let expectation;
         expectation = expect(typeof desc.value);
-        if (mode !== "prepared") expectation = expectation.not;
+        if (mode !== "prepared") {
+          expectation = expectation.not;
+        }
         expectation.toBe("undefined");
 
         let expectedValue;
-        if (mode === "frozen") expectedValue = false;
-        else if (mode === "sealed") expectedValue = true;
-        else expectedValue = undefined;
+        if (mode === "frozen") {
+          expectedValue = false;
+        } else if (mode === "sealed") {
+          expectedValue = true;
+        } else {
+          expectedValue = undefined;
+        }
         expect(desc.writable).toBe(expectedValue);
 
         expect(desc.enumerable).toBe(true);
@@ -455,8 +475,11 @@ describe("An object graph handler's proxy listeners", function () {
         expect(typeof desc.value).toBe(typeof check.value);
 
         let expectedValue;
-        if (mode === "frozen") expectedValue = false;
-        else expectedValue = true;
+        if (mode === "frozen") {
+          expectedValue = false;
+        } else {
+          expectedValue = true;
+        }
         expect(desc.writable).toBe(expectedValue);
 
         expect(desc.enumerable).toBe(true);
@@ -870,7 +893,9 @@ describe("An object graph handler's proxy listeners", function () {
 
     it("by invoking meta.stopIteration();", function () {
       function listener1(meta) {
-        if (mustSkip(meta.target)) return;
+        if (mustSkip(meta.target)) {
+          return;
+        }
 
         meta1 = meta;
         logger.info("listener1: stopped = " + meta.stopped);
@@ -880,7 +905,9 @@ describe("An object graph handler's proxy listeners", function () {
       }
 
       function listener2(meta) {
-        if (mustSkip(meta.target)) return;
+        if (mustSkip(meta.target)) {
+          return;
+        }
 
         meta2 = meta;
         logger.info("listener2: stopped = " + meta.stopped);
@@ -916,7 +943,9 @@ describe("An object graph handler's proxy listeners", function () {
     it("by invoking meta.throwException(exn);", function () {
       const dummyExn = new Error();
       function listener1(meta) {
-        if (mustSkip(meta.target)) return;
+        if (mustSkip(meta.target)) {
+          return;
+        }
 
         meta1 = meta;
         logger.info("listener1: stopped = " + meta.stopped);
@@ -926,7 +955,9 @@ describe("An object graph handler's proxy listeners", function () {
       }
 
       function listener2(meta) {
-        if (mustSkip(meta.target)) return;
+        if (mustSkip(meta.target)) {
+          return;
+        }
 
         meta2 = meta;
         logger.info("listener2: stopped = " + meta.stopped);
@@ -961,14 +992,18 @@ describe("An object graph handler's proxy listeners", function () {
     it("but not by accidentally triggering an exception", function () {
       const dummyExn = new Error("dummy exception");
       function listener1(meta) {
-        if (mustSkip(meta.target)) return;
+        if (mustSkip(meta.target)) {
+          return;
+        }
         meta1 = meta;
         logger.info("listener1: stopped = " + meta.stopped);
         throw dummyExn; // this is supposed to be an accident
       }
 
       function listener2(meta) {
-        if (mustSkip(meta.target)) return;
+        if (mustSkip(meta.target)) {
+          return;
+        }
         meta2 = meta;
         logger.info("listener2: stopped = " + meta.stopped);
       }

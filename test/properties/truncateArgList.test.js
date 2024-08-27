@@ -13,9 +13,15 @@ describe("Truncation of argument lists", function () {
   // a and b are here solely to check for function arity.
   function checkArgCount(a, b) {
     argCount = arguments.length;
-    if (arguments.length > 0) expect(arguments[0]).toBe(arg0);
-    if (arguments.length > 1) expect(arguments[1]).toBe(arg1);
-    if (arguments.length > 2) expect(arguments[2]).toBe(arg2);
+    if (arguments.length > 0) {
+      expect(arguments[0]).toBe(arg0);
+    }
+    if (arguments.length > 1) {
+      expect(arguments[1]).toBe(arg1);
+    }
+    if (arguments.length > 2) {
+      expect(arguments[2]).toBe(arg2);
+    }
   }
 
   beforeEach(function () {

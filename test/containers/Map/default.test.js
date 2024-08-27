@@ -50,9 +50,15 @@ it("Map instances by default in a membrane work like they do without a membrane"
         expect(this).toBe(thisArg);
         expect(m).toBe(map);
 
-        if (v == value) foundValue++;
-        if (k == key) foundKey++;
-        if (v == value && k == key) foundAll++;
+        if (v == value) {
+          foundValue++;
+        }
+        if (k == key) {
+          foundKey++;
+        }
+        if (v == value && k == key) {
+          foundAll++;
+        }
       }, thisArg);
       expect(foundValue).toBe(shouldHave ? 1 : 0);
       expect(foundKey).toBe(shouldHave ? 1 : 0);

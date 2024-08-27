@@ -53,7 +53,9 @@ describe("Whitelisting object properties", function () {
   function defineManualMockOptions() {
     function buildFilter(names, prevFilter) {
       return function (elem) {
-        if (prevFilter && prevFilter(elem)) return true;
+        if (prevFilter && prevFilter(elem)) {
+          return true;
+        }
         return names.includes(elem);
       };
     }
@@ -88,7 +90,9 @@ describe("Whitelisting object properties", function () {
         {
           let oldHandleEvent = EventListenerProto.handleEventAtTarget;
           EventListenerProto.handleEventAtTarget = function (/*event*/) {
-            if (mockOptions.checkEvent) mockOptions.checkEvent.apply(this, arguments);
+            if (mockOptions.checkEvent) {
+              mockOptions.checkEvent.apply(this, arguments);
+            }
             return oldHandleEvent.apply(this, arguments);
           };
           parts.wet.doc.handleEventAtTarget = EventListenerProto.handleEventAtTarget;
@@ -103,15 +107,19 @@ describe("Whitelisting object properties", function () {
             meta.callable !== EventListenerProto.addEventListener ||
             meta.trapName !== "apply" ||
             meta.argIndex !== 1
-          )
+          ) {
             return;
+          }
 
-          if (typeof meta.target == "function") return;
+          if (typeof meta.target == "function") {
+            return;
+          }
 
-          if (typeof meta.target != "object" || meta.target === null)
+          if (typeof meta.target != "object" || meta.target === null) {
             meta.throwException(
               new Error(".addEventListener requires listener be an object or a function!")
             );
+          }
 
           try {
             this.whitelist(meta, nameFilters.listener, "dry");
@@ -188,7 +196,9 @@ describe("Whitelisting object properties", function () {
         {
           let oldHandleEvent = EventListenerProto.handleEventAtTarget;
           EventListenerProto.handleEventAtTarget = function (/*event*/) {
-            if (mockOptions.checkEvent) mockOptions.checkEvent.apply(this, arguments);
+            if (mockOptions.checkEvent) {
+              mockOptions.checkEvent.apply(this, arguments);
+            }
             return oldHandleEvent.apply(this, arguments);
           };
           parts.wet.doc.handleEventAtTarget = EventListenerProto.handleEventAtTarget;
@@ -209,10 +219,13 @@ describe("Whitelisting object properties", function () {
             meta.callable !== EventListenerProto.addEventListener ||
             meta.trapName !== "apply" ||
             meta.argIndex !== 1
-          )
+          ) {
             return false;
+          }
 
-          if (typeof meta.target == "function") return false;
+          if (typeof meta.target == "function") {
+            return false;
+          }
 
           if (typeof meta.target != "object" || meta.target === null) {
             meta.throwException(
@@ -226,7 +239,9 @@ describe("Whitelisting object properties", function () {
 
         distortions.addListener(evLFilter, "filter", evLConfig);
 
-        if (mainIsWet) this.whitelistMain(distortions);
+        if (mainIsWet) {
+          this.whitelistMain(distortions);
+        }
 
         distortions.bindToHandler(handler);
       },
@@ -240,7 +255,9 @@ describe("Whitelisting object properties", function () {
       },
 
       dryHandlerCreated: function (handler /*, Mocks */) {
-        if (mainIsWet) return;
+        if (mainIsWet) {
+          return;
+        }
         const distortions = dryWetMB.modifyRules.createDistortionsListener();
         this.whitelistMain(distortions);
         distortions.bindToHandler(handler);
@@ -326,13 +343,19 @@ describe("Whitelisting object properties", function () {
 
       var descWet = Reflect.getOwnPropertyDescriptor(wetDocument, "handleEventAtTarget");
       expect(descWet).not.toBe(undefined);
-      if (descWet) expect(descWet.value).toBe(oldDescWet.value);
+      if (descWet) {
+        expect(descWet.value).toBe(oldDescWet.value);
+      }
 
       var descDry = Reflect.getOwnPropertyDescriptor(dryDocument, "handleEventAtTarget");
       let expectation = expect(descDry);
-      if (isDryExtensible) expectation = expectation.not;
+      if (isDryExtensible) {
+        expectation = expectation.not;
+      }
       expectation.toBe(undefined);
-      if (descDry) expect(descDry.value).toBe(HEAT_NEW);
+      if (descDry) {
+        expect(descDry.value).toBe(HEAT_NEW);
+      }
     });
 
     it("and deleting a not-whitelisted property on the dry document has no effect on the wet document.", function () {
@@ -350,7 +373,9 @@ describe("Whitelisting object properties", function () {
 
       var descWet = Reflect.getOwnPropertyDescriptor(wetDocument, "handleEventAtTarget");
       expect(descWet).not.toBe(undefined);
-      if (descWet) expect(descWet.value).toBe(oldDescWet.value);
+      if (descWet) {
+        expect(descWet.value).toBe(oldDescWet.value);
+      }
 
       var descDry = Reflect.getOwnPropertyDescriptor(dryDocument, "handleEventAtTarget");
       expect(descDry).toBe(undefined);
@@ -371,9 +396,13 @@ describe("Whitelisting object properties", function () {
 
       let descDry = Reflect.getOwnPropertyDescriptor(dryDocument, "extra");
       let expectation = expect(descDry);
-      if (isDryExtensible) expectation = expectation.not;
+      if (isDryExtensible) {
+        expectation = expectation.not;
+      }
       expectation.toBe(undefined);
-      if (descDry) expect(descDry.value).toBe(2);
+      if (descDry) {
+        expect(descDry.value).toBe(2);
+      }
     });
 
     it("and deleting a new property on the dry document has no effect on the wet document.", function () {
@@ -405,9 +434,13 @@ describe("Whitelisting object properties", function () {
 
       let descWet = Reflect.getOwnPropertyDescriptor(wetDocument, "extra");
       let expectation = expect(descWet);
-      if (isWetExtensible) expectation = expectation.not;
+      if (isWetExtensible) {
+        expectation = expectation.not;
+      }
       expectation.toBe(undefined);
-      if (descWet) expect(descWet.value).toBe(2);
+      if (descWet) {
+        expect(descWet.value).toBe(2);
+      }
 
       let descDry = Reflect.getOwnPropertyDescriptor(dryDocument, "extra");
       expect(descDry).toBe(undefined);
@@ -445,7 +478,9 @@ describe("Whitelisting object properties", function () {
       {
         let kids = dryRoot.childNodes;
         let isArray = Array.isArray(kids);
-        if (isArray) expect(kids.length).toBe(0);
+        if (isArray) {
+          expect(kids.length).toBe(0);
+        }
       }
 
       /* This doesn't appear because it's not whitelisted under the
@@ -503,9 +538,13 @@ describe("Whitelisting object properties", function () {
         let desired = null;
         for (let i = 0; i < length; i++) {
           let h = handlers[i];
-          if (h.type !== event.type) continue;
+          if (h.type !== event.type) {
+            continue;
+          }
           let hCode = h.isBubbling ? 4 - event.currentPhase : event.currentPhase;
-          if (hCode === 3) continue;
+          if (hCode === 3) {
+            continue;
+          }
 
           expect(desired).toBe(null);
           desired = h.listener;
@@ -514,7 +553,9 @@ describe("Whitelisting object properties", function () {
         // desired should be a proxy to listener.
         expect(desired).not.toBe(listener);
         expect(desired).not.toBe(null);
-        if (desired === null) return;
+        if (desired === null) {
+          return;
+        }
 
         let keys = Reflect.ownKeys(desired);
 
@@ -657,7 +698,9 @@ describe("Whitelisting object properties", function () {
       let keys = Reflect.ownKeys(Membrane.prototype);
       keys.forEach(function (propName) {
         let value = Membrane.prototype[propName];
-        if (typeof value == "function") mbListener.mustProxyMethods.add(value);
+        if (typeof value == "function") {
+          mbListener.mustProxyMethods.add(value);
+        }
       });
     }
 

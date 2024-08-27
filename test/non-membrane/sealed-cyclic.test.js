@@ -106,7 +106,9 @@ describe("Sealed cyclic references: ", function () {
     if (typeof desc === "undefined") {
       return false;
     }
-    if (!("get" in desc) && !("set" in desc)) return false;
+    if (!("get" in desc) && !("set" in desc)) {
+      return false;
+    }
     return true;
   }
 
@@ -119,7 +121,9 @@ describe("Sealed cyclic references: ", function () {
   it("A very simple recursive implementation hits an infinite stack error", function () {
     function buildReferenceAndSeal(obj) {
       refCount++;
-      if (refCount > 10) throw "Infinite recursion";
+      if (refCount > 10) {
+        throw "Infinite recursion";
+      }
 
       if (!map.has(obj)) {
         const rv = {};
@@ -154,20 +158,26 @@ describe("Sealed cyclic references: ", function () {
         lockedValue;
       function setLockedValue(value) {
         // This lockState check should be treated as an assertion.
-        if (lockState !== "transient")
+        if (lockState !== "transient") {
           throw new Error("setLockedValue should be callable exactly once!");
+        }
         lockedValue = value;
         lockState = "finalized";
       }
 
       const lazyDesc = {
         get: function () {
-          if (lockState === "finalized") return lockedValue;
-          if (lockState === "transient") return map.get(source[propName]);
+          if (lockState === "finalized") {
+            return lockedValue;
+          }
+          if (lockState === "transient") {
+            return map.get(source[propName]);
+          }
 
           let current = Reflect.getOwnPropertyDescriptor(target, propName);
-          if (current && !current.configurable)
+          if (current && !current.configurable) {
             throw new Error("lazy getter descriptor is not configurable -- this is fatal");
+          }
 
           // sourceDesc is the descriptor we really want
           let sourceDesc = Reflect.getOwnPropertyDescriptor(source, propName);
@@ -200,16 +210,23 @@ describe("Sealed cyclic references: ", function () {
           Reflect.defineProperty(target, propName, sourceDesc);
 
           // Finally, run the actual getter.
-          if (sourceDesc === undefined) return undefined;
-          if ("get" in sourceDesc) return sourceDesc.get.apply(this);
-          if ("value" in sourceDesc) return sourceDesc.value;
+          if (sourceDesc === undefined) {
+            return undefined;
+          }
+          if ("get" in sourceDesc) {
+            return sourceDesc.get.apply(this);
+          }
+          if ("value" in sourceDesc) {
+            return sourceDesc.value;
+          }
           return undefined;
         },
 
         set: function (value) {
           let current = Reflect.getOwnPropertyDescriptor(target, propName);
-          if (!current.configurable)
+          if (!current.configurable) {
             throw new Error("lazy getter descriptor is not configurable -- this is fatal");
+          }
 
           const desc = {
             value: current.value,
@@ -218,10 +235,12 @@ describe("Sealed cyclic references: ", function () {
             configurable: true
           };
 
-          if (!Reflect.deleteProperty(target, propName))
+          if (!Reflect.deleteProperty(target, propName)) {
             throw new Error("deleteProperty should've worked");
-          if (!Reflect.defineProperty(target, propName, desc))
+          }
+          if (!Reflect.defineProperty(target, propName, desc)) {
             throw new Error("defineProperty should've worked");
+          }
 
           return value;
         },
@@ -232,7 +251,9 @@ describe("Sealed cyclic references: ", function () {
 
       {
         let current = Reflect.getOwnPropertyDescriptor(source, propName);
-        if (current && !current.enumerable) lazyDesc.enumerable = false;
+        if (current && !current.enumerable) {
+          lazyDesc.enumerable = false;
+        }
       }
 
       Reflect.defineProperty(target, propName, lazyDesc);
@@ -240,7 +261,9 @@ describe("Sealed cyclic references: ", function () {
 
     function buildReferenceAndSeal(obj) {
       refCount++;
-      if (refCount >= 10) throw new Error("runaway");
+      if (refCount >= 10) {
+        throw new Error("runaway");
+      }
 
       if (!map.has(obj)) {
         const rv = {};
@@ -278,8 +301,12 @@ describe("Sealed cyclic references: ", function () {
     expect(Reflect.isExtensible(Alpha.next)).toBe(false);
 
     let accessorCount = 0;
-    if (isAccessorDescriptor(Reflect.getOwnPropertyDescriptor(Alpha, "next"))) accessorCount++;
-    if (isAccessorDescriptor(Reflect.getOwnPropertyDescriptor(Alpha.next, "next"))) accessorCount++;
+    if (isAccessorDescriptor(Reflect.getOwnPropertyDescriptor(Alpha, "next"))) {
+      accessorCount++;
+    }
+    if (isAccessorDescriptor(Reflect.getOwnPropertyDescriptor(Alpha.next, "next"))) {
+      accessorCount++;
+    }
 
     expect(accessorCount).toBe(1);
   });
@@ -291,8 +318,12 @@ describe("Sealed cyclic references: ", function () {
     };
 
     queue.append = function (level, callback) {
-      if (!this.levels.includes(level)) throw new Error("Unknown level");
-      if (typeof callback !== "function") throw new Error("callback must be a function");
+      if (!this.levels.includes(level)) {
+        throw new Error("Unknown level");
+      }
+      if (typeof callback !== "function") {
+        throw new Error("callback must be a function");
+      }
 
       this.levelMap.get(level).push(callback);
     };
@@ -300,7 +331,9 @@ describe("Sealed cyclic references: ", function () {
     queue.next = function () {
       const arrays = Array.from(this.levelMap.values());
       const firstArray = arrays.find((array) => array.length > 0);
-      if (!firstArray) return false;
+      if (!firstArray) {
+        return false;
+      }
 
       try {
         firstArray.shift()();
@@ -320,7 +353,9 @@ describe("Sealed cyclic references: ", function () {
 
     function buildReferenceAndSeal(obj, outparam) {
       refCount++;
-      if (refCount > 10) throw "Infinite recursion";
+      if (refCount > 10) {
+        throw "Infinite recursion";
+      }
 
       // executing immediately
       if (!map.has(obj)) {
@@ -332,7 +367,9 @@ describe("Sealed cyclic references: ", function () {
         // Simulating an observer
         {
           if ([alpha, beta].includes(obj)) {
-            if (!Reflect.isExtensible(rv)) throw new Error("rv is not extensible");
+            if (!Reflect.isExtensible(rv)) {
+              throw new Error("rv is not extensible");
+            }
             queue.append("seal", function () {
               Object.seal(rv);
             });
@@ -368,8 +405,12 @@ describe("Sealed cyclic references: ", function () {
     expect(Reflect.isExtensible(Alpha.next)).toBe(false);
 
     let accessorCount = 0;
-    if (isAccessorDescriptor(Reflect.getOwnPropertyDescriptor(Alpha, "next"))) accessorCount++;
-    if (isAccessorDescriptor(Reflect.getOwnPropertyDescriptor(Alpha.next, "next"))) accessorCount++;
+    if (isAccessorDescriptor(Reflect.getOwnPropertyDescriptor(Alpha, "next"))) {
+      accessorCount++;
+    }
+    if (isAccessorDescriptor(Reflect.getOwnPropertyDescriptor(Alpha.next, "next"))) {
+      accessorCount++;
+    }
 
     expect(accessorCount).toBe(0);
   });

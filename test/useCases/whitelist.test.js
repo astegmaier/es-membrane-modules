@@ -67,7 +67,9 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
 
     function buildFilter(names, prevFilter) {
       return function (elem) {
-        if (prevFilter && prevFilter(elem)) return true;
+        if (prevFilter && prevFilter(elem)) {
+          return true;
+        }
         return names.includes(elem);
       };
     }
@@ -91,7 +93,9 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
         dryWetMB.modifyRules.storeUnknownAsLocal(field, meta.target);
         dryWetMB.modifyRules.requireLocalDelete(field, meta.target);
         dryWetMB.modifyRules.filterOwnKeys(field, meta.target, filter);
-        if (shouldStop) meta.stopIteration();
+        if (shouldStop) {
+          meta.stopIteration();
+        }
       },
 
       wetHandlerCreated: function (handler, Mocks) {
@@ -102,7 +106,9 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
         {
           let oldHandleEvent = EventListenerProto.handleEventAtTarget;
           EventListenerProto.handleEventAtTarget = function () {
-            if (checkEvent) checkEvent.apply(this, arguments);
+            if (checkEvent) {
+              checkEvent.apply(this, arguments);
+            }
             return oldHandleEvent.apply(this, arguments);
           };
           parts.wet.doc.handleEventAtTarget = EventListenerProto.handleEventAtTarget;
@@ -113,15 +119,19 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
             meta.callable !== EventListenerProto.addEventListener ||
             meta.trapName !== "apply" ||
             meta.argIndex !== 1
-          )
+          ) {
             return;
+          }
 
-          if (typeof meta.target == "function") return;
+          if (typeof meta.target == "function") {
+            return;
+          }
 
-          if (typeof meta.target != "object" || meta.target === null)
+          if (typeof meta.target != "object" || meta.target === null) {
             meta.throwException(
               new Error(".addEventListener requires listener be an object or a function!")
             );
+          }
 
           try {
             this.whitelist(meta, nameFilters.listener, "dry");
@@ -233,11 +243,15 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
       expect(defined).toBe(true);
       descWet = Reflect.getOwnPropertyDescriptor(wetDocument, "handleEventAtTarget");
       expect(descWet).not.toBe(undefined);
-      if (descWet) expect(descWet.value).toBe(oldDescWet.value);
+      if (descWet) {
+        expect(descWet.value).toBe(oldDescWet.value);
+      }
 
       let descDry = Reflect.getOwnPropertyDescriptor(dryDocument, "handleEventAtTarget");
       expect(descDry).not.toBe(undefined);
-      if (descDry) expect(descDry.value).toBe(HEAT_NEW);
+      if (descDry) {
+        expect(descDry.value).toBe(HEAT_NEW);
+      }
     }
 
     extraTests(parts);

@@ -33,7 +33,9 @@ describe("Primordial values", function () {
       expect(desc.configurable).toBe(false);
     }
 
-    if (!Array.isArray(Membrane.Primordials)) return;
+    if (!Array.isArray(Membrane.Primordials)) {
+      return;
+    }
 
     topValues.forEach(function (k) {
       expect(Membrane.Primordials.includes(k)).toBe(true);

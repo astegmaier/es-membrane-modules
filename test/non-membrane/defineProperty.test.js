@@ -3,9 +3,15 @@ describe(".defineProperty, for descriptors which state properties", function () 
   const handler = {
     defineProperty: function (target, propName, desc) {
       var rv;
-      if (defineFirst) rv = Reflect.defineProperty(target, propName, desc);
-      if (propName == "blacklisted") return newPropReturns; // but don't actually define it on target.
-      if (!defineFirst) rv = Reflect.defineProperty(target, propName, desc);
+      if (defineFirst) {
+        rv = Reflect.defineProperty(target, propName, desc);
+      }
+      if (propName == "blacklisted") {
+        return newPropReturns;
+      } // but don't actually define it on target.
+      if (!defineFirst) {
+        rv = Reflect.defineProperty(target, propName, desc);
+      }
       return rv;
     }
   };

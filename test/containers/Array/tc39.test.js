@@ -169,10 +169,14 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
     }
 
     parts.handlers.dry.addProxyListener(function (meta) {
-      if (meta.target !== parts.wet.array) return;
+      if (meta.target !== parts.wet.array) {
+        return;
+      }
       try {
         parts.membrane.modifyRules.storeUnknownAsLocal("dry", meta.proxy);
-        if (chain) parts.membrane.modifyRules.replaceProxy(meta.proxy, chain);
+        if (chain) {
+          parts.membrane.modifyRules.replaceProxy(meta.proxy, chain);
+        }
       } catch (e) {
         meta.throwException(e);
       }
@@ -180,7 +184,9 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
     populateDry();
 
     // debugging
-    if (appender) appender.clear();
+    if (appender) {
+      appender.clear();
+    }
 
     /* [ alpha, beta, gamma ] */
 

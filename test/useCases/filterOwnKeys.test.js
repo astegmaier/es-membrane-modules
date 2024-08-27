@@ -12,7 +12,9 @@ import { MembraneMocks } from "../../mocks";
        real membrane.
     */
     function fixKeys(keys) {
-      if (keys.includes("membraneGraphName")) keys.splice(keys.indexOf("membraneGraphName"), 1);
+      if (keys.includes("membraneGraphName")) {
+        keys.splice(keys.indexOf("membraneGraphName"), 1);
+      }
     }
 
     var dryDocument, wetDocument;
@@ -70,7 +72,9 @@ import { MembraneMocks } from "../../mocks";
       fixKeys(secondKeySet);
       expect(secondKeySet.length).toBe(firstKeySet.length);
       let count = Math.min(firstKeySet.length, secondKeySet.length);
-      for (let i = 0; i < count; i++) expect(secondKeySet[i]).toBe(firstKeySet[i]);
+      for (let i = 0; i < count; i++) {
+        expect(secondKeySet[i]).toBe(firstKeySet[i]);
+      }
       expect(Reflect.getOwnPropertyDescriptor(dryDocument, "shouldNotBeAmongKeys")).toBe(undefined);
       expect(Reflect.getOwnPropertyDescriptor(dryDocument, "extra")).toBe(undefined);
     }

@@ -5,7 +5,9 @@ describe("Pass-through filters", function () {
   const MUSTCREATE = Object.freeze({ mustCreate: true });
   const p = {};
   function passP(value) {
-    if (value === p) return true;
+    if (value === p) {
+      return true;
+    }
     return false;
   }
   describe("on the membrane", function () {
@@ -40,7 +42,9 @@ describe("Pass-through filters", function () {
       const membrane = new Membrane({
         passThroughFilter: function (value) {
           count++;
-          if (value === p && count > 1) return true;
+          if (value === p && count > 1) {
+            return true;
+          }
           return false;
         }
       });
@@ -66,7 +70,9 @@ describe("Pass-through filters", function () {
       const membrane = new Membrane({
         passThroughFilter: function (value) {
           count++;
-          if (value === p && count === 1) return true;
+          if (value === p && count === 1) {
+            return true;
+          }
           return false;
         }
       });
@@ -104,7 +110,9 @@ describe("Pass-through filters", function () {
 
       let desc = Reflect.getOwnPropertyDescriptor(membrane, "passThroughFilter");
       expect(typeof desc).toBe("object");
-      if (!desc) return;
+      if (!desc) {
+        return;
+      }
       expect(desc.value).toBe(passP);
       expect(desc.writable).toBe(false);
       expect(desc.enumerable).toBe(false);
@@ -116,7 +124,9 @@ describe("Pass-through filters", function () {
 
       let desc = Reflect.getOwnPropertyDescriptor(membrane, "passThroughFilter");
       expect(typeof desc).toBe("object");
-      if (!desc) return;
+      if (!desc) {
+        return;
+      }
       expect(typeof desc.value).toBe("function");
       expect(desc.writable).toBe(false);
       expect(desc.enumerable).toBe(false);
@@ -128,7 +138,9 @@ describe("Pass-through filters", function () {
 
       let desc = Reflect.getOwnPropertyDescriptor(membrane, "passThroughFilter");
       expect(typeof desc).toBe("object");
-      if (!desc) return;
+      if (!desc) {
+        return;
+      }
       expect(typeof desc.value).toBe("function");
       expect(desc.writable).toBe(false);
       expect(desc.enumerable).toBe(false);
@@ -210,7 +222,9 @@ describe("Pass-through filters", function () {
       let count = 0;
       function passP2(value) {
         count++;
-        if (value === p && count > 1) return true;
+        if (value === p && count > 1) {
+          return true;
+        }
         return false;
       }
 
@@ -232,7 +246,9 @@ describe("Pass-through filters", function () {
       let count = 0;
       function passP2(value) {
         count++;
-        if (value === p && count === 1) return true;
+        if (value === p && count === 1) {
+          return true;
+        }
         return false;
       }
 
@@ -258,7 +274,9 @@ describe("Pass-through filters", function () {
 
       let desc = Reflect.getOwnPropertyDescriptor(wetHandler, "passThroughFilter");
       expect(typeof desc).toBe("object");
-      if (!desc) return false;
+      if (!desc) {
+        return false;
+      }
       expect(desc.configurable).toBe(false);
       expect(desc.enumerable).toBe(false);
       expect("get" in desc).toBe(true);

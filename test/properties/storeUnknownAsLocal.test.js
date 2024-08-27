@@ -2,7 +2,9 @@ import { MembraneMocks, DAMP } from "../../mocks";
 
 describe("Storing unknown properties locally", function () {
   function fixKeys(keys) {
-    if (keys.includes("membraneGraphName")) keys.splice(keys.indexOf("membraneGraphName"), 1);
+    if (keys.includes("membraneGraphName")) {
+      keys.splice(keys.indexOf("membraneGraphName"), 1);
+    }
   }
 
   // Customize this for whatever variables you need.
@@ -166,15 +168,20 @@ describe("Storing unknown properties locally", function () {
           }
         });
       }
-      if (isDryExtensible) addProps();
-      else expect(addProps).toThrow();
+      if (isDryExtensible) {
+        addProps();
+      } else {
+        expect(addProps).toThrow();
+      }
 
       // Ensure Reflect.ownKeys puts the inserted values at the end.
       let keySet = Reflect.ownKeys(dryRoot);
       fixKeys(keySet);
 
       var expectedLength = firstKeySet.length;
-      if (isDryExtensible) expectedLength += 3;
+      if (isDryExtensible) {
+        expectedLength += 3;
+      }
 
       expect(keySet.length).toBe(expectedLength);
       for (let i = 0; i < firstKeySet.length; i++) {
@@ -196,7 +203,9 @@ describe("Storing unknown properties locally", function () {
         enumerable: true,
         configurable: true
       });
-      if (isWetExtensible && isDryExtensible) expectedLength++;
+      if (isWetExtensible && isDryExtensible) {
+        expectedLength++;
+      }
 
       // Ensure the new wet graph's key precedes the dry graph keys.
       keySet = Reflect.ownKeys(dryRoot);
@@ -552,8 +561,11 @@ describe("Storing unknown properties locally", function () {
 
       it("when the object doesn't have a descriptor with that name", function () {
         const isDryExtensible = Reflect.isExtensible(dryRoot);
-        if (isDryExtensible) setter();
-        else expect(setter).toThrow();
+        if (isDryExtensible) {
+          setter();
+        } else {
+          expect(setter).toThrow();
+        }
 
         expect(Reflect.has(wetRoot, "extra")).toBe(false);
         let dryGetExtra = Reflect.get(dryRoot, "extra");
@@ -569,8 +581,11 @@ describe("Storing unknown properties locally", function () {
           configurable: true
         });
 
-        if (isDryExtensible) setter();
-        else expect(setter).toThrow();
+        if (isDryExtensible) {
+          setter();
+        } else {
+          expect(setter).toThrow();
+        }
 
         expect(Reflect.has(wetRoot, "extra")).toBe(false);
         let dryGetExtra = Reflect.get(dryRoot, "extra");
@@ -591,8 +606,11 @@ describe("Storing unknown properties locally", function () {
           configurable: true
         });
 
-        if (isDryExtensible) setter();
-        else expect(setter).toThrow();
+        if (isDryExtensible) {
+          setter();
+        } else {
+          expect(setter).toThrow();
+        }
 
         expect(Reflect.has(wetRoot, "extra")).toBe(false);
         let dryGetExtra = Reflect.get(dryRoot, "extra");
@@ -608,8 +626,11 @@ describe("Storing unknown properties locally", function () {
           configurable: true
         });
 
-        if (isDryExtensible) setter();
-        else expect(setter).toThrow();
+        if (isDryExtensible) {
+          setter();
+        } else {
+          expect(setter).toThrow();
+        }
 
         expect(Reflect.has(wetRoot, "extra")).toBe(false);
         let dryGetExtra = Reflect.get(dryRoot, "extra");
@@ -626,8 +647,11 @@ describe("Storing unknown properties locally", function () {
           configurable: true
         });
 
-        if (isDryExtensible) setter();
-        else expect(setter).toThrow();
+        if (isDryExtensible) {
+          setter();
+        } else {
+          expect(setter).toThrow();
+        }
 
         let wetGetExtra = Reflect.get(wetRoot, "extra");
         expect(wetGetExtra === y).toBe(true);

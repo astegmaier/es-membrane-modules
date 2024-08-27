@@ -15,9 +15,11 @@ it("A membrane-like proxy set always returns the same object for a prototype loo
   function makeShadowTarget(value) {
     "use strict";
     var rv;
-    if (Array.isArray(value)) rv = [];
-    else if (typeof value == "object") rv = {};
-    else if (typeof value == "function") {
+    if (Array.isArray(value)) {
+      rv = [];
+    } else if (typeof value == "object") {
+      rv = {};
+    } else if (typeof value == "function") {
       rv = function () {};
       /* ES7 specification says that functions in strict mode do not have their
        * own "arguments" or "length" properties naturally.  But in non-strict
@@ -28,11 +30,15 @@ it("A membrane-like proxy set always returns the same object for a prototype loo
        */
       let keys = Reflect.ownKeys(value);
       keys.forEach(function (key) {
-        if (Reflect.getOwnPropertyDescriptor(rv)) return;
+        if (Reflect.getOwnPropertyDescriptor(rv)) {
+          return;
+        }
         let desc = Reflect.getOwnPropertyDescriptor(value, key);
         Reflect.defineProperty(rv, key, desc);
       });
-    } else throw new Error("Unknown value for makeShadowTarget");
+    } else {
+      throw new Error("Unknown value for makeShadowTarget");
+    }
     ShadowKeyMap.set(rv, value);
     return rv;
   }
@@ -75,13 +81,20 @@ it("A membrane-like proxy set always returns the same object for a prototype loo
       const target = getRealTarget(shadow);
       let rv = Reflect.getOwnPropertyDescriptor(target, propertyName);
       if (rv) {
-        if (Reflect.ownKeys(rv).includes("value")) rv.value = this.getProxy(rv.value);
-        else throw new Error("not supported for this test");
+        if (Reflect.ownKeys(rv).includes("value")) {
+          rv.value = this.getProxy(rv.value);
+        } else {
+          throw new Error("not supported for this test");
+        }
 
-        if (propertyName === "prototype") rv.value = this.wrapPrototype(rv.value);
+        if (propertyName === "prototype") {
+          rv.value = this.wrapPrototype(rv.value);
+        }
 
         let oldDesc = Reflect.getOwnPropertyDescriptor(shadow, propertyName);
-        if (!oldDesc.configurable) rv.configurable = false;
+        if (!oldDesc.configurable) {
+          rv.configurable = false;
+        }
 
         Reflect.defineProperty(shadow, propertyName, rv);
       }
@@ -92,8 +105,12 @@ it("A membrane-like proxy set always returns the same object for a prototype loo
     get: function (shadow, propertyName) {
       const target = getRealTarget(shadow);
       let rv = this.getProxy(Reflect.get(target, propertyName));
-      if (propertyName === "prototype") rv = this.wrapPrototype(rv);
-      if (shadow[propertyName] !== rv) shadow[propertyName] = rv;
+      if (propertyName === "prototype") {
+        rv = this.wrapPrototype(rv);
+      }
+      if (shadow[propertyName] !== rv) {
+        shadow[propertyName] = rv;
+      }
       return rv;
     },
 
@@ -108,7 +125,9 @@ it("A membrane-like proxy set always returns the same object for a prototype loo
     getProxy: function (wetValue) {
       {
         const t = typeof wetValue;
-        if (t !== "object" && t !== "function") return wetValue;
+        if (t !== "object" && t !== "function") {
+          return wetValue;
+        }
       }
 
       if (!this.membrane.dryMap.has(wetValue)) {

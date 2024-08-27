@@ -48,7 +48,9 @@ describe("Filtering own keys ", function () {
   function voidFunc() {}
 
   function fixKeys(keys) {
-    if (keys.includes("membraneGraphName")) keys.splice(keys.indexOf("membraneGraphName"), 1);
+    if (keys.includes("membraneGraphName")) {
+      keys.splice(keys.indexOf("membraneGraphName"), 1);
+    }
   }
 
   function DocBlacklistFilter(name) {
@@ -254,7 +256,9 @@ describe("Filtering own keys ", function () {
         if (isExtensible) {
           expect(isDataDescriptor(extra)).toBe(true);
           expect(extra.value).toBe(4);
-        } else expect(extra).toBe(undefined);
+        } else {
+          expect(extra).toBe(undefined);
+        }
       }
       expect(Reflect.get(dryDocument, "extra")).toBe(isExtensible ? 4 : undefined);
 
@@ -267,7 +271,9 @@ describe("Filtering own keys ", function () {
         if (isExtensible) {
           expect(isDataDescriptor(extra)).toBe(true);
           expect(extra.value).toBe(4);
-        } else expect(extra).toBe(undefined);
+        } else {
+          expect(extra).toBe(undefined);
+        }
       }
       expect(Reflect.get(wetDocument, "extra")).toBe(isExtensible ? 4 : undefined);
 
@@ -373,7 +379,9 @@ describe("Filtering own keys ", function () {
         // Test that the delete didn't propagate through.
         let desc = Reflect.getOwnPropertyDescriptor(wetDocument, "blacklisted");
         let expectation = expect(desc);
-        if (isExtensible) expectation = expectation.not;
+        if (isExtensible) {
+          expectation = expectation.not;
+        }
         expectation.toBe(undefined);
         if (desc) {
           expect(desc.value).toBe(3);
@@ -395,7 +403,9 @@ describe("Filtering own keys ", function () {
         // Test that the delete didn't propagate through.
         let desc = Reflect.getOwnPropertyDescriptor(wetDocument, "blacklisted");
         let expectedDesc = expect(desc);
-        if (isExtensible) expectedDesc = expectedDesc.not;
+        if (isExtensible) {
+          expectedDesc = expectedDesc.not;
+        }
         expectedDesc.toBe(undefined);
         if (desc) {
           expect(desc.value).toBe(3);
@@ -435,8 +445,11 @@ describe("Filtering own keys ", function () {
         expect(Reflect.deleteProperty(dryDocument, "blacklisted")).toBe(true);
         checkDeleted();
 
-        if (wasDefined) checkAppenderForWarning("FILTERED_KEYS_WITHOUT_LOCAL");
-        else expect(appender.events.length).toBe(0);
+        if (wasDefined) {
+          checkAppenderForWarning("FILTERED_KEYS_WITHOUT_LOCAL");
+        } else {
+          expect(appender.events.length).toBe(0);
+        }
 
         // Test that the delete didn't propagate through.
         let desc = Reflect.getOwnPropertyDescriptor(wetDocument, "blacklisted");
@@ -458,8 +471,11 @@ describe("Filtering own keys ", function () {
         expect(Reflect.deleteProperty(dryDocument, "blacklisted")).toBe(true);
         checkDeleted();
 
-        if (wasDefined) checkAppenderForWarning("FILTERED_KEYS_WITHOUT_LOCAL");
-        else expect(appender.events.length).toBe(0);
+        if (wasDefined) {
+          checkAppenderForWarning("FILTERED_KEYS_WITHOUT_LOCAL");
+        } else {
+          expect(appender.events.length).toBe(0);
+        }
 
         // Test that the delete didn't propagate through.
         let desc = Reflect.getOwnPropertyDescriptor(wetDocument, "blacklisted");
@@ -479,8 +495,12 @@ describe("Filtering own keys ", function () {
 
   function defineTestSet(filterWet, filterDry, filterObj, descTail, beforeTail) {
     function modifyFilter() {
-      if (filterWet) membrane.modifyRules.filterOwnKeys("wet", wetDocument, filterObj);
-      if (filterDry) membrane.modifyRules.filterOwnKeys("dry", dryDocument, filterObj);
+      if (filterWet) {
+        membrane.modifyRules.filterOwnKeys("wet", wetDocument, filterObj);
+      }
+      if (filterDry) {
+        membrane.modifyRules.filterOwnKeys("dry", dryDocument, filterObj);
+      }
     }
 
     describe("and with a " + descTail, function () {
