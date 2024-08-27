@@ -2,8 +2,8 @@ import { Membrane } from "../src";
 import { generateSnapshotOnFailure } from "./testUtils/generateSnapshotOnFailure";
 import { forceGc } from "./testUtils/forceGc";
 
-/** 
- * We give objects we expect to possibly leak a distinct name so 
+/**
+ * We give objects we expect to possibly leak a distinct name so
  * we can find them in the heap snapshot in case something goes wrong.
  */
 class PotentiallyLeakyClass {

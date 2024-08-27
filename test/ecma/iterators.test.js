@@ -1,6 +1,6 @@
 import { Membrane } from "../../src";
 
-it("Iterators through a membrane work as expected", function() {
+it("Iterators through a membrane work as expected", function () {
   let parts = {
     wet: {
       iterator: {
@@ -14,9 +14,9 @@ it("Iterators through a membrane work as expected", function() {
     response: { value: true }
   };
 
-  parts.wet.iterator[Symbol.iterator] = function() {
+  parts.wet.iterator[Symbol.iterator] = function () {
     return {
-      next: function() {
+      next: function () {
         let rv = {
           value: { count: this.count },
           done: this.count > 3
@@ -34,12 +34,8 @@ it("Iterators through a membrane work as expected", function() {
     };
   };
 
-  parts.handlers.wet = parts.membrane.getHandlerByName(
-    "wet", { mustCreate: true }
-  );
-  parts.handlers.dry = parts.membrane.getHandlerByName(
-    "dry", { mustCreate: true }
-  );
+  parts.handlers.wet = parts.membrane.getHandlerByName("wet", { mustCreate: true });
+  parts.handlers.dry = parts.membrane.getHandlerByName("dry", { mustCreate: true });
 
   parts.dry.iterator = parts.membrane.convertArgumentToProxy(
     parts.handlers.wet,
@@ -47,7 +43,6 @@ it("Iterators through a membrane work as expected", function() {
     parts.wet.iterator
   );
 
-  let items = Array.from(parts.dry.iterator)
-                   .map((val) => val.count);
+  let items = Array.from(parts.dry.iterator).map((val) => val.count);
   expect(items).toEqual([0, 1, 2, 3]);
 });

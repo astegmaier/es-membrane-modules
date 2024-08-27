@@ -1,15 +1,13 @@
-it("Array.prototype.splice generates reasonable results with a proxy", function() {
+it("Array.prototype.splice generates reasonable results with a proxy", function () {
   const x = ["alpha", "beta", "gamma", "pi", "chi"];
 
   const handler = {};
   let events = [];
-  Reflect.ownKeys(Reflect).forEach(function(trap) {
-    handler[trap] = function() {
+  Reflect.ownKeys(Reflect).forEach(function (trap) {
+    handler[trap] = function () {
       let msg = trap + " called";
-      if (typeof arguments[1] == "string")
-        msg += ` for property "${arguments[1]}"`;
-      if (trap === "set")
-        msg += ` and value "${arguments[2]}"`;
+      if (typeof arguments[1] == "string") msg += ` for property "${arguments[1]}"`;
+      if (trap === "set") msg += ` and value "${arguments[2]}"`;
       events.push("enter: " + msg);
       const rv = Reflect[trap].apply(Reflect, arguments);
       events.push("exit:  " + msg + ` and return value ${JSON.stringify(rv)}`);
@@ -87,60 +85,49 @@ it("Array.prototype.splice generates reasonable results with a proxy", function(
 ]
 */
 
-it(
-  "Setting a prototype on a proxy to an array doesn't affect directly modifying the array",
-  function() {
-    "use strict";
-    var x = ["alpha", "beta", "gamma"];
-  
-    const handler = {};
-    const events = [];
-    Reflect.ownKeys(Reflect).forEach(function(trap) {
-      handler[trap] = function() {
-        var rv;
-        events.push(`enter ${trap}`);
-        try {
-          rv = Reflect[trap].apply(x, arguments);
-        }
-        catch (e) {
-          events.push(`error ${trap} ${e}`);
-          throw e;
-        }
-        finally {
-          events.push(`leave ${trap}`);
-        }
-        return rv;
-      };
-    });
-  
-    const proto = Proxy.revocable([], handler);
-    Reflect.ownKeys(Array.prototype).forEach(function(key) {
-      Reflect.defineProperty(
-        proto,
-        key,
-        Reflect.getOwnPropertyDescriptor(Array.prototype, key)
-      );
-    });
-    Reflect.setPrototypeOf(x, proto);
+it("Setting a prototype on a proxy to an array doesn't affect directly modifying the array", function () {
+  "use strict";
+  var x = ["alpha", "beta", "gamma"];
 
-    expect(Reflect.getOwnPropertyDescriptor(x, "splice")).toBe(undefined);
-    let spliceValue;
-    {
-      const desc = Reflect.getOwnPropertyDescriptor(proto, "splice");
-      expect(desc).not.toBe(undefined);
-      if (desc)
-        spliceValue = desc.value;
-      else
-        spliceValue = undefined;
-    }
-    expect(Reflect.get(x, "splice")).toBe(spliceValue);
-  
-    events.push("start");
-    x[1] = "delta";
-    events.push("middle");
-    x.splice(1, 1, "epsilon");
-    events.push("end");
-    expect(events).toEqual(["start", "middle", "end"]);
-    expect(x).toEqual(["alpha", "epsilon", "gamma"]);
+  const handler = {};
+  const events = [];
+  Reflect.ownKeys(Reflect).forEach(function (trap) {
+    handler[trap] = function () {
+      var rv;
+      events.push(`enter ${trap}`);
+      try {
+        rv = Reflect[trap].apply(x, arguments);
+      } catch (e) {
+        events.push(`error ${trap} ${e}`);
+        throw e;
+      } finally {
+        events.push(`leave ${trap}`);
+      }
+      return rv;
+    };
+  });
+
+  const proto = Proxy.revocable([], handler);
+  Reflect.ownKeys(Array.prototype).forEach(function (key) {
+    Reflect.defineProperty(proto, key, Reflect.getOwnPropertyDescriptor(Array.prototype, key));
+  });
+  Reflect.setPrototypeOf(x, proto);
+
+  expect(Reflect.getOwnPropertyDescriptor(x, "splice")).toBe(undefined);
+  let spliceValue;
+  {
+    const desc = Reflect.getOwnPropertyDescriptor(proto, "splice");
+    expect(desc).not.toBe(undefined);
+    if (desc) spliceValue = desc.value;
+    else spliceValue = undefined;
   }
-);
+  expect(Reflect.get(x, "splice")).toBe(spliceValue);
+
+  events.push("start");
+  x[1] = "delta";
+  events.push("middle");
+  x.splice(1, 1, "epsilon");
+  events.push("end");
+  expect(events).toEqual(["start", "middle", "end"]);
+  expect(x).toEqual(["alpha", "epsilon", "gamma"]);
+});

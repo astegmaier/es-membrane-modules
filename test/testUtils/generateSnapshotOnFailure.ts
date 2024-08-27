@@ -9,8 +9,7 @@ export function generateSnapshotOnFailure(assertion: () => void) {
   } catch (err) {
     const currentTestState = expect.getState();
     const isFromVsCodeJest = process.env.VS_CODE_JEST;
-    const isFailing =
-      currentTestState.numPassingAsserts !== currentTestState.assertionCalls;
+    const isFailing = currentTestState.numPassingAsserts !== currentTestState.assertionCalls;
     if (isFailing && !isFromVsCodeJest) {
       writeHeapSnapshot(currentTestState.currentTestName);
     }

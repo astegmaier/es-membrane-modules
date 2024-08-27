@@ -1,57 +1,57 @@
 import { MembraneMocks } from "../../mocks";
 
-describe("replacing proxies tests: ", function() {
+describe("replacing proxies tests: ", function () {
   "use strict";
   let parts, membrane, dryHandler, replacedProxy;
-  beforeEach(function() {
+  beforeEach(function () {
     parts = MembraneMocks();
     membrane = parts.membrane;
     dryHandler = membrane.getHandlerByName("dry");
     replacedProxy = null;
   });
-  afterEach(function() {
+  afterEach(function () {
     parts = null;
     membrane = null;
     dryHandler = null;
     replacedProxy = null;
   });
 
-  it("Attempting to replace unknown object in dryHandler fails", function() {
-    expect(function() {
+  it("Attempting to replace unknown object in dryHandler fails", function () {
+    expect(function () {
       membrane.modifyRules.replaceProxy({}, dryHandler);
     }).toThrow();
   });
 
-  it("Attempting to replace wetDocument in dryHandler fails", function() {
+  it("Attempting to replace wetDocument in dryHandler fails", function () {
     let wetDocument = parts.wet.doc;
-    expect(function() {
+    expect(function () {
       membrane.modifyRules.replaceProxy(wetDocument, dryHandler);
     }).toThrow();
   });
 
-  let dryObjectTests = function(dryObjectGenerator) {
-    return function() {
+  let dryObjectTests = function (dryObjectGenerator) {
+    return function () {
       let dryObject;
-      beforeEach(function() {
+      beforeEach(function () {
         dryObject = dryObjectGenerator(parts);
       });
-      afterEach(function() {
+      afterEach(function () {
         dryObject = null;
       });
 
-      it("with bare object fails", function() {
-        expect(function() {
+      it("with bare object fails", function () {
+        expect(function () {
           membrane.modifyRules.replaceProxy(dryObject, {});
         }).toThrow();
       });
 
-      it("with Reflect fails", function() {
-        expect(function() {
+      it("with Reflect fails", function () {
+        expect(function () {
           membrane.modifyRules.replaceProxy(dryObject, Reflect);
         }).toThrow();
       });
 
-      it("with object inheriting from Reflect fails", function() {
+      it("with object inheriting from Reflect fails", function () {
         let handler = Object.create(Reflect, {
           "thisIsATest": {
             value: true,
@@ -60,35 +60,35 @@ describe("replacing proxies tests: ", function() {
             configurable: true
           }
         });
-        expect(function() {
+        expect(function () {
           membrane.modifyRules.replaceProxy(dryObject, handler);
         }).toThrow();
       });
 
-      it("handler with dryHandler succeeds", function() {
+      it("handler with dryHandler succeeds", function () {
         replacedProxy = membrane.modifyRules.replaceProxy(dryObject, dryHandler);
         let mGN = replacedProxy.membraneGraphName;
         expect(mGN).toBe("dry");
       });
 
-      it("handler with dryHandler a second time fails", function() {
+      it("handler with dryHandler a second time fails", function () {
         membrane.modifyRules.replaceProxy(dryObject, dryHandler);
-        expect(function() {
+        expect(function () {
           membrane.modifyRules.replaceProxy(dryObject, dryHandler);
         }).toThrow();
       });
 
-      it("'s previously replaced handler with dryHandler succeeds", function() {
+      it("'s previously replaced handler with dryHandler succeeds", function () {
         replacedProxy = membrane.modifyRules.replaceProxy(dryObject, dryHandler);
-        expect(function() {
+        expect(function () {
           replacedProxy = membrane.modifyRules.replaceProxy(replacedProxy, dryHandler);
         }).not.toThrow();
         let mGN = replacedProxy.membraneGraphName;
         expect(mGN).toBe("dry");
       });
 
-      describe("with object inheriting from dryHandler", function() {
-        it("directly succeeds", function() {
+      describe("with object inheriting from dryHandler", function () {
+        it("directly succeeds", function () {
           let handler = membrane.modifyRules.createChainHandler(dryHandler);
           expect(handler.nextHandler).toBe(dryHandler);
           expect(handler.baseHandler).toBe(dryHandler);
@@ -115,7 +115,7 @@ describe("replacing proxies tests: ", function() {
           expect(mGN).toBe("dry");
         });
 
-        it("indirectly succeeds", function() {
+        it("indirectly succeeds", function () {
           let handler = membrane.modifyRules.createChainHandler(dryHandler);
           Object.defineProperties(handler, {
             "thisIsATest": {
@@ -142,12 +142,11 @@ describe("replacing proxies tests: ", function() {
           expect(mGN).toBe("dry");
         });
 
-        it("and replacing all traps with forwarding traps succeeds",
-           function() {
+        it("and replacing all traps with forwarding traps succeeds", function () {
           let handler = membrane.modifyRules.createChainHandler(dryHandler);
           let numCalls = 0;
-          membrane.allTraps.forEach(function(trapName) {
-            handler[trapName] = function() {
+          membrane.allTraps.forEach(function (trapName) {
+            handler[trapName] = function () {
               numCalls++;
               return this.nextHandler[trapName].apply(this, arguments);
             };
@@ -170,7 +169,7 @@ describe("replacing proxies tests: ", function() {
            */
         });
 
-        it("and then again with the original dryHandler succeeds", function() {
+        it("and then again with the original dryHandler succeeds", function () {
           let handler = membrane.modifyRules.createChainHandler(dryHandler);
           replacedProxy = membrane.modifyRules.replaceProxy(dryObject, handler);
           replacedProxy = membrane.modifyRules.replaceProxy(replacedProxy, dryHandler);
@@ -183,24 +182,20 @@ describe("replacing proxies tests: ", function() {
 
   describe(
     "Attempting to replace dryDocument",
-    dryObjectTests(
-      function(parts) {
-        return parts.dry.doc;
-      }
-    )
+    dryObjectTests(function (parts) {
+      return parts.dry.doc;
+    })
   );
 
   describe(
     "Attempting to replace NodeDry.prototype",
-    dryObjectTests(
-      function(parts) {
-        return parts.dry.Node.prototype;
-      }
-    )
+    dryObjectTests(function (parts) {
+      return parts.dry.Node.prototype;
+    })
   );
 
-  describe("Replacing wetDocument", function() {
-    it("with a direct Reflect proxy works", function() {
+  describe("Replacing wetDocument", function () {
+    it("with a direct Reflect proxy works", function () {
       let wetDocument = parts.wet.doc;
       let [found, wetProxy] = membrane.getMembraneProxy("wet", wetDocument);
       expect(found).toBe(true);
@@ -213,7 +208,7 @@ describe("replacing proxies tests: ", function() {
       expect(wetProxy.nodeName).toBe("#document");
     });
 
-    it("with an indirect Reflect proxy works", function() {
+    it("with an indirect Reflect proxy works", function () {
       let wetDocument = parts.wet.doc;
       let [found, wetProxy] = membrane.getMembraneProxy("wet", wetDocument);
       expect(found).toBe(true);
@@ -222,21 +217,20 @@ describe("replacing proxies tests: ", function() {
 
       let keys = Reflect.ownKeys(wetProxy);
       expect(keys.includes("shouldNotBeAmongKeys")).toBe(true);
-      
+
       let handler = membrane.modifyRules.createChainHandler(Reflect);
       expect(handler.nextHandler).toBe(Reflect);
       expect(handler.baseHandler).toBe(Reflect);
       let lastVisited = null;
-      membrane.allTraps.forEach(function(trapName) {
-        handler[trapName] = function() {
+      membrane.allTraps.forEach(function (trapName) {
+        handler[trapName] = function () {
           try {
             var rv = this.nextHandler[trapName].apply(this, arguments);
-            if ((trapName == "ownKeys") && rv.includes("shouldNotBeAmongKeys")) {
+            if (trapName == "ownKeys" && rv.includes("shouldNotBeAmongKeys")) {
               rv.splice(rv.indexOf("shouldNotBeAmongKeys"), 1);
             }
             return rv;
-          }
-          finally {
+          } finally {
             lastVisited = trapName;
           }
         };
@@ -264,28 +258,25 @@ describe("replacing proxies tests: ", function() {
       */
     });
 
-    it(
-      "with a proxy inheriting from the wet object graph does not work",
-      function() {
-        let wetDocument = parts.wet.doc;
-        let wetHandler = membrane.getHandlerByName("wet");
-        let found, wetProxy;
+    it("with a proxy inheriting from the wet object graph does not work", function () {
+      let wetDocument = parts.wet.doc;
+      let wetHandler = membrane.getHandlerByName("wet");
+      let found, wetProxy;
 
-        expect(function() {
-          wetDocument = membrane.modifyRules.replaceProxy(wetDocument, wetHandler);
-        }).toThrow();
-        [found, wetProxy] = membrane.getMembraneProxy("wet", wetDocument);
-        expect(found).toBe(true);
-        expect(wetProxy).toBe(wetDocument);
+      expect(function () {
+        wetDocument = membrane.modifyRules.replaceProxy(wetDocument, wetHandler);
+      }).toThrow();
+      [found, wetProxy] = membrane.getMembraneProxy("wet", wetDocument);
+      expect(found).toBe(true);
+      expect(wetProxy).toBe(wetDocument);
 
-        let handler = membrane.modifyRules.createChainHandler(wetHandler);
-        expect(function() {
-          wetDocument = membrane.modifyRules.replaceProxy(wetDocument, handler);
-        }).toThrow();
-        [found, wetProxy] = membrane.getMembraneProxy("wet", wetDocument);
-        expect(found).toBe(true);
-        expect(wetProxy).toBe(wetDocument);
-      }
-    );
+      let handler = membrane.modifyRules.createChainHandler(wetHandler);
+      expect(function () {
+        wetDocument = membrane.modifyRules.replaceProxy(wetDocument, handler);
+      }).toThrow();
+      [found, wetProxy] = membrane.getMembraneProxy("wet", wetDocument);
+      expect(found).toBe(true);
+      expect(wetProxy).toBe(wetDocument);
+    });
   });
 });

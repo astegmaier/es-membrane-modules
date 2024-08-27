@@ -20,6 +20,6 @@ export function createMembrane<T extends object>(target: T): CreateMembraneResul
     revoke: () => {
       dryHandler.revokeEverything();
       wetHandler.revokeEverything();
-    },
+    }
   };
 }

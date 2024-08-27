@@ -31,35 +31,24 @@
 
 import { MembraneMocks, DAMP } from "../../mocks";
 
-describe("Use case:  The membrane can be used to safely whitelist properties", function() {
+describe("Use case:  The membrane can be used to safely whitelist properties", function () {
   function buildTests(shouldStop, secondWetListener, secondDryListener, extraTests) {
-    function HEAT() { return descWet.value.apply(this, arguments); }
-    function HEAT_NEW() { return "Hello World"; }
+    function HEAT() {
+      return descWet.value.apply(this, arguments);
+    }
+    function HEAT_NEW() {
+      return "Hello World";
+    }
 
-    const EventListenerWetWhiteList = [
-      "handleEvent",
-    ];
+    const EventListenerWetWhiteList = ["handleEvent"];
 
-    const EventTargetWhiteList = [
-      "addEventListener",
-      "dispatchEvent",
-    ];
+    const EventTargetWhiteList = ["addEventListener", "dispatchEvent"];
 
-    const NodeWhiteList = [
-      "childNodes",
-      "ownerDocument",
-      "parentNode",
-    ];
+    const NodeWhiteList = ["childNodes", "ownerDocument", "parentNode"];
 
-    const NodeProtoWhiteList = [
-      "insertBefore",
-      "firstChild",
-    ];
+    const NodeProtoWhiteList = ["insertBefore", "firstChild"];
 
-    const ElementWhiteList = [
-      "nodeType",
-      "nodeName",
-    ];
+    const ElementWhiteList = ["nodeType", "nodeName"];
 
     const docWhiteList = [
       "ownerDocument",
@@ -73,13 +62,12 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
       "baseURL",
       "addEventListener",
       "dispatchEvent",
-      "rootElement",
+      "rootElement"
     ];
 
     function buildFilter(names, prevFilter) {
-      return function(elem) {
-        if (prevFilter && prevFilter(elem))
-          return true;
+      return function (elem) {
+        if (prevFilter && prevFilter(elem)) return true;
         return names.includes(elem);
       };
     }
@@ -91,64 +79,64 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
     nameFilters.node = buildFilter(NodeWhiteList, nameFilters.target);
     nameFilters.element = buildFilter(ElementWhiteList, nameFilters.node);
     nameFilters.proto = {};
-    nameFilters.proto.function = buildFilter(Reflect.ownKeys(function() {}));
+    nameFilters.proto.function = buildFilter(Reflect.ownKeys(function () {}));
     nameFilters.proto.node = buildFilter(NodeProtoWhiteList, nameFilters.proto.function);
     nameFilters.proto.element = buildFilter([], nameFilters.proto.node);
-    
+
     var parts, dryWetMB, descWet;
-    var EventListenerProto, checkEvent = null;
+    var EventListenerProto,
+      checkEvent = null;
     var mockOptions = {
-      whitelist: function(meta, filter, field = "wet") {
+      whitelist: function (meta, filter, field = "wet") {
         dryWetMB.modifyRules.storeUnknownAsLocal(field, meta.target);
         dryWetMB.modifyRules.requireLocalDelete(field, meta.target);
         dryWetMB.modifyRules.filterOwnKeys(field, meta.target, filter);
-        if (shouldStop)
-          meta.stopIteration();
+        if (shouldStop) meta.stopIteration();
       },
 
-      wetHandlerCreated: function(handler, Mocks) {
+      wetHandlerCreated: function (handler, Mocks) {
         parts = Mocks;
         dryWetMB = parts.membrane;
         EventListenerProto = Object.getPrototypeOf(parts.wet.Node.prototype);
 
         {
           let oldHandleEvent = EventListenerProto.handleEventAtTarget;
-          EventListenerProto.handleEventAtTarget = function() {
-            if (checkEvent)
-              checkEvent.apply(this, arguments);
+          EventListenerProto.handleEventAtTarget = function () {
+            if (checkEvent) checkEvent.apply(this, arguments);
             return oldHandleEvent.apply(this, arguments);
           };
           parts.wet.doc.handleEventAtTarget = EventListenerProto.handleEventAtTarget;
         }
 
-
-        var listener = (function(meta) {
-          if ((meta.callable !== EventListenerProto.addEventListener) ||
-              (meta.trapName !== "apply") ||
-              (meta.argIndex !== 1))
+        var listener = function (meta) {
+          if (
+            meta.callable !== EventListenerProto.addEventListener ||
+            meta.trapName !== "apply" ||
+            meta.argIndex !== 1
+          )
             return;
 
-          if (typeof meta.target == "function")
-            return;
+          if (typeof meta.target == "function") return;
 
-          if ((typeof meta.target != "object") || (meta.target === null))
-            meta.throwException(new Error(".addEventListener requires listener be an object or a function!"));
+          if (typeof meta.target != "object" || meta.target === null)
+            meta.throwException(
+              new Error(".addEventListener requires listener be an object or a function!")
+            );
 
           try {
             this.whitelist(meta, nameFilters.listener, "dry");
-          }
-          catch (ex) {
+          } catch (ex) {
             meta.throwException(ex);
           }
-        }).bind(this);
+        }.bind(this);
 
         handler.addProxyListener(listener);
 
         handler.addProxyListener(secondWetListener);
       },
 
-      dryHandlerCreated: function(handler/*, Mocks */) {
-        var listener = (function(meta) {
+      dryHandlerCreated: function (handler /*, Mocks */) {
+        var listener = function (meta) {
           if (meta.target === parts.wet.doc) {
             // parts.dry.doc will be meta.proxy.
             this.whitelist(meta, nameFilters.doc);
@@ -184,21 +172,22 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
             this.whitelist(meta, nameFilters.target);
             return;
           }
-        }).bind(this);
+        }.bind(this);
 
         handler.addProxyListener(listener);
 
         handler.addProxyListener(secondDryListener);
-      },
+      }
     };
     mockOptions.dampHandlerCreated = mockOptions.dryHandlerCreated;
 
     parts = MembraneMocks(true, null, mockOptions);
-    var wetDocument = parts.wet.doc, dryDocument = parts.dry.doc;
+    var wetDocument = parts.wet.doc,
+      dryDocument = parts.dry.doc;
 
     {
       descWet = Reflect.getOwnPropertyDescriptor(wetDocument, "nodeName");
-      void(dryDocument.nodeName); // necessary to resolve lazy getter
+      void dryDocument.nodeName; // necessary to resolve lazy getter
       let descDry = Reflect.getOwnPropertyDescriptor(dryDocument, "nodeName");
       expect(typeof descWet).not.toBe(undefined);
       expect(typeof descDry).not.toBe(undefined);
@@ -223,7 +212,7 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
         value: HEAT,
         writable: false,
         enumerable: true,
-        configurable: true,
+        configurable: true
       });
 
       let descDry = Reflect.getOwnPropertyDescriptor(dryDocument, "handleEventAtTarget");
@@ -244,13 +233,11 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
       expect(defined).toBe(true);
       descWet = Reflect.getOwnPropertyDescriptor(wetDocument, "handleEventAtTarget");
       expect(descWet).not.toBe(undefined);
-      if (descWet)
-        expect(descWet.value).toBe(oldDescWet.value);
+      if (descWet) expect(descWet.value).toBe(oldDescWet.value);
 
       let descDry = Reflect.getOwnPropertyDescriptor(dryDocument, "handleEventAtTarget");
       expect(descDry).not.toBe(undefined);
-      if (descDry)
-        expect(descDry.value).toBe(HEAT_NEW);
+      if (descDry) expect(descDry.value).toBe(HEAT_NEW);
     }
 
     extraTests(parts);
@@ -260,12 +247,9 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
   }
 
   function voidFunc() {}
-  it(
-    "manually without shadow targets",
-    buildTests.bind(null, true, voidFunc, voidFunc, voidFunc)
-  );
+  it("manually without shadow targets", buildTests.bind(null, true, voidFunc, voidFunc, voidFunc));
 
-  it("manually with shadow targets", function() {
+  it("manually with shadow targets", function () {
     /* DAMP represents the whitelist without calling on useShadowTarget.
      * "dry" represents the whitelist with useShadowTarget("prepared").
      * The idea is to demonstrate that using shadow targets is faster.
@@ -280,8 +264,7 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
 
       try {
         meta.useShadowTarget("prepared");
-      }
-      catch (ex) {
+      } catch (ex) {
         meta.throwException(ex);
       }
     }

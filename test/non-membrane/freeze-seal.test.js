@@ -1,10 +1,10 @@
-describe("Object.freeze() on ordinary objects", function() {
+describe("Object.freeze() on ordinary objects", function () {
   "use strict";
-  it("works as expected with primitive properties", function() {
-    var frozen = Object.freeze({x: 3});
+  it("works as expected with primitive properties", function () {
+    var frozen = Object.freeze({ x: 3 });
     expect(Reflect.isExtensible(frozen)).toBe(false);
 
-    expect(function() {
+    expect(function () {
       frozen.y = 5;
     }).toThrow();
 
@@ -14,7 +14,7 @@ describe("Object.freeze() on ordinary objects", function() {
       expect(desc.writable).toBe(false);
     }
 
-    expect(function() {
+    expect(function () {
       frozen.x = 4;
     }).toThrow();
 
@@ -26,7 +26,7 @@ describe("Object.freeze() on ordinary objects", function() {
     expect(Object.isSealed(frozen)).toBe(true);
   });
 
-  it("disallows calling setPrototypeOf() unless it's the existing prototype", function() {
+  it("disallows calling setPrototypeOf() unless it's the existing prototype", function () {
     function A() {}
     A.prototype.name = "letterA";
 
@@ -50,19 +50,19 @@ describe("Object.freeze() on ordinary objects", function() {
     expect(Reflect.getPrototypeOf(b)).toBe(B.prototype);
 
     expect(Reflect.setPrototypeOf(b, {})).toBe(false);
-    expect(Reflect.getPrototypeOf(b)).toBe(B.prototype);    
+    expect(Reflect.getPrototypeOf(b)).toBe(B.prototype);
   });
 });
 
-describe("Object.freeze() on objects with proxies directly reflecting them", function() {
+describe("Object.freeze() on objects with proxies directly reflecting them", function () {
   "use strict";
-  it("works as expected with primitive properties", function() {
-    var frozen = Object.freeze({x: 3});
-    var {proxy, revoke} = Proxy.revocable(frozen, {});
+  it("works as expected with primitive properties", function () {
+    var frozen = Object.freeze({ x: 3 });
+    var { proxy, revoke } = Proxy.revocable(frozen, {});
     frozen = proxy;
     expect(Reflect.isExtensible(frozen)).toBe(false);
 
-    expect(function() {
+    expect(function () {
       frozen.y = 5;
     }).toThrow();
 
@@ -72,7 +72,7 @@ describe("Object.freeze() on objects with proxies directly reflecting them", fun
       expect(desc.writable).toBe(false);
     }
 
-    expect(function() {
+    expect(function () {
       frozen.x = 4;
     }).toThrow();
 
@@ -86,7 +86,7 @@ describe("Object.freeze() on objects with proxies directly reflecting them", fun
     revoke();
   });
 
-  it("disallows calling setPrototypeOf() unless it's the existing prototype", function() {
+  it("disallows calling setPrototypeOf() unless it's the existing prototype", function () {
     function A() {}
     A.prototype.name = "letterA";
 
@@ -101,7 +101,7 @@ describe("Object.freeze() on objects with proxies directly reflecting them", fun
     expect(Reflect.getPrototypeOf(b)).toBe(B.prototype);
     Object.freeze(b);
 
-    var {proxy, revoke} = Proxy.revocable(b, {});
+    var { proxy, revoke } = Proxy.revocable(b, {});
     b = proxy;
 
     expect(Reflect.setPrototypeOf(b, A.prototype)).toBe(false);
@@ -120,14 +120,14 @@ describe("Object.freeze() on objects with proxies directly reflecting them", fun
   });
 });
 
-describe("Object.freeze() on proxies to objects", function() {
+describe("Object.freeze() on proxies to objects", function () {
   "use strict";
-  it("works as expected with primitive properties", function() {
-    var {proxy, revoke} = Proxy.revocable({x: 3}, {});
+  it("works as expected with primitive properties", function () {
+    var { proxy, revoke } = Proxy.revocable({ x: 3 }, {});
     var frozen = Object.freeze(proxy);
     expect(Reflect.isExtensible(frozen)).toBe(false);
 
-    expect(function() {
+    expect(function () {
       frozen.y = 5;
     }).toThrow();
 
@@ -137,7 +137,7 @@ describe("Object.freeze() on proxies to objects", function() {
       expect(desc.writable).toBe(false);
     }
 
-    expect(function() {
+    expect(function () {
       frozen.x = 4;
     }).toThrow();
 
@@ -151,7 +151,7 @@ describe("Object.freeze() on proxies to objects", function() {
     revoke();
   });
 
-  it("disallows calling setPrototypeOf() unless it's the existing prototype", function() {
+  it("disallows calling setPrototypeOf() unless it's the existing prototype", function () {
     function A() {}
     A.prototype.name = "letterA";
 
@@ -163,7 +163,7 @@ describe("Object.freeze() on proxies to objects", function() {
 
     let b = new B();
 
-    var {proxy, revoke} = Proxy.revocable(b, {});
+    var { proxy, revoke } = Proxy.revocable(b, {});
     b = proxy;
 
     expect(Reflect.getPrototypeOf(b)).toBe(B.prototype);
@@ -185,12 +185,12 @@ describe("Object.freeze() on proxies to objects", function() {
   });
 });
 
-describe("Object.seal() on ordinary objects", function() {
+describe("Object.seal() on ordinary objects", function () {
   "use strict";
-  it("works as expected with primitive properties", function() {
-    var sealed = Object.seal({x: 3});
+  it("works as expected with primitive properties", function () {
+    var sealed = Object.seal({ x: 3 });
     expect(Reflect.isExtensible(sealed)).toBe(false);
-    expect(function() {
+    expect(function () {
       sealed.y = 5;
     }).toThrow();
     expect(sealed.y).toBe(undefined);
@@ -211,7 +211,7 @@ describe("Object.seal() on ordinary objects", function() {
     expect(sealed.x).toBe(4);
   });
 
-  it("disallows calling setPrototypeOf() unless it's the existing prototype", function() {
+  it("disallows calling setPrototypeOf() unless it's the existing prototype", function () {
     function A() {}
     A.prototype.name = "letterA";
 
@@ -235,19 +235,19 @@ describe("Object.seal() on ordinary objects", function() {
     expect(Reflect.getPrototypeOf(b)).toBe(B.prototype);
 
     expect(Reflect.setPrototypeOf(b, {})).toBe(false);
-    expect(Reflect.getPrototypeOf(b)).toBe(B.prototype);    
+    expect(Reflect.getPrototypeOf(b)).toBe(B.prototype);
   });
 });
 
-describe("Object.seal() on objects with proxies directly reflecting them", function() {
+describe("Object.seal() on objects with proxies directly reflecting them", function () {
   "use strict";
-  it("works as expected with primitive properties", function() {
-    var sealed = Object.seal({x: 3});
-    var {proxy, revoke} = Proxy.revocable(sealed, {});
+  it("works as expected with primitive properties", function () {
+    var sealed = Object.seal({ x: 3 });
+    var { proxy, revoke } = Proxy.revocable(sealed, {});
     sealed = proxy;
 
     expect(Reflect.isExtensible(sealed)).toBe(false);
-    expect(function() {
+    expect(function () {
       sealed.y = 5;
     }).toThrow();
     expect(sealed.y).toBe(undefined);
@@ -270,7 +270,7 @@ describe("Object.seal() on objects with proxies directly reflecting them", funct
     revoke();
   });
 
-  it("disallows calling setPrototypeOf() unless it's the existing prototype", function() {
+  it("disallows calling setPrototypeOf() unless it's the existing prototype", function () {
     function A() {}
     A.prototype.name = "letterA";
 
@@ -285,7 +285,7 @@ describe("Object.seal() on objects with proxies directly reflecting them", funct
     expect(Reflect.getPrototypeOf(b)).toBe(B.prototype);
     Object.seal(b);
 
-    var {proxy, revoke} = Proxy.revocable(b, {});
+    var { proxy, revoke } = Proxy.revocable(b, {});
     b = proxy;
 
     expect(Reflect.setPrototypeOf(b, A.prototype)).toBe(false);
@@ -304,15 +304,15 @@ describe("Object.seal() on objects with proxies directly reflecting them", funct
   });
 });
 
-describe("Object.seal() on proxies of objects", function() {
+describe("Object.seal() on proxies of objects", function () {
   "use strict";
-  it("works as expected with primitive properties", function() {
-    var {proxy, revoke} = Proxy.revocable({x: 3}, {});
+  it("works as expected with primitive properties", function () {
+    var { proxy, revoke } = Proxy.revocable({ x: 3 }, {});
     var sealed = Object.seal(proxy);
     sealed = proxy;
 
     expect(Reflect.isExtensible(sealed)).toBe(false);
-    expect(function() {
+    expect(function () {
       sealed.y = 5;
     }).toThrow();
     expect(sealed.y).toBe(undefined);
@@ -335,7 +335,7 @@ describe("Object.seal() on proxies of objects", function() {
     revoke();
   });
 
-  it("disallows calling setPrototypeOf() unless it's the existing prototype", function() {
+  it("disallows calling setPrototypeOf() unless it's the existing prototype", function () {
     function A() {}
     A.prototype.name = "letterA";
 
@@ -347,7 +347,7 @@ describe("Object.seal() on proxies of objects", function() {
 
     let b = new B();
 
-    var {proxy, revoke} = Proxy.revocable(b, {});
+    var { proxy, revoke } = Proxy.revocable(b, {});
     b = proxy;
 
     expect(Reflect.getPrototypeOf(b)).toBe(B.prototype);

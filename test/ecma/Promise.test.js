@@ -1,8 +1,8 @@
 import { Membrane } from "../../src";
 
-describe("Promises through a membrane", function() {
+describe("Promises through a membrane", function () {
   let parts;
-  beforeEach(function() {
+  beforeEach(function () {
     parts = {
       wet: {
         wrapper: {}
@@ -13,17 +13,13 @@ describe("Promises through a membrane", function() {
 
       response: { value: true }
     };
-    parts.wet.wrapper.promise = new Promise(function(resolve, reject) {
+    parts.wet.wrapper.promise = new Promise(function (resolve, reject) {
       parts.wet.wrapper.resolve = resolve;
-      parts.wet.wrapper.reject  = reject;
+      parts.wet.wrapper.reject = reject;
     });
 
-    parts.handlers.wet = parts.membrane.getHandlerByName(
-      "wet", { mustCreate: true }
-    );
-    parts.handlers.dry = parts.membrane.getHandlerByName(
-      "dry", { mustCreate: true }
-    );
+    parts.handlers.wet = parts.membrane.getHandlerByName("wet", { mustCreate: true });
+    parts.handlers.dry = parts.membrane.getHandlerByName("dry", { mustCreate: true });
 
     parts.dry.wrapper = parts.membrane.convertArgumentToProxy(
       parts.handlers.wet,
@@ -32,61 +28,37 @@ describe("Promises through a membrane", function() {
     );
   });
 
-  it(
-    "may be resolved on the wet side (where the promise came from)",
-    function(done) {
-      expect(parts.dry.wrapper.promise).not.toBe(parts.wet.wrapper.promise);
-      parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(
-        function(result) {
-          expect(result.value).toBe(true);
-        },
-        fail
-      );
-      parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(done, done);
-      parts.wet.wrapper.resolve(parts.response);
-    }
-  );
+  it("may be resolved on the wet side (where the promise came from)", function (done) {
+    expect(parts.dry.wrapper.promise).not.toBe(parts.wet.wrapper.promise);
+    parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(function (result) {
+      expect(result.value).toBe(true);
+    }, fail);
+    parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(done, done);
+    parts.wet.wrapper.resolve(parts.response);
+  });
 
-  it(
-    "may be rejected on the wet side",
-    function(done) {
-      parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(
-        fail,
-        function(result) {
-          expect(result.value).toBe(true);
-        }
-      );
-      parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(done, done);
-      parts.wet.wrapper.reject(parts.response);
-    }
-  );
+  it("may be rejected on the wet side", function (done) {
+    parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(fail, function (result) {
+      expect(result.value).toBe(true);
+    });
+    parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(done, done);
+    parts.wet.wrapper.reject(parts.response);
+  });
 
-  it(
-    "may be resolved on the dry side",
-    function(done) {
-      expect(parts.dry.wrapper.promise).not.toBe(parts.wet.wrapper.promise);
-      parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(
-        function(result) {
-          expect(result.value).toBe(true);
-        },
-        fail
-      );
-      parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(done, done);
-      parts.dry.wrapper.resolve(parts.response);
-    }
-  );
+  it("may be resolved on the dry side", function (done) {
+    expect(parts.dry.wrapper.promise).not.toBe(parts.wet.wrapper.promise);
+    parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(function (result) {
+      expect(result.value).toBe(true);
+    }, fail);
+    parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(done, done);
+    parts.dry.wrapper.resolve(parts.response);
+  });
 
-  it(
-    "may be rejected on the dry side",
-    function(done) {
-      parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(
-        fail,
-        function(result) {
-          expect(result.value).toBe(true);
-        }
-      );
-      parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(done, done);
-      parts.dry.wrapper.reject(parts.response);
-    }
-  );
+  it("may be rejected on the dry side", function (done) {
+    parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(fail, function (result) {
+      expect(result.value).toBe(true);
+    });
+    parts.dry.wrapper.promise = parts.dry.wrapper.promise.then(done, done);
+    parts.dry.wrapper.reject(parts.response);
+  });
 });
