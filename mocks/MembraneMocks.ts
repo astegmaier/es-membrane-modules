@@ -16,19 +16,19 @@ type DeepPartial<T> = T extends object
 
 export interface IMocks {
   wet: {
-    [key: string]: any;
+    [key: string | symbol]: any;
     doc: IDocument;
     Node: IMockNodeConstructor;
     Element: IMockElementConstructor;
   };
   dry: {
-    [key: string]: any;
+    [key: string | symbol]: any;
     doc: IDocument;
     Node: IMockNodeConstructor;
     Element: IMockElementConstructor;
   };
   [DAMP]?: {
-    [key: string]: any;
+    [key: string | symbol]: any;
     doc: IDocument;
     Node: IMockNodeConstructor;
     Element: IMockElementConstructor;

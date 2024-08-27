@@ -1,7 +1,14 @@
 import { MembraneMocks, loggerLib, DAMP } from "../mocks";
+import type { IMockElement, IDocument, IMocks } from "../mocks";
+import type { Membrane } from "../src";
+
+interface ITraceMap extends Map<object, string> {
+  addMember(value: object | null, name: string): void;
+  getPrototypeChain(value: object): string[];
+}
 
 describe("basic concepts: ", function() {
-  var wetDocument, dryDocument, membrane;
+  let wetDocument: IDocument, dryDocument: IDocument, membrane: Membrane;
   
   beforeEach(function() {
     let parts = MembraneMocks();
@@ -11,9 +18,9 @@ describe("basic concepts: ", function() {
   });
 
   afterEach(function() {
-    wetDocument = null;
-    dryDocument = null;
-    membrane = null;
+    wetDocument = null as any;
+    dryDocument = null as any;
+    membrane = null as any;
   });
   
   it("dryDocument and wetDocument should not be the same", function() {
@@ -33,10 +40,10 @@ describe("basic concepts: ", function() {
   });
 
   it("Setters should wrap and unwrap values correctly", function () {
-    var extraHolder;
+    let extraHolder: any;
     const desc = {
       get: function() { return extraHolder; },
-      set: function(val) {
+      set: function(val: any) {
         extraHolder = val;
         return val;
       },
@@ -138,7 +145,7 @@ describe("basic concepts: ", function() {
   );
 
   it("Looking up an accessor descriptor works", function() {
-    var desc = Object.getOwnPropertyDescriptor(dryDocument, "firstChild");
+    let desc = Object.getOwnPropertyDescriptor(dryDocument, "firstChild")!;
     expect(desc.configurable).toBe(true);
     expect(desc.enumerable).toBe(true);
     expect(typeof desc.get).toBe("function");
@@ -146,7 +153,7 @@ describe("basic concepts: ", function() {
     expect(typeof desc.set).toBe("undefined");
 
 
-    desc = Object.getOwnPropertyDescriptor(dryDocument, "baseURL");
+    desc = Object.getOwnPropertyDescriptor(dryDocument, "baseURL")!;
     expect(desc.configurable).toBe(true);
     expect(desc.enumerable).toBe(true);
     expect(typeof desc.get).toBe("function");
@@ -166,13 +173,9 @@ describe("basic concepts: ", function() {
   });
 
   it("ElementDry and NodeDry respect Object.getPrototypeOf", function() {
-    let wetRoot, ElementWet, NodeWet;
-    let dryRoot, ElementDry, NodeDry;
-
     let parts = MembraneMocks();
-    wetRoot     = parts.wet.doc.rootElement;
-    ElementWet  = parts.wet.Element;
-    NodeWet     = parts.wet.Node;
+    const ElementWet  = parts.wet.Element;
+    const NodeWet     = parts.wet.Node;
 
     let e, eP, proto, p2;
 
@@ -185,9 +188,9 @@ describe("basic concepts: ", function() {
     p2 = NodeWet.prototype;
     expect(proto === p2).toBe(true);
     
-    dryRoot     = parts.dry.doc.rootElement;
-    ElementDry  = parts.dry.Element;
-    NodeDry     = parts.dry.Node;
+    const dryRoot     = parts.dry.doc.rootElement;
+    const ElementDry  = parts.dry.Element;
+    const NodeDry     = parts.dry.Node;
 
     e = new ElementDry({}, "test");
     eP = Object.getPrototypeOf(e);
@@ -211,7 +214,7 @@ describe("basic concepts: ", function() {
     let proto1 = ElementDry.prototype;
     let owner = {
       isFakeDoc: true,
-      root: null
+      root: null as null | IMockElement
     };
     let k = new ElementDry(owner, "k");
     expect(typeof k).not.toBe("undefined");
@@ -281,7 +284,7 @@ describe("basic concepts: ", function() {
   });
 
   it("The in operator works", function() {
-    let checkHas = function(value, valueName, propName, index, array) {
+    let checkHas = function(value: object, _valueName: string, propName: string, index: number, array: string[]) {
       expect(propName in value).toBe(index !== array.length - 1);
     };
     let propList = [
@@ -302,14 +305,14 @@ describe("basic concepts: ", function() {
 
   describe("The delete operator works as expected", function() {
     it("on dryDocument.rootElement", function() {
-      let wasDeleted = delete dryDocument.rootElement;
+      let wasDeleted = delete (dryDocument as Partial<IDocument>).rootElement;
       expect(typeof dryDocument.rootElement).toBe("undefined");
       expect("rootElement" in dryDocument).toBe(false);
       expect(wasDeleted).toBe(true);
     });
 
     it("on dryDocument.rootElement.nodeName", function() {
-      let root = dryDocument.rootElement;
+      let root: Partial<IMockElement> = dryDocument.rootElement;
       let wasDeleted = delete root.nodeName;
       expect(typeof root.nodeName).toBe("undefined");
       expect("nodeName" in root).toBe(false);
@@ -317,7 +320,7 @@ describe("basic concepts: ", function() {
     });
 
     it("on dryDocument.rootElement.insertBefore", function() {
-      let root = dryDocument.rootElement;
+      let root: Partial<IMockElement> = dryDocument.rootElement;
       let wasDeleted = delete root.insertBefore;
 
       // This is because insertBefore is inherited from NodeWet.prototype.
@@ -478,18 +481,13 @@ describe("basic concepts: ", function() {
 
   it("Setting a prototype works as expected", function() {
     const logger = loggerLib.getLogger("test.membrane.setPrototypeOf");
-    let wetRoot, ElementWet, NodeWet;
-    let dryRoot, ElementDry, NodeDry;
 
-    let parts = MembraneMocks(false, logger);
-    wetRoot     = parts.wet.doc.rootElement;
-    ElementWet  = parts.wet.Element;
-    NodeWet     = parts.wet.Node;
+    const parts = MembraneMocks(false, logger);
+    const wetRoot = parts.wet.doc.rootElement;
     parts.wet.root = wetRoot;
 
-    dryRoot     = parts.dry.doc.rootElement;
-    ElementDry  = parts.dry.Element;
-    NodeDry     = parts.dry.Node;
+    const dryRoot = parts.dry.doc.rootElement;
+    const ElementDry = parts.dry.Element;
     parts.dry.root = dryRoot;
 
     let XHTMLElementDryProto = {
@@ -497,9 +495,9 @@ describe("basic concepts: ", function() {
     };
     let eProto = ElementDry.prototype;
 
-    const traceMap = new Map(/* value: name */);
+    const traceMap = new Map(/* value: name */) as ITraceMap;
     {
-      traceMap.addMember = function(value, name) {
+      traceMap.addMember = function(value: object, name: string) {
         if (!this.has(value))
           this.set(value, name);
         if ((typeof value === "function") && !this.has(value.prototype))
@@ -508,9 +506,9 @@ describe("basic concepts: ", function() {
 
       {
         let keys = Reflect.ownKeys(parts.wet);
-        keys.forEach(function(key) {
+        keys.forEach(function(this: IMocks['wet'], key) {
           let value = this[key];
-          traceMap.addMember(value, "parts.wet." + key);
+          traceMap.addMember(value, "parts.wet." + key.toString());
         }, parts.wet);
 
         traceMap.addMember(
@@ -520,9 +518,9 @@ describe("basic concepts: ", function() {
       }
       {
         let keys = Reflect.ownKeys(parts.dry);
-        keys.forEach(function(key) {
+        keys.forEach(function(this: IMocks['dry'], key) {
           let value = this[key];
-          traceMap.addMember(value, "parts.dry." + key);
+          traceMap.addMember(value, "parts.dry." + key.toString());
         }, parts.dry);
 
         traceMap.addMember(
@@ -533,7 +531,7 @@ describe("basic concepts: ", function() {
         traceMap.set(XHTMLElementDryProto, "XHTMLElementDryProto");
       }
 
-      traceMap.getPrototypeChain = function(value) {
+      traceMap.getPrototypeChain = function(value: object | null) {
         var rv = [], next;
         while (value) {
           next = this.get(value) || "(unknown)";
@@ -662,7 +660,7 @@ describe("basic concepts: ", function() {
   it(
     "ObjectGraphHandler.prototype.revokeEverything() breaks all proxy access on an object graph",
     function() {
-      function lookup(obj, propName) {
+      function lookup(obj: { [key: string]: any }, propName: string) {
         return function() {
           return obj[propName];
         };
@@ -703,18 +701,17 @@ describe("basic concepts: ", function() {
   describe(
     "Object constructors should be properly wrapped (thanks to Luca Franceschini for this test)",
     function() {
-      // objects returned by `should`
-      function ObjectWrapper(obj) {
-        this._obj = obj;
+      class ObjectWrapper {
+        constructor(private _obj: object) {}
+        equal(other: object) {
+          return (this._obj === other);
+        }
       }
 
-      ObjectWrapper.prototype.equal = function equal(other) {
-        return (this._obj === other);
-      };
       beforeEach(function() {
         Object.defineProperty(Object.prototype, 'should', {
           configurable: true,
-          get: function () {
+          get: function (this: object) {
             return new ObjectWrapper(this);
           }
         });
@@ -746,7 +743,25 @@ describe("basic concepts: ", function() {
 });
 
 describe("Receivers in proxies", function() {
-  let wetObj, dryObj;
+  interface ITestObject {
+    ALPHA: {
+      value: string;
+    };
+    BETA: {
+      value: "B";
+    };
+    alpha: {
+      upper: object | null;
+      value: string;
+      _upper: object | null;
+    };
+    beta: {
+      _upper: object | null;
+      value: string;
+    };
+    X: {};
+  }
+  let wetObj: ITestObject, dryObj: ITestObject;
   beforeEach(function() {
     wetObj = {
       ALPHA: {
@@ -804,7 +819,8 @@ it("More than one object graph can be available", function() {
   let parts = MembraneMocks(true);
   let wetDocument = parts.wet.doc;
   let dryDocument = parts.dry.doc;
-  let dampDocument = parts[DAMP].doc;
+  // ansteg TODO: enhance MembraneMocks with an overload signature so we know deterministically when the DAMP object graph is available.
+  let dampDocument = parts[DAMP]!.doc;
 
   wetDocument.dispatchEvent("unload");
 

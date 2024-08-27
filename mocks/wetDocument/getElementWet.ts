@@ -4,7 +4,7 @@ import type { IMockNode, IMockNodeConstructor } from "./getNodeWet";
 export interface IMockElement extends IMockNode {
   nodeType: number;
   nodeName: string;
-  [key: string]: any;
+  [key: string | symbol]: any;
 }
 
 export interface IMockElementConstructor {

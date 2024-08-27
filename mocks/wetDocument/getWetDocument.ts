@@ -4,7 +4,7 @@ import { IMockNode, IMockNodeConstructor } from "./getNodeWet";
 import type { IMockEventTarget, IMockEventTargetConstructor } from "./EventTargetWet";
 
 export interface IDocument extends IMockEventTarget {
-  [key: string]: any;
+  [key: string | symbol]: any;
   ownerDocument: any;
   childNodes: any[];
   nodeType: number;
@@ -15,7 +15,7 @@ export interface IDocument extends IMockEventTarget {
   shouldNotBeAmongKeys: boolean;
   membraneGraphName: string;
   createElement(name: string): IMockElement;
-  insertBefore(newChild: IMockNode, refChild: IMockNode): IMockNode;
+  insertBefore(newChild: IMockNode, refChild: IMockNode | null): IMockNode;
   rootElement: IMockElement;
 }
 
