@@ -1,10 +1,9 @@
 import assert from "./assert";
-import type { DAMP } from "./dampSymbol";
 import { EventTargetWet } from "./wetDocument/EventTargetWet";
 import { getNodeWet, type IMockNodeConstructor } from "./wetDocument/getNodeWet";
 import { getElementWet, type IMockElementConstructor } from "./wetDocument/getElementWet";
 import { getWetDocument, type IDocument } from "./wetDocument/getWetDocument";
-import { dampObjectGraph } from "./dampObjectGraph";
+import { dampObjectGraph, type IDampMocks } from "./dampObjectGraph";
 
 import { Membrane, type ObjectGraphHandler, type ILogger } from "../src";
 
@@ -27,16 +26,9 @@ export interface IMocks {
     Node: IMockNodeConstructor;
     Element: IMockElementConstructor;
   };
-  [DAMP]?: {
-    [key: string | symbol]: any;
-    doc: IDocument;
-    Node: IMockNodeConstructor;
-    Element: IMockElementConstructor;
-  };
   handlers: {
     dry: ObjectGraphHandler;
     wet: ObjectGraphHandler;
-    [DAMP]?: ObjectGraphHandler;
   };
   membrane: Membrane;
 }
@@ -48,10 +40,20 @@ export interface IMockOptions {
 }
 
 export function MembraneMocks(
+  includeDamp?: false,
+  logger?: ILogger,
+  mockOptions?: IMockOptions
+): IMocks;
+export function MembraneMocks(
+  includeDamp: true,
+  logger?: ILogger,
+  mockOptions?: IMockOptions
+): IMocks & IDampMocks;
+export function MembraneMocks(
   includeDamp?: boolean,
   logger?: ILogger,
   mockOptions?: IMockOptions
-): IMocks {
+): IMocks & IDampMocks {
   includeDamp = Boolean(includeDamp);
   if (!mockOptions) {
     mockOptions = {};
@@ -191,5 +193,5 @@ export function MembraneMocks(
     dampObjectGraph(Mocks as IMocks, mockOptions);
   }
 
-  return Mocks as IMocks;
+  return Mocks as IMocks & IDampMocks;
 }
