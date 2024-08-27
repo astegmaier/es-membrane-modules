@@ -11,13 +11,14 @@ export function dampObjectGraph(parts: IMocks, mockOptions: IMockOptions) {
   }
 
   let keys = Object.getOwnPropertyNames(parts.wet);
-  parts[DAMP] = {};
+  const dampParts = {} as IMocks[typeof DAMP];
   for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
-    parts[DAMP][key] = parts.membrane.convertArgumentToProxy(
+    let key = keys[i]!;
+    dampParts![key] = parts.membrane.convertArgumentToProxy(
       parts.handlers.wet,
       parts.handlers[DAMP],
       parts.wet[key]
     );
   }
+  parts[DAMP] = dampParts!;
 }

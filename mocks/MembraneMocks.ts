@@ -1,6 +1,8 @@
 import assert from "./assert";
-import { getNodeWet, type INode } from "./wetDocument/getNodeWet";
-import { getElementWet, type IElement } from "./wetDocument/getElementWet";
+import type { DAMP } from "./dampSymbol";
+import { EventTargetWet } from "./wetDocument/EventTargetWet";
+import { getNodeWet, type IMockNodeConstructor } from "./wetDocument/getNodeWet";
+import { getElementWet, type IMockElementConstructor } from "./wetDocument/getElementWet";
 import { getWetDocument, type IDocument } from "./wetDocument/getWetDocument";
 import { dampObjectGraph } from "./dampObjectGraph";
 
@@ -14,20 +16,27 @@ type DeepPartial<T> = T extends object
 
 export interface IMocks {
   wet: {
+    [key: string]: any;
     doc: IDocument;
-    Node: INode;
-    Element: IElement;
-    root?: IElement;
+    Node: IMockNodeConstructor;
+    Element: IMockElementConstructor;
   };
   dry: {
+    [key: string]: any;
     doc: IDocument;
-    Node: INode;
-    Element: IElement;
-    root?: IElement;
+    Node: IMockNodeConstructor;
+    Element: IMockElementConstructor;
+  };
+  [DAMP]?: {
+    [key: string]: any;
+    doc: IDocument;
+    Node: IMockNodeConstructor;
+    Element: IMockElementConstructor;
   };
   handlers: {
     dry: ObjectGraphHandler;
     wet: ObjectGraphHandler;
+    [DAMP]?: ObjectGraphHandler;
   };
   membrane: Membrane;
 }
@@ -54,9 +63,9 @@ export function MembraneMocks(
   // Originally from mocks/wetDocument.js //
   //////////////////////////////////////////
 
-  const NodeWet = getNodeWet();
+  const NodeWet = getNodeWet(EventTargetWet);
   const ElementWet = getElementWet(NodeWet);
-  const wetDocument = getWetDocument(NodeWet, ElementWet);
+  const wetDocument = getWetDocument(NodeWet, ElementWet, EventTargetWet);
 
   Mocks.wet = {
     doc: wetDocument,

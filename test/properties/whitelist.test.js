@@ -35,6 +35,11 @@ describe("Whitelisting object properties", function() {
   const ElementWhiteList = [
     "nodeType",
     "nodeName",
+    // ansteg: I added this when I converted the test mocks to ES6 classes, 
+    // which work slightly differently than the manually-rolled prototype inheritance we were using before.
+    // Specifically when a class inherits from another one the base classes "own" props that are set in the constructor
+    // end up on the same instance object, whereas before they would be on the inherited prototype object.
+    "parentNode" 
   ];
 
   const docWhiteList = [

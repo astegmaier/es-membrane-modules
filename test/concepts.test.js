@@ -612,11 +612,22 @@ describe("basic concepts: ", function() {
     expect(dryRoot.namespaceURI).toBe(XHTMLElementDryProto.namespaceURI);
     expect(wetRoot.namespaceURI).toBe(XHTMLElementDryProto.namespaceURI);
 
-    let XHTMLElementDry = function(ownerDoc, name) {
-      // this takes care of ownerDoc, name
-      ElementDry.apply(this, [ownerDoc, name]);
-    };
-    XHTMLElementDry.prototype = XHTMLElementDryProto;
+    // ansteg: the two lines below used to be:
+    //
+    // let XHTMLElementDry = function(ownerDoc, name) {
+    //   // this takes care of ownerDoc, name
+    //   ElementDry.apply(this, [ownerDoc, name]);
+    // };
+    // XHTMLElementDry.prototype = XHTMLElementDryProto;
+    //
+    // ...but now that ElementDry is a proper ES6 class, it would throw "TypeError: Class constructor ElementDry cannot be invoked without 'new'"
+    // To work around this, we are using ES6 inheritance to create a new class that extends ElementDry, and override its prototype from there.
+    // In addition, because XHTMLElementDry.prototype is a read-only property, we have to tweak the prototype-of-the-prototype
+    // (e.g. modify XHTMLElementDry.prototype.__proto__ instead of XHTMLElementDry.prototype) in order to tweak the prototype chain.
+
+    class XHTMLElementDry extends ElementDry {}
+    Reflect.setPrototypeOf(XHTMLElementDry.prototype, XHTMLElementDryProto);
+
     traceMap.addMember(XHTMLElementDry, "XHTMLElementDry");
 
     let x = new XHTMLElementDry(dryDocument, "test");
@@ -625,6 +636,7 @@ describe("basic concepts: ", function() {
       let chain = traceMap.getPrototypeChain(x);
       let expectedChain = [
         "x",
+        "XHTMLElementDry.prototype",
         "XHTMLElementDryProto",
         "parts.dry.Element.prototype",
         "parts.dry.Node.prototype",

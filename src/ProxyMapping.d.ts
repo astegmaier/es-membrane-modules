@@ -84,7 +84,7 @@ export interface IProxyMappingPrototype {
     recordLocalDelete: any
   ): void;
   cachedOwnKeys(this: ProxyMapping, fieldName: symbol | string): any;
-  setCachedOwnKeys(this: ProxyMapping, fieldName: symbol | string, keys, original): void;
+  setCachedOwnKeys(this: ProxyMapping, fieldName: symbol | string, keys: any, original: any): void;
   localOwnKeys(this: ProxyMapping, fieldName: symbol | string): any;
   appendDeletedNames(this: ProxyMapping, fieldName: symbol | string, set: any): void;
   wasDeletedLocally(this: ProxyMapping, fieldName: symbol | string, propName: any): boolean;

@@ -1,13 +1,35 @@
 import assert from "../assert";
-import { EventTargetWet } from "./EventTargetWet";
+import { IMockElement, IMockElementConstructor } from "./getElementWet";
+import { IMockNode, IMockNodeConstructor } from "./getNodeWet";
+import type { IMockEventTarget, IMockEventTargetConstructor } from "./EventTargetWet";
 
-export function getWetDocument(NodeWet, ElementWet) {
+export interface IDocument extends IMockEventTarget {
+  [key: string]: any;
+  ownerDocument: any;
+  childNodes: any[];
+  nodeType: number;
+  nodeName: string;
+  parentNode: any;
+  firstChild: any;
+  baseUrl: string;
+  shouldNotBeAmongKeys: boolean;
+  membraneGraphName: string;
+  createElement(name: string): IMockElement;
+  insertBefore(newChild: IMockNode, refChild: IMockNode): IMockNode;
+  rootElement: IMockElement;
+}
+
+export function getWetDocument(
+  NodeWet: IMockNodeConstructor,
+  ElementWet: IMockElementConstructor,
+  EventTargetWet: IMockEventTargetConstructor
+) {
   // A sample object for developing the Membrane module with.
 
   /* XXX ajvincent Don't make this object inherit from any prototypes.
    * Instead, test prototype inheritance through ElementWet.
    */
-  const wetDocument = {
+  const wetDocument: Partial<IDocument> = {
     ownerDocument: null,
 
     childNodes: [],
@@ -16,8 +38,10 @@ export function getWetDocument(NodeWet, ElementWet) {
     parentNode: null,
 
     get firstChild() {
-      if (this.childNodes.length > 0) {
-        return this.childNodes[0];
+      // TODO: revisit type assertion (!)
+      if (this.childNodes!.length > 0) {
+        // TODO: revisit type assertion (!)
+        return this.childNodes![0];
       }
       return null;
     },
@@ -44,7 +68,7 @@ export function getWetDocument(NodeWet, ElementWet) {
   };
 
   Object.defineProperty(wetDocument, "createElement", {
-    value: function (name) {
+    value: function (name: string) {
       if (typeof name != "string") {
         throw new Error("createElement requires name be a string!");
       }
@@ -56,7 +80,7 @@ export function getWetDocument(NodeWet, ElementWet) {
   });
 
   Object.defineProperty(wetDocument, "insertBefore", {
-    value: function (newChild, refChild) {
+    value: function (newChild: IMockNode, refChild: IMockNode) {
       if (!(newChild instanceof NodeWet)) {
         throw new Error("insertBefore expects a Node!");
       }
@@ -88,7 +112,8 @@ export function getWetDocument(NodeWet, ElementWet) {
   var docBaseURL = "http://www.example.com/";
 
   Object.defineProperty(wetDocument, "rootElement", {
-    value: wetDocument.createElement("root"),
+    // TODO: revisit type assertion (!)
+    value: wetDocument.createElement!("root"),
     writable: false,
     enumerable: true,
     // "non-configurable objects cannot gain or lose properties"
@@ -96,7 +121,8 @@ export function getWetDocument(NodeWet, ElementWet) {
   });
 
   assert(
-    wetDocument.rootElement.ownerDocument == wetDocument,
+    // TODO: revisit type assertion (!)
+    wetDocument.rootElement!.ownerDocument == wetDocument,
     "wetDocument cyclic reference isn't correct"
   );
 

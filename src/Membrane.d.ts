@@ -19,7 +19,7 @@ export interface ILogger {
 export interface MembraneOptions {
   passThroughFilter?: (value: unknown) => boolean;
   showGraphName?: boolean;
-  logger?: ILogger;
+  logger?: ILogger | null;
 }
 
 export interface IBuildMappingOptions {
@@ -42,7 +42,7 @@ export interface IMembraneOwn {
    */
   map: WeakMap<any, ProxyMapping>;
   handlersByFieldName: { [fieldName: string | symbol]: any };
-  logger?: ILogger;
+  logger: ILogger | null;
   __functionListeners__: any[];
   warnOnceSet: Set<any> | null;
   modifyRules: ModifyRulesAPI;

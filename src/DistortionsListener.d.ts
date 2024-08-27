@@ -38,7 +38,7 @@ export interface IDistortionsListenerPrototype {
    * @private
    */
   proxyListener(this: DistortionsListener, meta: any): void;
-  passThroughFilter(this: DistortionsListener, value): boolean;
+  passThroughFilter(this: DistortionsListener, value: any): boolean;
 }
 
 export interface DistortionsListener
