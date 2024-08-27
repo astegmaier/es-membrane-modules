@@ -1,7 +1,6 @@
-describe("Internal values are not exposed:  ", function() {
-  const GLOBAL = (typeof global == "object") ? global : window;
-  const PRIVATE_KEYS = 
-  [
+describe("Internal values are not exposed:  ", function () {
+  const GLOBAL = typeof global == "object" ? global : window;
+  const PRIVATE_KEYS = [
     // source/moduleUtilities.js
     "valueType",
     "ShadowKeyMap",
@@ -32,10 +31,10 @@ describe("Internal values are not exposed:  ", function() {
     "ModifyRulesAPI",
 
     // source/dogfood.js
-    "DogfoodMembrane",
+    "DogfoodMembrane"
   ];
-  PRIVATE_KEYS.forEach(function(name) {
-    it(name, function() {
+  PRIVATE_KEYS.forEach(function (name) {
+    it(name, function () {
       expect(name in GLOBAL).toBe(false);
     });
   });

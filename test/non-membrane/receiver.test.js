@@ -1,10 +1,10 @@
-describe("Receivers in Reflect", function() {
+describe("Receivers in Reflect", function () {
   var alpha, beta, ALPHA, BETA;
-  beforeEach(function() {
+  beforeEach(function () {
     ALPHA = {
       value: "A"
     };
-    BETA  = {
+    BETA = {
       value: "B"
     };
 
@@ -16,7 +16,7 @@ describe("Receivers in Reflect", function() {
         this._upper = val;
       },
       _upper: ALPHA,
-      value: "a",
+      value: "a"
     };
 
     beta = {
@@ -25,18 +25,18 @@ describe("Receivers in Reflect", function() {
     };
   });
 
-  afterEach(function() {
+  afterEach(function () {
     alpha = null;
     beta = null;
     ALPHA = null;
     BETA = null;
   });
 
-  it("are where property lookups happen", function() {
+  it("are where property lookups happen", function () {
     expect(Reflect.get(alpha, "upper", beta)).toBe(BETA);
   });
 
-  it("are where property setter invocations happen", function() {
+  it("are where property setter invocations happen", function () {
     const X = {};
     Reflect.set(alpha, "upper", X, beta);
     expect(beta._upper).toBe(X);

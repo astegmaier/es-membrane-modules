@@ -1,6 +1,6 @@
 import { MembraneMocks, loggerLib, DAMP } from "../../mocks";
 
-describe("Function listeners", function() {
+describe("Function listeners", function () {
   "use strict";
   // Customize this for whatever variables you need.
   var parts, membrane, dryDocument, wetDocument, dampDocument;
@@ -15,13 +15,13 @@ describe("Function listeners", function() {
   mLogger.addAppender(mAppender);
 
   function setParts() {
-    dryDocument  = parts.dry.doc;
-    wetDocument  = parts.wet.doc;
+    dryDocument = parts.dry.doc;
+    wetDocument = parts.wet.doc;
     dampDocument = parts[DAMP].doc;
-    membrane     = parts.membrane;
+    membrane = parts.membrane;
   }
 
-  beforeEach(function() {
+  beforeEach(function () {
     parts = MembraneMocks(true, mLogger);
     setParts();
     appender.clear();
@@ -29,40 +29,39 @@ describe("Function listeners", function() {
   });
 
   function clearParts() {
-    dryDocument  = null;
-    wetDocument  = null;
+    dryDocument = null;
+    wetDocument = null;
     dampDocument = null;
 
     membrane.getHandlerByName("dry").revokeEverything();
     membrane = null;
-    parts    = null;
+    parts = null;
   }
   afterEach(clearParts);
 
-  function TestMessage(
-    cbToken, reason, trapName, fromField, toField, target, rvOrExn
-  )
-  {
-    this.cbToken   = cbToken;
-    this.reason    = reason;
-    this.trapName  = trapName;
+  function TestMessage(cbToken, reason, trapName, fromField, toField, target, rvOrExn) {
+    this.cbToken = cbToken;
+    this.reason = reason;
+    this.trapName = trapName;
     this.fromField = fromField;
-    this.toField   = toField;
-    this.target    = target;
-    this.rvOrExn   = rvOrExn;
+    this.toField = toField;
+    this.target = target;
+    this.rvOrExn = rvOrExn;
   }
-  TestMessage.prototype.expectEquals = function(other/*, index*/) {
+  TestMessage.prototype.expectEquals = function (other /*, index*/) {
     let pass = other instanceof TestMessage;
     expect(pass).toBe(true);
-    if (!pass)
+    if (!pass) {
       return;
+    }
 
     Reflect.ownKeys(this).forEach((key) => {
-      let t = this[key], o = other[key];
+      let t = this[key],
+        o = other[key];
       expect(t).toBe(o);
     }, this);
   };
-  TestMessage.prototype.toString = function() {
+  TestMessage.prototype.toString = function () {
     return JSON.stringify([
       this.cbToken,
       this.reason,
@@ -73,14 +72,9 @@ describe("Function listeners", function() {
       this.rvOrExn
     ]);
   };
-  
-  function fireInfo(
-    cbToken, reason, trapName, fromField, toField, target, rvOrExn
-  )
-  {
-    var msg = new TestMessage(
-      cbToken, reason, trapName, fromField, toField, target, rvOrExn
-    );
+
+  function fireInfo(cbToken, reason, trapName, fromField, toField, target, rvOrExn) {
+    var msg = new TestMessage(cbToken, reason, trapName, fromField, toField, target, rvOrExn);
     logger.info(msg);
     return appender.events.length;
   }
@@ -93,7 +87,7 @@ describe("Function listeners", function() {
     dry1: fireInfo.bind(null, "dry1"),
 
     damp: fireInfo.bind(null, "damp"),
-    
+
     mem0: fireInfo.bind(null, "mem0"),
     mem1: fireInfo.bind(null, "mem1"),
 
@@ -105,321 +99,377 @@ describe("Function listeners", function() {
   function testMessageSequence(messages) {
     expect(messages.length).toBe(appender.events.length);
     if (messages.length === appender.events.length) {
-      messages.forEach(function(m, index) {
+      messages.forEach(function (m, index) {
         m.expectEquals(appender.events[index].message, index);
       });
     }
   }
-  
-  it(
-    "on an apply call and through cross-membrane callback functions",
-    function() {
-      // Event listeners, basically.
-      parts.dry.doc.addEventListener("applyTest", TestListeners.target, false);
 
-      parts.membrane.addFunctionListener(TestListeners.mem0);
-      parts.membrane.addFunctionListener(TestListeners.mem1);
+  it("on an apply call and through cross-membrane callback functions", function () {
+    // Event listeners, basically.
+    parts.dry.doc.addEventListener("applyTest", TestListeners.target, false);
 
-      parts.handlers.dry.addFunctionListener(TestListeners.dry0);
-      parts.handlers.dry.addFunctionListener(TestListeners.dry1);
+    parts.membrane.addFunctionListener(TestListeners.mem0);
+    parts.membrane.addFunctionListener(TestListeners.mem1);
 
-      parts.handlers.wet.addFunctionListener(TestListeners.wet0);
-      parts.handlers.wet.addFunctionListener(TestListeners.wet1);
+    parts.handlers.dry.addFunctionListener(TestListeners.dry0);
+    parts.handlers.dry.addFunctionListener(TestListeners.dry1);
 
-      parts.dry.doc.dispatchEvent("applyTest");
+    parts.handlers.wet.addFunctionListener(TestListeners.wet0);
+    parts.handlers.wet.addFunctionListener(TestListeners.wet1);
 
-      const messages = [
-        /* entering dispatchEvent */
-        new TestMessage(
-          "dry0", "enter",  "apply", "dry", "wet",
-          parts.wet.doc.dispatchEvent, undefined
-        ),
-        new TestMessage(
-          "dry1", "enter",  "apply", "dry", "wet",
-          parts.wet.doc.dispatchEvent, undefined
-        ),
-        new TestMessage(
-          "wet0", "enter",  "apply", "dry", "wet",
-          parts.wet.doc.dispatchEvent, undefined
-        ),
-        new TestMessage(
-          "wet1", "enter",  "apply", "dry", "wet",
-          parts.wet.doc.dispatchEvent, undefined
-        ),
-        new TestMessage(
-          "mem0", "enter",  "apply", "dry", "wet",
-          parts.wet.doc.dispatchEvent, undefined
-        ),
-        new TestMessage(
-          "mem1", "enter",  "apply", "dry", "wet",
-          parts.wet.doc.dispatchEvent, undefined
-        ),
+    parts.dry.doc.dispatchEvent("applyTest");
 
-        /* entering added event listener */
-        new TestMessage(
-          "wet0", "enter",  "apply", "wet", "dry",
-          TestListeners.target, undefined
-        ),
-        new TestMessage(
-          "wet1", "enter",  "apply", "wet", "dry",
-          TestListeners.target, undefined
-        ),
-        new TestMessage(
-          "dry0", "enter",  "apply", "wet", "dry",
-          TestListeners.target, undefined
-        ),
-        new TestMessage(
-          "dry1", "enter",  "apply", "wet", "dry",
-          TestListeners.target, undefined
-        ),
-        new TestMessage(
-          "mem0", "enter",  "apply", "wet", "dry",
-          TestListeners.target, undefined
-        ),
-        new TestMessage(
-          "mem1", "enter",  "apply", "wet", "dry",
-          TestListeners.target, undefined
-        ),
+    const messages = [
+      /* entering dispatchEvent */
+      new TestMessage(
+        "dry0",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.dispatchEvent,
+        undefined
+      ),
+      new TestMessage(
+        "dry1",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.dispatchEvent,
+        undefined
+      ),
+      new TestMessage(
+        "wet0",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.dispatchEvent,
+        undefined
+      ),
+      new TestMessage(
+        "wet1",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.dispatchEvent,
+        undefined
+      ),
+      new TestMessage(
+        "mem0",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.dispatchEvent,
+        undefined
+      ),
+      new TestMessage(
+        "mem1",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.dispatchEvent,
+        undefined
+      ),
 
-        /* exiting added event listener */
-        new TestMessage(
-          "wet0", "return",  "apply", "wet", "dry",
-          TestListeners.target, 12
-        ),
-        new TestMessage(
-          "wet1", "return",  "apply", "wet", "dry",
-          TestListeners.target, 12
-        ),
-        new TestMessage(
-          "dry0", "return",  "apply", "wet", "dry",
-          TestListeners.target, 12
-        ),
-        new TestMessage(
-          "dry1", "return",  "apply", "wet", "dry",
-          TestListeners.target, 12
-        ),
-        new TestMessage(
-          "mem0", "return",  "apply", "wet", "dry",
-          TestListeners.target, 12
-        ),
-        new TestMessage(
-          "mem1", "return",  "apply", "wet", "dry",
-          TestListeners.target, 12
-        ),
+      /* entering added event listener */
+      new TestMessage("wet0", "enter", "apply", "wet", "dry", TestListeners.target, undefined),
+      new TestMessage("wet1", "enter", "apply", "wet", "dry", TestListeners.target, undefined),
+      new TestMessage("dry0", "enter", "apply", "wet", "dry", TestListeners.target, undefined),
+      new TestMessage("dry1", "enter", "apply", "wet", "dry", TestListeners.target, undefined),
+      new TestMessage("mem0", "enter", "apply", "wet", "dry", TestListeners.target, undefined),
+      new TestMessage("mem1", "enter", "apply", "wet", "dry", TestListeners.target, undefined),
 
-        /* exiting dispatchEvent */
-        new TestMessage(
-          "dry0", "return", "apply", "dry", "wet",
-          parts.wet.doc.dispatchEvent, undefined
-        ),
-        new TestMessage(
-          "dry1", "return", "apply", "dry", "wet",
-          parts.wet.doc.dispatchEvent, undefined
-        ),
-        new TestMessage(
-          "wet0", "return", "apply", "dry", "wet",
-          parts.wet.doc.dispatchEvent, undefined
-        ),
-        new TestMessage(
-          "wet1", "return", "apply", "dry", "wet",
-          parts.wet.doc.dispatchEvent, undefined
-        ),
-        new TestMessage(
-          "mem0", "return", "apply", "dry", "wet",
-          parts.wet.doc.dispatchEvent, undefined
-        ),
-        new TestMessage(
-          "mem1", "return", "apply", "dry", "wet",
-          parts.wet.doc.dispatchEvent, undefined
-        )
-      ];
-      testMessageSequence(messages);
-    }
-  );
+      /* exiting added event listener */
+      new TestMessage("wet0", "return", "apply", "wet", "dry", TestListeners.target, 12),
+      new TestMessage("wet1", "return", "apply", "wet", "dry", TestListeners.target, 12),
+      new TestMessage("dry0", "return", "apply", "wet", "dry", TestListeners.target, 12),
+      new TestMessage("dry1", "return", "apply", "wet", "dry", TestListeners.target, 12),
+      new TestMessage("mem0", "return", "apply", "wet", "dry", TestListeners.target, 12),
+      new TestMessage("mem1", "return", "apply", "wet", "dry", TestListeners.target, 12),
 
-  it(
-    "on a construct() call",
-    function() {
-      parts.handlers.wet.addFunctionListener(TestListeners.wet0);
+      /* exiting dispatchEvent */
+      new TestMessage(
+        "dry0",
+        "return",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.dispatchEvent,
+        undefined
+      ),
+      new TestMessage(
+        "dry1",
+        "return",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.dispatchEvent,
+        undefined
+      ),
+      new TestMessage(
+        "wet0",
+        "return",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.dispatchEvent,
+        undefined
+      ),
+      new TestMessage(
+        "wet1",
+        "return",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.dispatchEvent,
+        undefined
+      ),
+      new TestMessage(
+        "mem0",
+        "return",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.dispatchEvent,
+        undefined
+      ),
+      new TestMessage(
+        "mem1",
+        "return",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.dispatchEvent,
+        undefined
+      )
+    ];
+    testMessageSequence(messages);
+  });
 
-      const dryElem = new parts.dry.Element(parts.dry.doc, "test");
+  it("on a construct() call", function () {
+    parts.handlers.wet.addFunctionListener(TestListeners.wet0);
 
-      const messages = [
-        new TestMessage(
-          "wet0", "enter",  "construct", "dry", "wet",
-          parts.wet.Element, undefined
-        ),
+    const dryElem = new parts.dry.Element(parts.dry.doc, "test");
 
-        new TestMessage(
-          "wet0", "return", "construct", "dry", "wet",
-          parts.wet.Element, dryElem
-        ),
-      ];
-      testMessageSequence(messages);
-    }
-  );
+    const messages = [
+      new TestMessage("wet0", "enter", "construct", "dry", "wet", parts.wet.Element, undefined),
 
-  it(
-    "is ignored for object graphs not involved",
-    function() {
-      parts.handlers.wet.addFunctionListener(TestListeners.wet0);
-      parts.handlers.dry.addFunctionListener(TestListeners.dry0);
+      new TestMessage("wet0", "return", "construct", "dry", "wet", parts.wet.Element, dryElem)
+    ];
+    testMessageSequence(messages);
+  });
 
-      // ignored in the test
-      parts.handlers[DAMP].addFunctionListener(TestListeners.damp);
+  it("is ignored for object graphs not involved", function () {
+    parts.handlers.wet.addFunctionListener(TestListeners.wet0);
+    parts.handlers.dry.addFunctionListener(TestListeners.dry0);
 
-      const dryElem = parts.dry.doc.createElement("test");
+    // ignored in the test
+    parts.handlers[DAMP].addFunctionListener(TestListeners.damp);
 
-      const messages = [
-        new TestMessage(
-          "dry0", "enter",  "apply", "dry", "wet",
-          parts.wet.doc.createElement, undefined
-        ),
-        new TestMessage(
-          "wet0", "enter",  "apply", "dry", "wet",
-          parts.wet.doc.createElement, undefined
-        ),
+    const dryElem = parts.dry.doc.createElement("test");
 
-        new TestMessage(
-          "dry0", "return", "apply", "dry", "wet",
-          parts.wet.doc.createElement, dryElem
-        ),
-        new TestMessage(
-          "wet0", "return", "apply", "dry", "wet",
-          parts.wet.doc.createElement, dryElem
-        ),
-      ];
-      testMessageSequence(messages);
-    }
-  );
+    const messages = [
+      new TestMessage(
+        "dry0",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.createElement,
+        undefined
+      ),
+      new TestMessage(
+        "wet0",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.createElement,
+        undefined
+      ),
 
-  it(
-    "can be removed at will",
-    function() {
-      parts.handlers.wet.addFunctionListener(TestListeners.wet0);
+      new TestMessage(
+        "dry0",
+        "return",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.createElement,
+        dryElem
+      ),
+      new TestMessage("wet0", "return", "apply", "dry", "wet", parts.wet.doc.createElement, dryElem)
+    ];
+    testMessageSequence(messages);
+  });
 
-      parts.handlers.dry.addFunctionListener(TestListeners.dry1);
-      parts.handlers.dry.addFunctionListener(TestListeners.dry0);
+  it("can be removed at will", function () {
+    parts.handlers.wet.addFunctionListener(TestListeners.wet0);
 
-      // ignored in the test
-      parts.dry.doc.createElement("test");
+    parts.handlers.dry.addFunctionListener(TestListeners.dry1);
+    parts.handlers.dry.addFunctionListener(TestListeners.dry0);
 
-      appender.clear();
-      parts.handlers.dry.removeFunctionListener(TestListeners.dry1);
+    // ignored in the test
+    parts.dry.doc.createElement("test");
 
-      const dryElem = parts.dry.doc.createElement("test");
+    appender.clear();
+    parts.handlers.dry.removeFunctionListener(TestListeners.dry1);
 
-      const messages = [
-        new TestMessage(
-          "dry0", "enter",  "apply", "dry", "wet",
-          parts.wet.doc.createElement, undefined
-        ),
-        new TestMessage(
-          "wet0", "enter",  "apply", "dry", "wet",
-          parts.wet.doc.createElement, undefined
-        ),
+    const dryElem = parts.dry.doc.createElement("test");
 
-        new TestMessage(
-          "dry0", "return", "apply", "dry", "wet",
-          parts.wet.doc.createElement, dryElem
-        ),
-        new TestMessage(
-          "wet0", "return", "apply", "dry", "wet",
-          parts.wet.doc.createElement, dryElem
-        ),
-      ];
-      testMessageSequence(messages);
-    }
-  );
+    const messages = [
+      new TestMessage(
+        "dry0",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.createElement,
+        undefined
+      ),
+      new TestMessage(
+        "wet0",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.createElement,
+        undefined
+      ),
 
-  it(
-    "can throw an exception and not interfere with other listeners or the target function",
-    function() {
-      const staticException = new Error("Unhandled!");
+      new TestMessage(
+        "dry0",
+        "return",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.createElement,
+        dryElem
+      ),
+      new TestMessage("wet0", "return", "apply", "dry", "wet", parts.wet.doc.createElement, dryElem)
+    ];
+    testMessageSequence(messages);
+  });
 
-      parts.handlers.wet.addFunctionListener(TestListeners.wet0);
+  it("can throw an exception and not interfere with other listeners or the target function", function () {
+    const staticException = new Error("Unhandled!");
 
-      parts.handlers.dry.addFunctionListener(function(reason) {
-        if (reason !== "enter")
-          return;
-        throw staticException;
-      });
+    parts.handlers.wet.addFunctionListener(TestListeners.wet0);
 
-      parts.handlers.dry.addFunctionListener(TestListeners.dry0);
-
-      mAppender.clear();
-      const dryElem = parts.dry.doc.createElement("test");
-
-      const messages = [
-        new TestMessage(
-          "dry0", "enter",  "apply", "dry", "wet",
-          parts.wet.doc.createElement, undefined
-        ),
-        new TestMessage(
-          "wet0", "enter",  "apply", "dry", "wet",
-          parts.wet.doc.createElement, undefined
-        ),
-
-        new TestMessage(
-          "dry0", "return", "apply", "dry", "wet",
-          parts.wet.doc.createElement, dryElem
-        ),
-        new TestMessage(
-          "wet0", "return", "apply", "dry", "wet",
-          parts.wet.doc.createElement, dryElem
-        ),
-      ];
-      testMessageSequence(messages);
-
-      expect(mAppender.events.length).toBe(1);
-      if (mAppender.events.length >= 1) {
-        expect(mAppender.events[0].level).toBe("ERROR");
-        expect(mAppender.events[0].message).toBe(staticException.message);
+    parts.handlers.dry.addFunctionListener(function (reason) {
+      if (reason !== "enter") {
+        return;
       }
+      throw staticException;
+    });
+
+    parts.handlers.dry.addFunctionListener(TestListeners.dry0);
+
+    mAppender.clear();
+    const dryElem = parts.dry.doc.createElement("test");
+
+    const messages = [
+      new TestMessage(
+        "dry0",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.createElement,
+        undefined
+      ),
+      new TestMessage(
+        "wet0",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.createElement,
+        undefined
+      ),
+
+      new TestMessage(
+        "dry0",
+        "return",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.createElement,
+        dryElem
+      ),
+      new TestMessage("wet0", "return", "apply", "dry", "wet", parts.wet.doc.createElement, dryElem)
+    ];
+    testMessageSequence(messages);
+
+    expect(mAppender.events.length).toBe(1);
+    if (mAppender.events.length >= 1) {
+      expect(mAppender.events[0].level).toBe("ERROR");
+      expect(mAppender.events[0].message).toBe(staticException.message);
     }
-  );
+  });
 
-  it(
-    "notifies of exceptions thrown from the target function",
-    function() {
-      parts.handlers.wet.addFunctionListener(TestListeners.wet0);
+  it("notifies of exceptions thrown from the target function", function () {
+    parts.handlers.wet.addFunctionListener(TestListeners.wet0);
 
-      const staticException = new Error("Unhandled!");
-      parts.wet.doc.generateExceptionString = function() {
-        throw staticException;
-      };
+    const staticException = new Error("Unhandled!");
+    parts.wet.doc.generateExceptionString = function () {
+      throw staticException;
+    };
 
-      parts.handlers.dry.addFunctionListener(TestListeners.dry0);
+    parts.handlers.dry.addFunctionListener(TestListeners.dry0);
 
-      var exception;
-      try {
-        parts.dry.doc.generateExceptionString();
-      }
-      catch (ex) {
-        exception = ex;
-      }
-      expect(exception).toBe(staticException);
-
-      const messages = [
-        new TestMessage(
-          "dry0", "enter", "apply", "dry", "wet",
-          parts.wet.doc.generateExceptionString, undefined
-        ),
-        new TestMessage(
-          "wet0", "enter", "apply", "dry", "wet",
-          parts.wet.doc.generateExceptionString, undefined
-        ),
-
-        new TestMessage(
-          "dry0", "throw", "apply", "dry", "wet",
-          parts.wet.doc.generateExceptionString, staticException
-        ),
-        new TestMessage(
-          "wet0", "throw", "apply", "dry", "wet",
-          parts.wet.doc.generateExceptionString, staticException
-        ),
-      ];
-      testMessageSequence(messages);
+    var exception;
+    try {
+      parts.dry.doc.generateExceptionString();
+    } catch (ex) {
+      exception = ex;
     }
-  );
+    expect(exception).toBe(staticException);
+
+    const messages = [
+      new TestMessage(
+        "dry0",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.generateExceptionString,
+        undefined
+      ),
+      new TestMessage(
+        "wet0",
+        "enter",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.generateExceptionString,
+        undefined
+      ),
+
+      new TestMessage(
+        "dry0",
+        "throw",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.generateExceptionString,
+        staticException
+      ),
+      new TestMessage(
+        "wet0",
+        "throw",
+        "apply",
+        "dry",
+        "wet",
+        parts.wet.doc.generateExceptionString,
+        staticException
+      )
+    ];
+    testMessageSequence(messages);
+  });
 });

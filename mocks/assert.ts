@@ -3,9 +3,8 @@
  * @param value {unknown} The input that is checked for being truthy.
  * @param message {string} The message used for the error, if thrown.
  */
-export default function assert(value, message) {
-    if (!value) {
-      throw new Error(message);
-    }
+export default function assert(value: unknown, message: string): asserts value {
+  if (!value) {
+    throw new Error(message);
   }
-  
+}

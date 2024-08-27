@@ -58,7 +58,7 @@ export interface IObjectGraphHandlerPrototype
    *
    * @private
    */
-  getShadowTarget(this: ObjectGraphHandler, target): any;
+  getShadowTarget(this: ObjectGraphHandler, target: object): any;
 
   /**
    * Ensure a value has been wrapped in the membrane (and is available for distortions)

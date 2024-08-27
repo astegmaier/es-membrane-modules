@@ -48,7 +48,7 @@ export function isDataDescriptor(desc: any): desc is DataDescriptor<any>;
 
 export function isAccessorDescriptor(desc: any): desc is AccessorDescriptor<any, any>;
 
-export function isGenericDescriptor(desc): boolean;
+export function isGenericDescriptor(desc: any): boolean;
 
 export const allTraps: ReadonlyArray<string>;
 

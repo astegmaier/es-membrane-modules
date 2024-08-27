@@ -21,13 +21,14 @@
 import { MembraneMocks } from "../../mocks";
 
 {
-  it("Use case:  membrane.modifyRules.storeUnknownAsLocal", function() {
+  it("Use case:  membrane.modifyRules.storeUnknownAsLocal", function () {
     /* XXX ajvincent This is a hack, for a property that shouldn't be in the
        real membrane.
     */
     function fixKeys(keys) {
-      if (keys.includes("membraneGraphName"))
+      if (keys.includes("membraneGraphName")) {
         keys.splice(keys.indexOf("membraneGraphName"), 1);
+      }
     }
 
     var dryRoot, wetRoot, wetPropKeys;
@@ -78,8 +79,9 @@ import { MembraneMocks } from "../../mocks";
       fixKeys(keys);
       expect(keys.length).toBe(wetPropKeys.length);
       let length = Math.min(keys.length, wetPropKeys.length);
-      for (let i = 0; i < length; i++)
+      for (let i = 0; i < length; i++) {
         expect(keys[i]).toBe(wetPropKeys[i]);
+      }
     }
   });
 }

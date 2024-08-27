@@ -13,13 +13,13 @@
 
 import { MembraneMocks } from "../../mocks";
 
-let MockupsForThisTest = function() {
+let MockupsForThisTest = function () {
   // This function you're free to customize any way you want.
   let parts = MembraneMocks();
   return parts;
 };
 
-it("Use case:  membrane.modifyRules.requireLocalDelete", function() {
+it("Use case:  membrane.modifyRules.requireLocalDelete", function () {
   // Customize this for whatever variables you need.
   var parts = MockupsForThisTest();
   parts.membrane.modifyRules.requireLocalDelete("wet", parts.wet.doc);
@@ -30,7 +30,7 @@ it("Use case:  membrane.modifyRules.requireLocalDelete", function() {
   expect("__events__" in parts.wet.doc).toBe(true);
 
   parts.dry.doc.dispatchEvent("unload");
-  expect(function() {
-    void(parts.dry.doc.nodeType); 
+  expect(function () {
+    void parts.dry.doc.nodeType;
   }).toThrow();
 });

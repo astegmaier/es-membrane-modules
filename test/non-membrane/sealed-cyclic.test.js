@@ -93,10 +93,11 @@ However, those are details to work out separately, and distract from this
 example.
 */
 
-describe("Sealed cyclic references: ", function() {
+describe("Sealed cyclic references: ", function () {
   const map = new Map();
 
-  const alpha = {}, beta = {};
+  const alpha = {},
+    beta = {};
   alpha.next = beta;
   beta.next = alpha;
   var refCount;
@@ -105,313 +106,312 @@ describe("Sealed cyclic references: ", function() {
     if (typeof desc === "undefined") {
       return false;
     }
-    if (!("get" in desc) && !("set" in desc))
+    if (!("get" in desc) && !("set" in desc)) {
       return false;
+    }
     return true;
   }
 
-  beforeEach(function() {
+  beforeEach(function () {
     jest.setTimeout(120000);
     map.clear();
     refCount = 0;
   });
 
-  it(
-    "A very simple recursive implementation hits an infinite stack error",
-    function() {
-      function buildReferenceAndSeal(obj) {
-        refCount++;
-        if (refCount > 10)
-          throw "Infinite recursion";
-
-        if (!map.has(obj)) {
-          const rv = {};
-
-          // Simulating an observer
-          {
-            const desc = {
-              value: buildReferenceAndSeal(obj.next),
-              writable: false,
-              enumerable: true,
-              configurable: false
-            };
-            Reflect.defineProperty(rv, "next", desc);
-            Object.seal(rv);
-          }
-
-          map.set(obj, rv);
-        }
-
-        return map.get(obj);
+  it("A very simple recursive implementation hits an infinite stack error", function () {
+    function buildReferenceAndSeal(obj) {
+      refCount++;
+      if (refCount > 10) {
+        throw "Infinite recursion";
       }
 
-      expect(function() {
-        buildReferenceAndSeal(alpha);
-      }).toThrow("Infinite recursion");
-    }
-  );
+      if (!map.has(obj)) {
+        const rv = {};
 
-  it(
-    "A lazy-getter recursive implementation can work, but leaves one lazy getter behind",
-    function() {
-      const inConstruction = new Map();
-      function defineLazyGetter(source, target, propName) {
-        let lockState = "none", lockedValue;
-        function setLockedValue(value) {
-          // This lockState check should be treated as an assertion.
-          if (lockState !== "transient")
-            throw new Error("setLockedValue should be callable exactly once!");
-          lockedValue = value;
-          lockState = "finalized";
+        // Simulating an observer
+        {
+          const desc = {
+            value: buildReferenceAndSeal(obj.next),
+            writable: false,
+            enumerable: true,
+            configurable: false
+          };
+          Reflect.defineProperty(rv, "next", desc);
+          Object.seal(rv);
         }
 
-        const lazyDesc = {
-          get: function() {
-            if (lockState === "finalized")
-              return lockedValue;
-            if (lockState === "transient")
-              return map.get(source[propName]);
+        map.set(obj, rv);
+      }
 
-            let current = Reflect.getOwnPropertyDescriptor(target, propName);
-            if (current && !current.configurable)
-              throw new Error("lazy getter descriptor is not configurable -- this is fatal");
+      return map.get(obj);
+    }
 
-            // sourceDesc is the descriptor we really want
-            let sourceDesc = Reflect.getOwnPropertyDescriptor(source, propName);
+    expect(function () {
+      buildReferenceAndSeal(alpha);
+    }).toThrow("Infinite recursion");
+  });
 
-            let hasValue = "value" in sourceDesc,
-                value = sourceDesc.value;
+  it("A lazy-getter recursive implementation can work, but leaves one lazy getter behind", function () {
+    const inConstruction = new Map();
+    function defineLazyGetter(source, target, propName) {
+      let lockState = "none",
+        lockedValue;
+      function setLockedValue(value) {
+        // This lockState check should be treated as an assertion.
+        if (lockState !== "transient") {
+          throw new Error("setLockedValue should be callable exactly once!");
+        }
+        lockedValue = value;
+        lockState = "finalized";
+      }
 
-            // This is necessary to force desc.value to be wrapped.
-            if (hasValue) {
-              sourceDesc.value = buildReferenceAndSeal(value);
-            }
+      const lazyDesc = {
+        get: function () {
+          if (lockState === "finalized") {
+            return lockedValue;
+          }
+          if (lockState === "transient") {
+            return map.get(source[propName]);
+          }
 
-            if (hasValue && inConstruction.has(value)) {
-              /* Ah, nuts.  Somewhere in our stack trace, the unwrapped value has
-               * a proxy in this object graph under construction.  That's not
-               * supposed to happen very often, but can happen during a recursive
-               * Object.seal() or Object.freeze() call.  What that means is that
-               * we may not be able to replace the lazy getter (which is an
-               * accessor descriptor) with a data descriptor when external code
-               * looks up the property on the shadow target.
-               */
+          let current = Reflect.getOwnPropertyDescriptor(target, propName);
+          if (current && !current.configurable) {
+            throw new Error("lazy getter descriptor is not configurable -- this is fatal");
+          }
 
-              inConstruction.get(value).push(setLockedValue);
-              sourceDesc = lazyDesc;
-              delete sourceDesc.set;
-              lockState = "transient";
-            }
+          // sourceDesc is the descriptor we really want
+          let sourceDesc = Reflect.getOwnPropertyDescriptor(source, propName);
 
-            Reflect.deleteProperty(target, propName);
-            Reflect.defineProperty(target, propName, sourceDesc);
-  
-            // Finally, run the actual getter.
-            if (sourceDesc === undefined)
-              return undefined;
-            if ("get" in sourceDesc)
-              return sourceDesc.get.apply(this);
-            if ("value" in sourceDesc)
-              return sourceDesc.value;
+          let hasValue = "value" in sourceDesc,
+            value = sourceDesc.value;
+
+          // This is necessary to force desc.value to be wrapped.
+          if (hasValue) {
+            sourceDesc.value = buildReferenceAndSeal(value);
+          }
+
+          if (hasValue && inConstruction.has(value)) {
+            /* Ah, nuts.  Somewhere in our stack trace, the unwrapped value has
+             * a proxy in this object graph under construction.  That's not
+             * supposed to happen very often, but can happen during a recursive
+             * Object.seal() or Object.freeze() call.  What that means is that
+             * we may not be able to replace the lazy getter (which is an
+             * accessor descriptor) with a data descriptor when external code
+             * looks up the property on the shadow target.
+             */
+
+            inConstruction.get(value).push(setLockedValue);
+            sourceDesc = lazyDesc;
+            delete sourceDesc.set;
+            lockState = "transient";
+          }
+
+          Reflect.deleteProperty(target, propName);
+          Reflect.defineProperty(target, propName, sourceDesc);
+
+          // Finally, run the actual getter.
+          if (sourceDesc === undefined) {
             return undefined;
-          },
+          }
+          if ("get" in sourceDesc) {
+            return sourceDesc.get.apply(this);
+          }
+          if ("value" in sourceDesc) {
+            return sourceDesc.value;
+          }
+          return undefined;
+        },
 
-          set: function(value) {
-            let current = Reflect.getOwnPropertyDescriptor(target, propName);
-            if (!current.configurable)
-              throw new Error("lazy getter descriptor is not configurable -- this is fatal");
-
-            const desc = {
-              value: current.value,
-              writable: true,
-              enumerable: current.enumerable,
-              configurable: true
-            };
-
-            if (!Reflect.deleteProperty(target, propName))
-              throw new Error("deleteProperty should've worked");
-            if (!Reflect.defineProperty(target, propName, desc))
-              throw new Error("defineProperty should've worked");
-
-            return value;
-          },
-
-          enumerable: true,
-          configurable: true
-        };
-
-        {
-          let current = Reflect.getOwnPropertyDescriptor(source, propName);
-          if (current && !current.enumerable)
-            lazyDesc.enumerable = false;
-        }
-
-        Reflect.defineProperty(target, propName, lazyDesc);
-      }
-
-      function buildReferenceAndSeal(obj) {
-        refCount++;
-        if (refCount >= 10)
-          throw new Error("runaway");
-
-        if (!map.has(obj))
-        {
-          const rv = {};
-          map.set(obj, rv);
-
-          const callbacks = [];
-          inConstruction.set(obj, callbacks);
-
-          // Simulating an observer
-          {
-            defineLazyGetter(obj, rv, "next");
-            // We want to trigger the lazy getter so that the property can be sealed.
-            void(Reflect.get(rv, "next"));
-            Object.seal(rv);
-            map.set(obj, rv);
+        set: function (value) {
+          let current = Reflect.getOwnPropertyDescriptor(target, propName);
+          if (!current.configurable) {
+            throw new Error("lazy getter descriptor is not configurable -- this is fatal");
           }
 
-          callbacks.forEach(function(c) {
-            try {
-              c(rv);
-            }
-            catch (e) {
-              // do nothing
-            }
-          });
-    
-          inConstruction.delete(obj);
-        }
+          const desc = {
+            value: current.value,
+            writable: true,
+            enumerable: current.enumerable,
+            configurable: true
+          };
 
-        return map.get(obj);
+          if (!Reflect.deleteProperty(target, propName)) {
+            throw new Error("deleteProperty should've worked");
+          }
+          if (!Reflect.defineProperty(target, propName, desc)) {
+            throw new Error("defineProperty should've worked");
+          }
+
+          return value;
+        },
+
+        enumerable: true,
+        configurable: true
+      };
+
+      {
+        let current = Reflect.getOwnPropertyDescriptor(source, propName);
+        if (current && !current.enumerable) {
+          lazyDesc.enumerable = false;
+        }
       }
 
-      const Alpha = buildReferenceAndSeal(alpha);
-      expect(Alpha.next.next).toBe(Alpha);
-      expect(Reflect.isExtensible(Alpha)).toBe(false);
-      expect(Reflect.isExtensible(Alpha.next)).toBe(false);
-
-      let accessorCount = 0;
-      if (isAccessorDescriptor(
-            Reflect.getOwnPropertyDescriptor(Alpha, "next")
-          ))
-        accessorCount++;
-      if (isAccessorDescriptor(
-            Reflect.getOwnPropertyDescriptor(Alpha.next, "next")
-          ))
-        accessorCount++;
-
-      expect(accessorCount).toBe(1);
+      Reflect.defineProperty(target, propName, lazyDesc);
     }
-  );
 
-  it(
-    "A priority queue can resolve all the data descriptors",
-    function() {
-      const queue = {
-        levels: ["firstCall", "seal", "final"],
-        levelMap: new Map()
-      };
-      
-      queue.append = function(level, callback)
-      {
-        if (!this.levels.includes(level))
-          throw new Error("Unknown level");
-        if (typeof callback !== "function")
-          throw new Error("callback must be a function");
-      
-        this.levelMap.get(level).push(callback);
-      };
-      
-      queue.next = function()
-      {
-        const arrays = Array.from(this.levelMap.values());
-        const firstArray = arrays.find((array) => array.length > 0);
-        if (!firstArray)
-          return false;
-      
-        try
-        {
-          firstArray.shift()();
-        }
-        catch (e)
-        {
-          arrays.forEach((array) => array.length = 0);
-          throw e;
-        }
-        return true;
-      };
-
-      {
-        Object.freeze(queue.levels);
-        queue.levels.forEach((l) => queue.levelMap.set(l, []));
-        Object.freeze(queue.levelMap);
-        Object.freeze(queue);
+    function buildReferenceAndSeal(obj) {
+      refCount++;
+      if (refCount >= 10) {
+        throw new Error("runaway");
       }
 
-      function buildReferenceAndSeal(obj, outparam) {
-        refCount++;
-        if (refCount > 10)
-          throw "Infinite recursion";
+      if (!map.has(obj)) {
+        const rv = {};
+        map.set(obj, rv);
 
-        // executing immediately
-        if (!map.has(obj)) {
-          const rv = {};
+        const callbacks = [];
+        inConstruction.set(obj, callbacks);
+
+        // Simulating an observer
+        {
+          defineLazyGetter(obj, rv, "next");
+          // We want to trigger the lazy getter so that the property can be sealed.
+          void Reflect.get(rv, "next");
+          Object.seal(rv);
           map.set(obj, rv);
+        }
 
-          rv.next = pseudoProxy(obj.next);
-  
-          // Simulating an observer
-          {
-            if ([alpha, beta].includes(obj)) {
-              if (!Reflect.isExtensible(rv))
-                throw new Error("rv is not extensible");
-              queue.append("seal", function() {
-                Object.seal(rv);
-              });
+        callbacks.forEach(function (c) {
+          try {
+            c(rv);
+          } catch (e) {
+            // do nothing
+          }
+        });
+
+        inConstruction.delete(obj);
+      }
+
+      return map.get(obj);
+    }
+
+    const Alpha = buildReferenceAndSeal(alpha);
+    expect(Alpha.next.next).toBe(Alpha);
+    expect(Reflect.isExtensible(Alpha)).toBe(false);
+    expect(Reflect.isExtensible(Alpha.next)).toBe(false);
+
+    let accessorCount = 0;
+    if (isAccessorDescriptor(Reflect.getOwnPropertyDescriptor(Alpha, "next"))) {
+      accessorCount++;
+    }
+    if (isAccessorDescriptor(Reflect.getOwnPropertyDescriptor(Alpha.next, "next"))) {
+      accessorCount++;
+    }
+
+    expect(accessorCount).toBe(1);
+  });
+
+  it("A priority queue can resolve all the data descriptors", function () {
+    const queue = {
+      levels: ["firstCall", "seal", "final"],
+      levelMap: new Map()
+    };
+
+    queue.append = function (level, callback) {
+      if (!this.levels.includes(level)) {
+        throw new Error("Unknown level");
+      }
+      if (typeof callback !== "function") {
+        throw new Error("callback must be a function");
+      }
+
+      this.levelMap.get(level).push(callback);
+    };
+
+    queue.next = function () {
+      const arrays = Array.from(this.levelMap.values());
+      const firstArray = arrays.find((array) => array.length > 0);
+      if (!firstArray) {
+        return false;
+      }
+
+      try {
+        firstArray.shift()();
+      } catch (e) {
+        arrays.forEach((array) => (array.length = 0));
+        throw e;
+      }
+      return true;
+    };
+
+    {
+      Object.freeze(queue.levels);
+      queue.levels.forEach((l) => queue.levelMap.set(l, []));
+      Object.freeze(queue.levelMap);
+      Object.freeze(queue);
+    }
+
+    function buildReferenceAndSeal(obj, outparam) {
+      refCount++;
+      if (refCount > 10) {
+        throw "Infinite recursion";
+      }
+
+      // executing immediately
+      if (!map.has(obj)) {
+        const rv = {};
+        map.set(obj, rv);
+
+        rv.next = pseudoProxy(obj.next);
+
+        // Simulating an observer
+        {
+          if ([alpha, beta].includes(obj)) {
+            if (!Reflect.isExtensible(rv)) {
+              throw new Error("rv is not extensible");
             }
+            queue.append("seal", function () {
+              Object.seal(rv);
+            });
           }
         }
-
-        // executing deferred
-        queue.append("final", function() {
-          const rv = map.get(obj);
-          outparam.value = rv;
-        });
       }
 
-      function pseudoProxy(obj) {
-        const outparam = {
-          value: undefined
-        };
-        queue.append("firstCall", function() {
-          buildReferenceAndSeal(obj, outparam);
-        });
-
-        while (queue.next()) {
-          // do nothing
-        }
-
-        return outparam.value;
-      }
-
-      const Alpha = pseudoProxy(alpha);
-      expect(Alpha.next.next).toBe(Alpha);
-      expect(Reflect.isExtensible(Alpha)).toBe(false);
-      expect(Reflect.isExtensible(Alpha.next)).toBe(false);
-
-      let accessorCount = 0;
-      if (isAccessorDescriptor(
-            Reflect.getOwnPropertyDescriptor(Alpha, "next")
-          ))
-        accessorCount++;
-      if (isAccessorDescriptor(
-            Reflect.getOwnPropertyDescriptor(Alpha.next, "next")
-          ))
-        accessorCount++;
-
-      expect(accessorCount).toBe(0);
+      // executing deferred
+      queue.append("final", function () {
+        const rv = map.get(obj);
+        outparam.value = rv;
+      });
     }
-  );
+
+    function pseudoProxy(obj) {
+      const outparam = {
+        value: undefined
+      };
+      queue.append("firstCall", function () {
+        buildReferenceAndSeal(obj, outparam);
+      });
+
+      while (queue.next()) {
+        // do nothing
+      }
+
+      return outparam.value;
+    }
+
+    const Alpha = pseudoProxy(alpha);
+    expect(Alpha.next.next).toBe(Alpha);
+    expect(Reflect.isExtensible(Alpha)).toBe(false);
+    expect(Reflect.isExtensible(Alpha.next)).toBe(false);
+
+    let accessorCount = 0;
+    if (isAccessorDescriptor(Reflect.getOwnPropertyDescriptor(Alpha, "next"))) {
+      accessorCount++;
+    }
+    if (isAccessorDescriptor(Reflect.getOwnPropertyDescriptor(Alpha.next, "next"))) {
+      accessorCount++;
+    }
+
+    expect(accessorCount).toBe(0);
+  });
 });
-

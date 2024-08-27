@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // The inspiration for these tests were the problems with proxies pointed out by Rob Eisenberg            //
 // in this article: https://eisenbergeffect.medium.com/the-prickly-case-of-javascript-proxies-b6c3833b738 //
@@ -30,7 +29,6 @@ class Person {
 }
 
 describe("Membranes that proxy classes with private members", () => {
-
   beforeEach(() => jest.resetAllMocks());
 
   it("throws when using Reflect.get() naively in a proxy trap", () => {
@@ -39,14 +37,16 @@ describe("Membranes that proxy classes with private members", () => {
       get(target, property, receiver) {
         mockConsoleLog(`Access: "${String(property)}"`);
         return Reflect.get(target, property, receiver);
-      },
+      }
     });
-    expect(() => proxy.introduceYourselfTo("Jane")).toThrow("Cannot read private member #firstName from an object whose class did not declare it");
+    expect(() => proxy.introduceYourselfTo("Jane")).toThrow(
+      "Cannot read private member #firstName from an object whose class did not declare it"
+    );
     expect(mockConsoleLog).toHaveBeenNthCalledWith(1, 'Access: "introduceYourselfTo"');
     expect(mockConsoleLog).toHaveBeenNthCalledWith(2, 'Access: "fullName"');
     expect(mockConsoleLog).toHaveBeenNthCalledWith(3, 'Access: "firstName"');
   });
-  
+
   it("does not throw with es-membrane", () => {
     const dryPerson = new Person("John", "Doe");
 

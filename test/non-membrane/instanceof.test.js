@@ -1,7 +1,7 @@
 "use strict";
-it("Reflect Proxy objects correctly implement instanceof", function() {
+it("Reflect Proxy objects correctly implement instanceof", function () {
   function a() {}
-  const {proxy, revoke} = Proxy.revocable(a, Reflect);
+  const { proxy, revoke } = Proxy.revocable(a, Reflect);
   const A = proxy;
 
   const b = new a();

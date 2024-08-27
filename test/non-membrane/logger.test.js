@@ -1,20 +1,20 @@
 import { loggerLib } from "../../mocks";
 
-describe("Jasmine mock logger library works", function() {
+describe("Jasmine mock logger library works", function () {
   const logger = loggerLib.getLogger("test.jasmine.logger");
   var appender;
 
-  beforeEach(function() {
+  beforeEach(function () {
     appender = new loggerLib.Appender();
     logger.addAppender(appender);
   });
 
-  afterEach(function() {
+  afterEach(function () {
     logger.removeAppender(appender);
     appender = null;
   });
 
-  it("for one message", function() {
+  it("for one message", function () {
     logger.info("Hello World");
     expect(appender.events.length).toBe(1);
     if (appender.events.length > 0) {
@@ -24,7 +24,7 @@ describe("Jasmine mock logger library works", function() {
     }
   });
 
-  it("for two messages", function() {
+  it("for two messages", function () {
     logger.info("Hello World");
     logger.debug("It's a small world after all");
 
@@ -40,5 +40,4 @@ describe("Jasmine mock logger library works", function() {
       expect(event.message).toBe("It's a small world after all");
     }
   });
-
 });
