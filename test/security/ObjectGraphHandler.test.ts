@@ -1,8 +1,8 @@
 import { MembraneMocks } from "../../mocks";
+import type { Membrane, ObjectGraphHandler } from "../../src";
 
 describe("Security checks for object graph handlers", function () {
-  "use strict";
-  var membrane, dryHandler;
+  let membrane: Membrane, dryHandler: ObjectGraphHandler;
   beforeEach(function () {
     let parts = MembraneMocks();
     dryHandler = parts.handlers.dry;
@@ -10,8 +10,8 @@ describe("Security checks for object graph handlers", function () {
   });
 
   afterEach(function () {
-    dryHandler = null;
-    membrane = null;
+    dryHandler = null as any;
+    membrane = null as any;
   });
 
   /* spec/security/exports.js guarantees ObjectGraphHandler (the function) is
@@ -19,7 +19,8 @@ describe("Security checks for object graph handlers", function () {
    */
 
   it("Setting the prototype of ObjectGraphHandler is disallowed", function () {
-    const proto = Reflect.getPrototypeOf(dryHandler);
+    const proto = Reflect.getPrototypeOf(dryHandler)!;
+    expect(proto).toBeTruthy();
     expect(Reflect.ownKeys(proto).includes("ownKeys")).toBe(true);
     expect(Reflect.setPrototypeOf(proto, {})).toBe(false);
 
@@ -33,7 +34,7 @@ describe("Security checks for object graph handlers", function () {
   });
 
   it("The object graph handler disallows setting its fieldName", function () {
-    const desc = Reflect.getOwnPropertyDescriptor(dryHandler, "fieldName");
+    const desc = Reflect.getOwnPropertyDescriptor(dryHandler, "fieldName")!;
     expect(desc.writable).toBe(false);
     expect(desc.configurable).toBe(false);
   });
