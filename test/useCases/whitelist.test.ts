@@ -30,11 +30,18 @@
  */
 
 import { MembraneMocks, DAMP } from "../../mocks";
+import type { IDampMocks, IDocument, IMockEventTarget, IMockOptions, IMocks } from "../../mocks";
+import type { AllListenerMetadata, Membrane, ObjectGraphHandler, ProxyListener } from "../../src";
 
 describe("Use case:  The membrane can be used to safely whitelist properties", function () {
-  function buildTests(shouldStop, secondWetListener, secondDryListener, extraTests) {
-    function HEAT() {
-      return descWet.value.apply(this, arguments);
+  function buildTests(
+    shouldStop: boolean,
+    secondWetListener: ProxyListener,
+    secondDryListener: ProxyListener,
+    extraTests: (mocks: IMocks & IDampMocks) => void
+  ) {
+    function HEAT(this: IDocument) {
+      return descWet!.value.apply(this, arguments);
     }
     function HEAT_NEW() {
       return "Hello World";
@@ -65,7 +72,9 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
       "rootElement"
     ];
 
-    function buildFilter(names, prevFilter) {
+    type Filter = (element: string | symbol) => boolean;
+
+    function buildFilter(names: (string | symbol)[], prevFilter?: Filter): Filter {
       return function (elem) {
         if (prevFilter && prevFilter(elem)) {
           return true;
@@ -74,22 +83,39 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
       };
     }
 
-    const nameFilters = {};
+    interface INameFilters {
+      doc: Filter;
+      listener: Filter;
+      target: Filter;
+      node: Filter;
+      element: Filter;
+      proto: {
+        function: Filter;
+        node: Filter;
+        element: Filter;
+      };
+    }
+
+    const nameFilters = {} as INameFilters;
     nameFilters.doc = buildFilter(docWhiteList);
     nameFilters.listener = buildFilter(EventListenerWetWhiteList);
     nameFilters.target = buildFilter(EventTargetWhiteList);
     nameFilters.node = buildFilter(NodeWhiteList, nameFilters.target);
     nameFilters.element = buildFilter(ElementWhiteList, nameFilters.node);
-    nameFilters.proto = {};
+    nameFilters.proto = {} as INameFilters["proto"];
     nameFilters.proto.function = buildFilter(Reflect.ownKeys(function () {}));
     nameFilters.proto.node = buildFilter(NodeProtoWhiteList, nameFilters.proto.function);
     nameFilters.proto.element = buildFilter([], nameFilters.proto.node);
 
-    var parts, dryWetMB, descWet;
-    var EventListenerProto,
-      checkEvent = null;
-    var mockOptions = {
-      whitelist: function (meta, filter, field = "wet") {
+    let parts: IMocks & IDampMocks, dryWetMB: Membrane, descWet: PropertyDescriptor | undefined;
+    let EventListenerProto: IMockEventTarget;
+
+    interface IMockOptionsWithWhitelist extends IMockOptions<IMocks & IDampMocks> {
+      whitelist: (meta: AllListenerMetadata, filter: Filter, field?: string) => void;
+    }
+
+    const mockOptions: IMockOptionsWithWhitelist = {
+      whitelist: function (meta: AllListenerMetadata, filter: Filter, field = "wet") {
         dryWetMB.modifyRules.storeUnknownAsLocal(field, meta.target);
         dryWetMB.modifyRules.requireLocalDelete(field, meta.target);
         dryWetMB.modifyRules.filterOwnKeys(field, meta.target, filter);
@@ -98,23 +124,24 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
         }
       },
 
-      wetHandlerCreated: function (handler, Mocks) {
+      wetHandlerCreated: function (
+        this: IMockOptionsWithWhitelist,
+        handler: ObjectGraphHandler,
+        Mocks: IMocks & IDampMocks
+      ) {
         parts = Mocks;
         dryWetMB = parts.membrane;
         EventListenerProto = Object.getPrototypeOf(parts.wet.Node.prototype);
 
         {
           let oldHandleEvent = EventListenerProto.handleEventAtTarget;
-          EventListenerProto.handleEventAtTarget = function () {
-            if (checkEvent) {
-              checkEvent.apply(this, arguments);
-            }
-            return oldHandleEvent.apply(this, arguments);
+          EventListenerProto.handleEventAtTarget = function (...args) {
+            return oldHandleEvent.apply(this, args);
           };
           parts.wet.doc.handleEventAtTarget = EventListenerProto.handleEventAtTarget;
         }
 
-        var listener = function (meta) {
+        var listener = function (this: IMockOptionsWithWhitelist, meta: any) {
           if (
             meta.callable !== EventListenerProto.addEventListener ||
             meta.trapName !== "apply" ||
@@ -145,8 +172,11 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
         handler.addProxyListener(secondWetListener);
       },
 
-      dryHandlerCreated: function (handler /*, Mocks */) {
-        var listener = function (meta) {
+      dryHandlerCreated: function (
+        this: IMockOptionsWithWhitelist,
+        handler: ObjectGraphHandler /*, Mocks */
+      ) {
+        var listener = function (this: IMockOptionsWithWhitelist, meta: any) {
           if (meta.target === parts.wet.doc) {
             // parts.dry.doc will be meta.proxy.
             this.whitelist(meta, nameFilters.doc);
@@ -189,7 +219,7 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
         handler.addProxyListener(secondDryListener);
       }
     };
-    mockOptions.dampHandlerCreated = mockOptions.dryHandlerCreated;
+    mockOptions.dampHandlerCreated = mockOptions.dryHandlerCreated!;
 
     parts = MembraneMocks(true, null, mockOptions);
     var wetDocument = parts.wet.doc,
@@ -210,7 +240,7 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
     {
       descWet = Reflect.getOwnPropertyDescriptor(wetDocument, "handleEventAtTarget");
       expect(descWet).not.toBe(undefined);
-      expect(typeof descWet.value).toBe("function");
+      expect(typeof descWet!.value).toBe("function");
       let descDry = Reflect.getOwnPropertyDescriptor(dryDocument, "handleEventAtTarget");
       expect(descDry).toBe(undefined);
     }
@@ -228,7 +258,8 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
       let descDry = Reflect.getOwnPropertyDescriptor(dryDocument, "handleEventAtTarget");
       expect(descDry).toBe(undefined);
 
-      Reflect.defineProperty(wetDocument, "handleEventAtTarget", descWet);
+      expect(descWet).toBeDefined();
+      Reflect.defineProperty(wetDocument, "handleEventAtTarget", descWet!);
     }
 
     {
@@ -242,10 +273,10 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
       });
       expect(defined).toBe(true);
       descWet = Reflect.getOwnPropertyDescriptor(wetDocument, "handleEventAtTarget");
+
       expect(descWet).not.toBe(undefined);
-      if (descWet) {
-        expect(descWet.value).toBe(oldDescWet.value);
-      }
+      expect(oldDescWet).not.toBe(undefined);
+      expect(descWet!.value).toBe(oldDescWet!.value);
 
       let descDry = Reflect.getOwnPropertyDescriptor(dryDocument, "handleEventAtTarget");
       expect(descDry).not.toBe(undefined);
@@ -269,7 +300,7 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
      * The idea is to demonstrate that using shadow targets is faster.
      */
 
-    function secondDryListener(meta) {
+    function secondDryListener(meta: AllListenerMetadata) {
       // dry and damp handler secondary listener
       if (meta.handler.fieldName === DAMP) {
         meta.handler.removeProxyListener(secondDryListener);
@@ -283,7 +314,7 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
       }
     }
 
-    function exerciseDoc(doc, limit) {
+    function exerciseDoc(doc: IDocument, limit: number) {
       for (let i = 0; i < limit; i++) {
         let elem = doc.createElement("foo");
         let root = doc.rootElement;
@@ -292,7 +323,7 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
       }
     }
 
-    function extraTests(parts) {
+    function extraTests(parts: IMocks & IDampMocks) {
       /* This is to make sure the parts actually work.  The first pass, there
        * will be lazy getters on the "dry" object graph.  The second pass, the
        * properties should be directly defined.

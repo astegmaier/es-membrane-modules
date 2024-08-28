@@ -23,7 +23,7 @@ export function getWetDocument(
   NodeWet: IMockNodeConstructor,
   ElementWet: IMockElementConstructor,
   EventTargetWet: IMockEventTargetConstructor
-) {
+): IDocument {
   // A sample object for developing the Membrane module with.
 
   /* XXX ajvincent Don't make this object inherit from any prototypes.
@@ -126,5 +126,5 @@ export function getWetDocument(
     "wetDocument cyclic reference isn't correct"
   );
 
-  return wetDocument;
+  return wetDocument as IDocument;
 }

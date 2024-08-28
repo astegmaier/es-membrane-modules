@@ -7,12 +7,6 @@ import { dampObjectGraph, type IDampMocks } from "./dampObjectGraph";
 
 import { Membrane, type ObjectGraphHandler, type ILogger } from "../src";
 
-type DeepPartial<T> = T extends object
-  ? {
-      [P in keyof T]?: DeepPartial<T[P]>;
-    }
-  : T;
-
 export interface IMocks {
   wet: {
     [key: string | symbol]: any;
@@ -33,33 +27,33 @@ export interface IMocks {
   membrane: Membrane;
 }
 
-export interface IMockOptions {
-  wetHandlerCreated?: (handler: ObjectGraphHandler, mocks: IMocks) => void;
-  dryHandlerCreated?: (handler: ObjectGraphHandler, mocks: IMocks) => void;
-  dampHandlerCreated?: (handler: ObjectGraphHandler, mocks: IMocks) => void;
+export interface IMockOptions<Mocks extends IMocks = IMocks> {
+  wetHandlerCreated?: (handler: ObjectGraphHandler, mocks: Mocks) => void;
+  dryHandlerCreated?: (handler: ObjectGraphHandler, mocks: Mocks) => void;
+  dampHandlerCreated?: (handler: ObjectGraphHandler, mocks: Mocks) => void;
 }
 
 export function MembraneMocks(
   includeDamp?: false,
-  logger?: ILogger,
+  logger?: ILogger | null,
   mockOptions?: IMockOptions
 ): IMocks;
 export function MembraneMocks(
   includeDamp: true,
-  logger?: ILogger,
-  mockOptions?: IMockOptions
+  logger?: ILogger | null,
+  mockOptions?: IMockOptions<IMocks & IDampMocks>
 ): IMocks & IDampMocks;
 export function MembraneMocks(
   includeDamp?: boolean,
-  logger?: ILogger,
-  mockOptions?: IMockOptions
+  logger?: ILogger | null,
+  mockOptions?: IMockOptions<IMocks & IDampMocks>
 ): IMocks & IDampMocks {
   includeDamp = Boolean(includeDamp);
   if (!mockOptions) {
     mockOptions = {};
   }
 
-  const Mocks: DeepPartial<IMocks> = {};
+  const Mocks = {} as IMocks & IDampMocks;
 
   //////////////////////////////////////////
   // Originally from mocks/wetDocument.js //
@@ -87,7 +81,7 @@ export function MembraneMocks(
   });
 
   Mocks.membrane = dryWetMB;
-  Mocks.handlers = {};
+  Mocks.handlers = {} as (IMocks & IDampMocks)["handlers"];
 
   {
     // Establish "wet" view of document.
@@ -96,7 +90,7 @@ export function MembraneMocks(
     // Mocks.wet is established in wetDocument.js
 
     if (typeof mockOptions.wetHandlerCreated == "function") {
-      mockOptions.wetHandlerCreated(wetHandler, Mocks as IMocks);
+      mockOptions.wetHandlerCreated(wetHandler, Mocks);
     }
   }
 
@@ -110,10 +104,10 @@ export function MembraneMocks(
     // Establish proxy handler for "dry" mode.
     let dryHandler = dryWetMB.getHandlerByName("dry", { mustCreate: true });
     Mocks.handlers.dry = dryHandler;
-    Mocks.dry = {};
+    Mocks.dry = {} as (IMocks & IDampMocks)["dry"];
 
     if (typeof mockOptions.dryHandlerCreated == "function") {
-      mockOptions.dryHandlerCreated(dryHandler, Mocks as IMocks);
+      mockOptions.dryHandlerCreated(dryHandler, Mocks);
     }
 
     let found, doc;
@@ -190,7 +184,7 @@ export function MembraneMocks(
   */
 
   if (includeDamp) {
-    dampObjectGraph(Mocks as IMocks, mockOptions);
+    dampObjectGraph(Mocks, mockOptions);
   }
 
   return Mocks as IMocks & IDampMocks;

@@ -9,7 +9,7 @@ export type {
   IGetHandlerByNameOptions
 } from "./Membrane";
 export type { IChainHandlerProtection, IChainHandler, ModifyRulesAPI } from "./ModifyRulesAPI";
-export type { ObjectGraphHandler } from "./ObjectGraphHandler";
+export type { ObjectGraphHandler, ProxyListener } from "./ObjectGraphHandler";
 export type { IProxyParts, ProxyMapping } from "./ProxyMapping";
 export type {
   ListenerMetadata,

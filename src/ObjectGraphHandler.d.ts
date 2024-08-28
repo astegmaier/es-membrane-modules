@@ -1,6 +1,9 @@
 import type { Membrane } from "./Membrane";
 import type { ProxyMapping } from "./ProxyMapping";
+import { AllListenerMetadata } from "./ProxyNotify";
 import type { WithThisValueForMethods } from "./utilityTypes";
+
+export type ProxyListener = (meta: AllListenerMetadata) => void;
 
 export interface IObjectGraphHandlerOwn {
   membrane: Membrane;
@@ -12,7 +15,7 @@ export interface IObjectGraphHandlerOwn {
   proxiesInConstruction: WeakMap<any, any>;
   __revokeFunctions__: any[];
   __isDead__: boolean;
-  __proxyListeners__: any[];
+  __proxyListeners__: ProxyListener[];
   __functionListeners__: any[];
 }
 
@@ -72,14 +75,14 @@ export interface IObjectGraphHandlerPrototype
    *
    * @see ProxyNotify
    */
-  addProxyListener(this: ObjectGraphHandler, listener: any): void;
+  addProxyListener(this: ObjectGraphHandler, listener: ProxyListener): void;
 
   /**
    * Remove a listener for new proxies.
    *
    * @see ProxyNotify
    */
-  removeProxyListener(this: ObjectGraphHandler, listener: any): void;
+  removeProxyListener(this: ObjectGraphHandler, listener: ProxyListener): void;
 
   /**
    * Add a listener for function entry, return and throw operations.

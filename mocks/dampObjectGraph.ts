@@ -16,25 +16,28 @@ export interface IDampMocks {
   handlers: { [DAMP]: ObjectGraphHandler };
 }
 
-export function dampObjectGraph(parts: IMocks, mockOptions: IMockOptions): void {
-  let partsWithDamp = parts as IMocks & IDampMocks;
+export function dampObjectGraph(
+  parts: IMocks,
+  mockOptions: IMockOptions<IMocks & IDampMocks>
+): asserts parts is IMocks & IDampMocks {
+  const partsWithDamp = parts as IMocks & IDampMocks;
   partsWithDamp.handlers[DAMP] = parts.membrane.getHandlerByName(DAMP, {
     mustCreate: true
   });
 
   if (typeof mockOptions.dampHandlerCreated == "function") {
-    mockOptions.dampHandlerCreated(partsWithDamp.handlers[DAMP], parts);
+    mockOptions.dampHandlerCreated(partsWithDamp.handlers[DAMP], partsWithDamp);
   }
 
   let keys = Object.getOwnPropertyNames(parts.wet);
   const dampParts = {} as IDampMocks[typeof DAMP];
   for (let i = 0; i < keys.length; i++) {
     let key = keys[i]!;
-    dampParts![key] = parts.membrane.convertArgumentToProxy(
+    dampParts[key] = parts.membrane.convertArgumentToProxy(
       parts.handlers.wet,
       partsWithDamp.handlers[DAMP],
       parts.wet[key]
     );
   }
-  partsWithDamp[DAMP] = dampParts!;
+  partsWithDamp[DAMP] = dampParts;
 }
