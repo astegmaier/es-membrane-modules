@@ -1,23 +1,53 @@
 import { Membrane } from "../../src";
+import type {
+  DistortionsListener,
+  IDistortionsListenerConfig,
+  ObjectGraphHandler
+} from "../../src";
+
+interface ITestGraph {
+  A: any;
+  B: any;
+  C: any;
+  D: any;
+  a: any;
+  b: any;
+}
+
+interface IParts {
+  wet: ITestGraph;
+  dry: ITestGraph;
+  handlers: {
+    wet: ObjectGraphHandler;
+    dry: ObjectGraphHandler;
+  };
+  membrane: Membrane;
+  distortions: DistortionsListener;
+  bindDry: (this: IParts) => void;
+  updateKeys: (this: IParts) => void;
+  config: IDistortionsListenerConfig;
+}
 
 describe("DistortionsListener", function () {
-  var parts;
+  let parts: IParts;
   beforeEach(function () {
+    const membrane = new Membrane();
+    const distortions = membrane.modifyRules.createDistortionsListener();
     parts = {
-      wet: {},
-      dry: {},
+      wet: {} as ITestGraph,
+      dry: {} as ITestGraph,
       handlers: {
-        wet: null,
-        dry: null
+        wet: membrane.getHandlerByName("wet", { mustCreate: true }),
+        dry: membrane.getHandlerByName("dry", { mustCreate: true })
       },
-      membrane: new Membrane(),
-      distortions: null,
+      membrane,
+      distortions,
       bindDry: function () {
         this.distortions.bindToHandler(this.handlers.dry);
       },
       updateKeys: function () {
-        let keys = Reflect.ownKeys(this.wet);
-        keys.forEach(function (k) {
+        let keys = Reflect.ownKeys(this.wet) as (keyof ITestGraph)[];
+        keys.forEach(function (this: IParts, k) {
           if (k in this.dry) {
             return;
           }
@@ -28,20 +58,14 @@ describe("DistortionsListener", function () {
           );
         }, this);
       },
-      config: null
+      config: distortions.sampleConfig(true)
     };
-
-    parts.handlers.wet = parts.membrane.getHandlerByName("wet", { mustCreate: true });
-    parts.handlers.dry = parts.membrane.getHandlerByName("dry", { mustCreate: true });
-
-    parts.distortions = parts.membrane.modifyRules.createDistortionsListener();
-    parts.config = parts.distortions.sampleConfig(true);
     // disable the set trap
     parts.config.proxyTraps.splice(parts.config.proxyTraps.indexOf("set"), 1);
   });
 
   afterEach(function () {
-    parts = null;
+    parts = null as any;
   });
 
   describe(".prototype.addListener", function () {
@@ -219,7 +243,7 @@ describe("DistortionsListener", function () {
       B.color = "blue";
 
       const items = new Set([parts.wet.A, B]);
-      const filter = function (meta) {
+      const filter = function (meta: any) {
         return items.has(meta.target);
       };
 
