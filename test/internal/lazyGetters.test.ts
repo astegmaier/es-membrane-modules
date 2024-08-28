@@ -1,4 +1,6 @@
 import { MembraneMocks } from "../../mocks";
+import type { IMocks, IDocument } from "../../mocks";
+import type { Membrane } from "../../src";
 
 /* XXX ajvincent This is very specifically testing internal API's.  Hence the
  * conditional block at the start of this auto-executing function.
@@ -9,11 +11,14 @@ import { MembraneMocks } from "../../mocks";
     if (typeof parts.handlers.dry.defineLazyGetter === "undefined") {
       return;
     }
-    parts = null;
+    parts = null as any;
   }
   describe("Internal API:  Defining a lazy getter", function () {
-    "use strict";
-    var parts, dryDocument, wetDocument, membrane, shadow;
+    let parts: IMocks,
+      dryDocument: IDocument,
+      wetDocument: IDocument,
+      membrane: Membrane,
+      shadow: IDocument;
 
     beforeEach(function () {
       parts = MembraneMocks(false);
@@ -22,14 +27,14 @@ import { MembraneMocks } from "../../mocks";
       membrane = parts.membrane;
 
       let mapping = membrane.map.get(dryDocument);
-      shadow = mapping.getShadowTarget("dry");
+      shadow = mapping!.getShadowTarget("dry");
     });
 
     it("by itself does not affect an original target or a proxy", function () {
       parts.handlers.dry.defineLazyGetter(wetDocument, shadow, "parentNode");
 
       let wetDesc = Reflect.getOwnPropertyDescriptor(wetDocument, "parentNode");
-      expect("value" in wetDesc).toBe(true);
+      expect("value" in wetDesc!).toBe(true);
 
       let shadowDesc = Reflect.getOwnPropertyDescriptor(shadow, "parentNode");
       expect(shadowDesc).not.toBe(undefined);
@@ -179,7 +184,7 @@ import { MembraneMocks } from "../../mocks";
       parts.handlers.dry.revokeEverything();
 
       let wetDesc = Reflect.getOwnPropertyDescriptor(wetDocument, "nodeType");
-      expect("value" in wetDesc).toBe(true);
+      expect("value" in wetDesc!).toBe(true);
 
       expect(function () {
         void shadow.nodeType;
