@@ -19,19 +19,20 @@
  */
 
 import { MembraneMocks } from "../../mocks";
+import type { IMockElement } from "../../mocks";
 
 {
   it("Use case:  membrane.modifyRules.storeUnknownAsLocal", function () {
     /* XXX ajvincent This is a hack, for a property that shouldn't be in the
        real membrane.
     */
-    function fixKeys(keys) {
+    function fixKeys(keys: string[]) {
       if (keys.includes("membraneGraphName")) {
         keys.splice(keys.indexOf("membraneGraphName"), 1);
       }
     }
 
-    var dryRoot, wetRoot, wetPropKeys;
+    let dryRoot: IMockElement, wetRoot: IMockElement, wetPropKeys: string[];
 
     // Internal code, setting up the environment.
     {
