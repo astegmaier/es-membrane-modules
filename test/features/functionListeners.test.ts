@@ -1,9 +1,49 @@
 import { MembraneMocks, loggerLib, DAMP } from "../../mocks";
+import type { IMocks, IDampMocks } from "../../mocks";
+import type { Membrane } from "../../src";
+
+class TestMessage {
+  constructor(
+    public cbToken: string,
+    public reason: string,
+    public trapName: string,
+    public fromField: string,
+    public toField: string,
+    public target: any,
+    public rvOrExn: any
+  ) {}
+
+  expectEquals(other: TestMessage, _index: number) {
+    let pass = other instanceof TestMessage;
+    expect(pass).toBe(true);
+    if (!pass) {
+      return;
+    }
+    const keys = Reflect.ownKeys(this) as (keyof TestMessage)[];
+    keys.forEach((key) => {
+      let t = this[key],
+        o = other[key];
+      expect(t).toBe(o);
+    }, this);
+  }
+
+  toString() {
+    return JSON.stringify([
+      this.cbToken,
+      this.reason,
+      this.trapName,
+      this.fromField,
+      this.toField,
+      this.target.name,
+      this.rvOrExn
+    ]);
+  }
+}
 
 describe("Function listeners", function () {
   "use strict";
   // Customize this for whatever variables you need.
-  var parts, membrane, dryDocument, wetDocument, dampDocument;
+  let parts: IMocks & IDampMocks, membrane: Membrane;
   const logger = loggerLib.getLogger("test.membrane.functionlisteners");
   const appender = new loggerLib.Appender();
   appender.setThreshold("INFO");
@@ -15,9 +55,6 @@ describe("Function listeners", function () {
   mLogger.addAppender(mAppender);
 
   function setParts() {
-    dryDocument = parts.dry.doc;
-    wetDocument = parts.wet.doc;
-    dampDocument = parts[DAMP].doc;
     membrane = parts.membrane;
   }
 
@@ -29,51 +66,21 @@ describe("Function listeners", function () {
   });
 
   function clearParts() {
-    dryDocument = null;
-    wetDocument = null;
-    dampDocument = null;
-
     membrane.getHandlerByName("dry").revokeEverything();
-    membrane = null;
-    parts = null;
+    membrane = null as any;
+    parts = null as any;
   }
   afterEach(clearParts);
 
-  function TestMessage(cbToken, reason, trapName, fromField, toField, target, rvOrExn) {
-    this.cbToken = cbToken;
-    this.reason = reason;
-    this.trapName = trapName;
-    this.fromField = fromField;
-    this.toField = toField;
-    this.target = target;
-    this.rvOrExn = rvOrExn;
-  }
-  TestMessage.prototype.expectEquals = function (other /*, index*/) {
-    let pass = other instanceof TestMessage;
-    expect(pass).toBe(true);
-    if (!pass) {
-      return;
-    }
-
-    Reflect.ownKeys(this).forEach((key) => {
-      let t = this[key],
-        o = other[key];
-      expect(t).toBe(o);
-    }, this);
-  };
-  TestMessage.prototype.toString = function () {
-    return JSON.stringify([
-      this.cbToken,
-      this.reason,
-      this.trapName,
-      this.fromField,
-      this.toField,
-      this.target.name,
-      this.rvOrExn
-    ]);
-  };
-
-  function fireInfo(cbToken, reason, trapName, fromField, toField, target, rvOrExn) {
+  function fireInfo(
+    cbToken: string,
+    reason: string,
+    trapName: string,
+    fromField: string,
+    toField: string,
+    target: any,
+    rvOrExn: any
+  ) {
     var msg = new TestMessage(cbToken, reason, trapName, fromField, toField, target, rvOrExn);
     logger.info(msg);
     return appender.events.length;
@@ -96,11 +103,11 @@ describe("Function listeners", function () {
     }
   };
 
-  function testMessageSequence(messages) {
+  function testMessageSequence(messages: TestMessage[]) {
     expect(messages.length).toBe(appender.events.length);
     if (messages.length === appender.events.length) {
       messages.forEach(function (m, index) {
-        m.expectEquals(appender.events[index].message, index);
+        m.expectEquals(appender.events[index]!.message as TestMessage, index);
       });
     }
   }
@@ -361,7 +368,7 @@ describe("Function listeners", function () {
 
     parts.handlers.wet.addFunctionListener(TestListeners.wet0);
 
-    parts.handlers.dry.addFunctionListener(function (reason) {
+    parts.handlers.dry.addFunctionListener(function (reason: unknown) {
       if (reason !== "enter") {
         return;
       }
@@ -408,8 +415,8 @@ describe("Function listeners", function () {
 
     expect(mAppender.events.length).toBe(1);
     if (mAppender.events.length >= 1) {
-      expect(mAppender.events[0].level).toBe("ERROR");
-      expect(mAppender.events[0].message).toBe(staticException.message);
+      expect(mAppender.events[0]!.level).toBe("ERROR");
+      expect(mAppender.events[0]!.message).toBe(staticException.message);
     }
   });
 

@@ -2,7 +2,7 @@ import type { ILogger, LogLevel } from "../src/Membrane";
 
 export namespace loggerLib {
   class BasicLogger implements ILogger {
-    log(level: LogLevel, message: string) {
+    log(level: LogLevel, message: unknown) {
       var exn = null,
         exnFound = false;
       this.appenders.forEach(function (appender) {
@@ -20,27 +20,27 @@ export namespace loggerLib {
       }
     }
 
-    fatal = (message: string): void => {
+    fatal = (message: unknown): void => {
       this.log("FATAL", message);
     };
 
-    error = (message: string): void => {
+    error = (message: unknown): void => {
       this.log("ERROR", message);
     };
 
-    warn = (message: string): void => {
+    warn = (message: unknown): void => {
       this.log("WARN", message);
     };
 
-    info = (message: string): void => {
+    info = (message: unknown): void => {
       this.log("INFO", message);
     };
 
-    debug = (message: string): void => {
+    debug = (message: unknown): void => {
       this.log("DEBUG", message);
     };
 
-    trace = (message: string): void => {
+    trace = (message: unknown): void => {
       this.log("TRACE", message);
     };
 
@@ -64,11 +64,11 @@ export namespace loggerLib {
 
   export class Appender {
     threshold: LogLevel = "TRACE";
-    events: Array<{ level: any; message: string }> = [];
+    events: Array<{ level: any; message: unknown }> = [];
     clear() {
       this.events = [];
     }
-    notify(level: LogLevel, message: string) {
+    notify(level: LogLevel, message: unknown) {
       if (
         BasicLogger.prototype.levels.indexOf(level) <=
         BasicLogger.prototype.levels.indexOf(this.threshold)
