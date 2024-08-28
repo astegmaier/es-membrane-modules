@@ -1,5 +1,7 @@
+/// <reference lib="dom" />
 describe("Internal values are not exposed:  ", function () {
   const GLOBAL = typeof global == "object" ? global : window;
+  expect(GLOBAL).toBeDefined();
   const PRIVATE_KEYS = [
     // source/moduleUtilities.js
     "valueType",
