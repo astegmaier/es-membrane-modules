@@ -6,18 +6,20 @@
  */
 
 import { MembraneMocks } from "../../mocks";
+import type { IDocument } from "../../mocks";
+
 {
   it("Use case:  Hiding properties of an object", function () {
     /* XXX ajvincent This is a hack, for a property that shouldn't be in the
        real membrane.
     */
-    function fixKeys(keys) {
+    function fixKeys(keys: string[]) {
       if (keys.includes("membraneGraphName")) {
         keys.splice(keys.indexOf("membraneGraphName"), 1);
       }
     }
 
-    var dryDocument, wetDocument;
+    var dryDocument: IDocument, wetDocument: IDocument;
 
     // Internal code, setting up the environment.
     {
@@ -40,7 +42,7 @@ import { MembraneMocks } from "../../mocks";
         "addEventListener",
         "membraneGraphName"
       ]);
-      let wetDocFilter = function (propName) {
+      let wetDocFilter = function (propName: string) {
         return whiteListedDocProps.has(propName);
       };
 
