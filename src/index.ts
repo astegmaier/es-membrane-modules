@@ -1,4 +1,5 @@
 export { Membrane } from "./Membrane";
+export { Constants } from "./moduleUtilities";
 
 export type { IDistortionsListenerConfig, DistortionsListener } from "./DistortionsListener";
 export type {
@@ -8,7 +9,12 @@ export type {
   IBuildMappingOptions,
   IGetHandlerByNameOptions
 } from "./Membrane";
-export type { IChainHandlerProtection, IChainHandler, ModifyRulesAPI } from "./ModifyRulesAPI";
+export type {
+  IChainHandlerProtection,
+  IChainHandler,
+  ModifyRulesAPI,
+  OwnKeysFilter
+} from "./ModifyRulesAPI";
 export type { ObjectGraphHandler, ProxyListener } from "./ObjectGraphHandler";
 export type { IProxyParts, ProxyMapping } from "./ProxyMapping";
 export type {

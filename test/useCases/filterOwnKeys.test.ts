@@ -27,7 +27,7 @@ import type { IDocument } from "../../mocks";
       let dryWetMB = parts.membrane;
       wetDocument = parts.wet.doc;
 
-      const whiteListedDocProps = new Set([
+      const whiteListedDocProps = new Set<string | symbol>([
         "ownerDocument",
         "childNodes",
         "nodeType",
@@ -42,7 +42,7 @@ import type { IDocument } from "../../mocks";
         "addEventListener",
         "membraneGraphName"
       ]);
-      let wetDocFilter = function (propName: string) {
+      let wetDocFilter = function (propName: string | symbol) {
         return whiteListedDocProps.has(propName);
       };
 

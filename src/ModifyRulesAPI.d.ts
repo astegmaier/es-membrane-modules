@@ -34,6 +34,11 @@ export interface IModifyRulesAPIOwn {
   membrane: Membrane;
 }
 
+export type OwnKeysFilter =
+  | ((propertyName: string | symbol) => boolean)
+  | Set<symbol | string>
+  | Array<symbol | string>;
+
 export interface IModifyRulesAPIPrototype {
   /**
    * Convert a shadow target to a real proxy target.
@@ -124,7 +129,7 @@ export interface IModifyRulesAPIPrototype {
     this: ModifyRulesAPI,
     fieldName: symbol | string,
     proxy: any,
-    filter: (...args: any[]) => any | Set<any> | Array<any>,
+    filter: OwnKeysFilter,
     options?: {}
   ): any;
 

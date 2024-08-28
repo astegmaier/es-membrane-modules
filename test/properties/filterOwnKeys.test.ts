@@ -21,6 +21,8 @@
 
 import { MembraneMocks, loggerLib, DAMP } from "../../mocks";
 import { DataDescriptor, isDataDescriptor } from "../../src/sharedUtilities";
+import type { IDampMocks, IDocument, IMocks } from "../../mocks";
+import type { Membrane, Constants, OwnKeysFilter } from "../../src";
 
 describe("Filtering own keys ", function () {
   "use strict";
@@ -47,13 +49,13 @@ describe("Filtering own keys ", function () {
 
   function voidFunc() {}
 
-  function fixKeys(keys) {
+  function fixKeys(keys: (string | symbol)[]) {
     if (keys.includes("membraneGraphName")) {
       keys.splice(keys.indexOf("membraneGraphName"), 1);
     }
   }
 
-  function DocBlacklistFilter(name) {
+  function DocBlacklistFilter(name: string | symbol) {
     switch (name) {
       case "__events__":
       case "handleEventAtTarget":
@@ -84,7 +86,7 @@ describe("Filtering own keys ", function () {
   ];
   Object.freeze(docKeysAsArray);
 
-  const docKeysAsSet = new Set();
+  const docKeysAsSet = new Set<string>();
   docKeysAsArray.forEach((key) => docKeysAsSet.add(key));
   Object.freeze(docKeysAsSet);
 
@@ -92,7 +94,11 @@ describe("Filtering own keys ", function () {
   var extraDesc2 = new DataDescriptor(4, true, true, true);
 
   // Customize this for whatever variables you need.
-  var parts, membrane, dryDocument, wetDocument, dampDocument;
+  let parts: IMocks & IDampMocks,
+    membrane: Membrane,
+    dryDocument: IDocument,
+    wetDocument: IDocument,
+    dampDocument: IDocument;
   const logger = loggerLib.getLogger("test.membrane.defineProperty");
   var appender = new loggerLib.Appender();
   appender.setThreshold("WARN");
@@ -112,13 +118,13 @@ describe("Filtering own keys ", function () {
   });
 
   function clearParts() {
-    dryDocument = null;
-    wetDocument = null;
-    dampDocument = null;
+    dryDocument = null as any;
+    wetDocument = null as any;
+    dampDocument = null as any;
 
     membrane.getHandlerByName("dry").revokeEverything();
-    membrane = null;
-    parts = null;
+    membrane = null as any;
+    parts = null as any;
   }
   afterEach(clearParts);
 
@@ -135,10 +141,10 @@ describe("Filtering own keys ", function () {
     expect(Reflect.get(dryDocument, "blacklisted")).toBe(undefined);
   }
 
-  function checkAppenderForWarning(wName) {
+  function checkAppenderForWarning(wName: keyof typeof Constants.warnings) {
     expect(appender.events.length).toBe(1);
     if (appender.events.length > 0) {
-      let event = appender.events[0];
+      let event = appender.events[0]!;
       expect(event.level).toBe("WARN");
       expect(event.message).toBe(membrane.constants.warnings[wName]);
     }
@@ -159,7 +165,7 @@ describe("Filtering own keys ", function () {
 
   //} end infrastructure
 
-  function definePropertyTests(modifyFilter) {
+  function definePropertyTests(modifyFilter: () => void) {
     function rebuildMocksWithLogger() {
       clearParts();
       appender.clear();
@@ -199,7 +205,7 @@ describe("Filtering own keys ", function () {
       {
         let events = Reflect.getOwnPropertyDescriptor(wetDocument, "__events__");
         expect(isDataDescriptor(events)).toBe(true);
-        expect(Array.isArray(events.value)).toBe(true);
+        expect(Array.isArray(events!.value)).toBe(true);
       }
       {
         let events = Reflect.get(wetDocument, "__events__");
@@ -222,7 +228,7 @@ describe("Filtering own keys ", function () {
         let extra = Reflect.getOwnPropertyDescriptor(dryDocument, "extra");
         if (isExtensible) {
           expect(isDataDescriptor(extra)).toBe(true);
-          expect(extra.value).toBe(3);
+          expect(extra!.value).toBe(3);
         } else {
           expect(extra).toBe(undefined);
         }
@@ -237,7 +243,7 @@ describe("Filtering own keys ", function () {
         let extra = Reflect.getOwnPropertyDescriptor(wetDocument, "extra");
         if (isExtensible) {
           expect(isDataDescriptor(extra)).toBe(true);
-          expect(extra.value).toBe(3);
+          expect(extra!.value).toBe(3);
         } else {
           expect(extra).toBe(undefined);
         }
@@ -255,7 +261,7 @@ describe("Filtering own keys ", function () {
         let extra = Reflect.getOwnPropertyDescriptor(dryDocument, "extra");
         if (isExtensible) {
           expect(isDataDescriptor(extra)).toBe(true);
-          expect(extra.value).toBe(4);
+          expect(extra!.value).toBe(4);
         } else {
           expect(extra).toBe(undefined);
         }
@@ -270,7 +276,7 @@ describe("Filtering own keys ", function () {
         let extra = Reflect.getOwnPropertyDescriptor(wetDocument, "extra");
         if (isExtensible) {
           expect(isDataDescriptor(extra)).toBe(true);
-          expect(extra.value).toBe(4);
+          expect(extra!.value).toBe(4);
         } else {
           expect(extra).toBe(undefined);
         }
@@ -301,7 +307,7 @@ describe("Filtering own keys ", function () {
     });
 
     describe(".defineProperty(dryDocument, 'blacklisted', desc) returns false for a blacklisted property, and does not set the property", function () {
-      var desc;
+      let desc: PropertyDescriptor;
       beforeEach(function () {
         desc = {
           "value": 2,
@@ -311,7 +317,7 @@ describe("Filtering own keys ", function () {
       });
 
       afterEach(function () {
-        desc = null;
+        desc = null as any;
       });
 
       it("where desc.configurable is false,", function () {
@@ -330,7 +336,7 @@ describe("Filtering own keys ", function () {
     });
 
     describe(".defineProperty(dryDocument, 'blacklisted', desc) triggers a membrane logger warning once", function () {
-      var desc;
+      let desc: PropertyDescriptor;
       beforeEach(function () {
         rebuildMocksWithLogger();
         desc = {
@@ -341,7 +347,7 @@ describe("Filtering own keys ", function () {
       });
 
       afterEach(function () {
-        desc = null;
+        desc = null as any;
       });
 
       it("where desc.configurable is false,", function () {
@@ -378,10 +384,7 @@ describe("Filtering own keys ", function () {
 
         // Test that the delete didn't propagate through.
         let desc = Reflect.getOwnPropertyDescriptor(wetDocument, "blacklisted");
-        let expectation = expect(desc);
-        if (isExtensible) {
-          expectation = expectation.not;
-        }
+        const expectation = isExtensible ? expect(desc).not : expect(desc);
         expectation.toBe(undefined);
         if (desc) {
           expect(desc.value).toBe(3);
@@ -402,10 +405,7 @@ describe("Filtering own keys ", function () {
 
         // Test that the delete didn't propagate through.
         let desc = Reflect.getOwnPropertyDescriptor(wetDocument, "blacklisted");
-        let expectedDesc = expect(desc);
-        if (isExtensible) {
-          expectedDesc = expectedDesc.not;
-        }
+        const expectedDesc = isExtensible ? expect(desc).not : expect(desc);
         expectedDesc.toBe(undefined);
         if (desc) {
           expect(desc.value).toBe(3);
@@ -493,7 +493,13 @@ describe("Filtering own keys ", function () {
     });
   }
 
-  function defineTestSet(filterWet, filterDry, filterObj, descTail, beforeTail) {
+  function defineTestSet(
+    filterWet: boolean,
+    filterDry: boolean,
+    filterObj: OwnKeysFilter,
+    descTail: string,
+    beforeTail: () => void
+  ) {
     function modifyFilter() {
       if (filterWet) {
         membrane.modifyRules.filterOwnKeys("wet", wetDocument, filterObj);
@@ -516,21 +522,21 @@ describe("Filtering own keys ", function () {
     });
   }
 
-  function defineTestsByFilter(filterWet, filterDry, beforeTail) {
+  function defineTestsByFilter(filterWet: boolean, filterDry: boolean, beforeTail: () => void) {
     defineTestSet(filterWet, filterDry, DocBlacklistFilter, "blacklist function", beforeTail);
 
     defineTestSet(filterWet, filterDry, docKeysAsArray, "whitelist array", beforeTail);
     defineTestSet(filterWet, filterDry, docKeysAsSet, "whitelist set", beforeTail);
   }
 
-  function defineTestsByObjectGraph(graphName, beforeTail) {
+  function defineTestsByObjectGraph(graphName: string, beforeTail: () => void) {
     const isWet = graphName === "wet";
     describe(`with the ${graphName} object graph`, function () {
       defineTestsByFilter(isWet, !isWet, beforeTail);
     });
   }
 
-  function defineTestsBySealant(sealTail) {
+  function defineTestsBySealant(sealTail: () => void) {
     defineTestsByObjectGraph("wet", sealTail);
     defineTestsByObjectGraph("dry", sealTail);
   }
@@ -565,7 +571,7 @@ describe("Filtering own keys ", function () {
       {
         let events = Reflect.getOwnPropertyDescriptor(dryDocument, "__events__");
         expect(isDataDescriptor(events)).toBe(true);
-        expect(Array.isArray(events.value)).toBe(true);
+        expect(Array.isArray(events!.value)).toBe(true);
       }
       {
         let events = Reflect.get(wetDocument, "__events__");
@@ -591,7 +597,7 @@ describe("Filtering own keys ", function () {
       {
         let events = Reflect.getOwnPropertyDescriptor(wetDocument, "__events__");
         expect(isDataDescriptor(events)).toBe(true);
-        expect(Array.isArray(events.value)).toBe(true);
+        expect(Array.isArray(events!.value)).toBe(true);
       }
       {
         let events = Reflect.get(wetDocument, "__events__");
@@ -612,7 +618,7 @@ describe("Filtering own keys ", function () {
       {
         let extra = Reflect.getOwnPropertyDescriptor(dryDocument, "extra");
         expect(isDataDescriptor(extra)).toBe(true);
-        expect(extra.value).toBe(3);
+        expect(extra!.value).toBe(3);
       }
       expect(Reflect.get(dryDocument, "extra")).toBe(3);
 
@@ -623,7 +629,7 @@ describe("Filtering own keys ", function () {
       {
         let extra = Reflect.getOwnPropertyDescriptor(wetDocument, "extra");
         expect(isDataDescriptor(extra)).toBe(true);
-        expect(extra.value).toBe(3);
+        expect(extra!.value).toBe(3);
       }
       expect(Reflect.get(wetDocument, "extra")).toBe(3);
 
@@ -637,7 +643,7 @@ describe("Filtering own keys ", function () {
       {
         let extra = Reflect.getOwnPropertyDescriptor(dryDocument, "extra");
         expect(isDataDescriptor(extra)).toBe(true);
-        expect(extra.value).toBe(4);
+        expect(extra!.value).toBe(4);
       }
       expect(Reflect.get(dryDocument, "extra")).toBe(4);
 
@@ -648,7 +654,7 @@ describe("Filtering own keys ", function () {
       {
         let extra = Reflect.getOwnPropertyDescriptor(wetDocument, "extra");
         expect(isDataDescriptor(extra)).toBe(true);
-        expect(extra.value).toBe(4);
+        expect(extra!.value).toBe(4);
       }
       expect(Reflect.get(wetDocument, "extra")).toBe(4);
 
@@ -676,7 +682,7 @@ describe("Filtering own keys ", function () {
     });
 
     describe(".defineProperty(dryDocument, 'blacklisted', desc) returns true for a blacklisted property, and sets the property", function () {
-      var desc;
+      let desc: PropertyDescriptor;
       beforeEach(function () {
         desc = {
           "value": 2,
@@ -686,7 +692,7 @@ describe("Filtering own keys ", function () {
       });
 
       afterEach(function () {
-        desc = null;
+        desc = null as any;
       });
 
       it("where desc.configurable is false,", function () {
@@ -705,7 +711,7 @@ describe("Filtering own keys ", function () {
     });
 
     describe(".defineProperty(dryDocument, 'blacklisted', desc) does not trigger a membrane logger warning", function () {
-      var desc;
+      let desc: PropertyDescriptor;
       beforeEach(function () {
         rebuildMocksWithLogger();
         desc = {
@@ -716,7 +722,7 @@ describe("Filtering own keys ", function () {
       });
 
       afterEach(function () {
-        desc = null;
+        desc = null as any;
       });
 
       it("where desc.configurable is false,", function () {
