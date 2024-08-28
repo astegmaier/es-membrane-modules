@@ -19,9 +19,7 @@ export interface IMockNodeConstructor {
   new (ownerDocument: any): IMockNode;
 }
 
-export function getNodeWet(
-  EventTargetWet: IMockEventTargetConstructor // TODO: go back to importing, rather than injecting MockEventTarget
-): IMockNodeConstructor {
+export function getNodeWet(EventTargetWet: IMockEventTargetConstructor): IMockNodeConstructor {
   const wetMarker = {
     marker: "true"
   };
@@ -33,8 +31,6 @@ export function getNodeWet(
     constructor(public ownerDocument: any) {
       super();
       this.parentNode = null;
-      // @ts-ignore - TODO: remove this - it didn't work.
-      // super.parentNode = null;
       this.wetMarker = wetMarker;
     }
 

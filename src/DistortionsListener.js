@@ -1,4 +1,4 @@
-/** @import {IDistortionsListenerPrototype} from "./DistortionsListener" */
+/** @import {IDistortionsListenerPrototype, DistortionListenerFilter} from "./DistortionsListener" */
 /** @import {NWNCDataDescriptorsOf} from "./sharedUtilities" */
 import { NWNCDataDescriptor, allTraps, Primordials } from "./sharedUtilities.js";
 import { throwAndLog } from "./throwAndLog";
@@ -38,17 +38,19 @@ Object.defineProperties(
   /** @type NWNCDataDescriptorsOf<IDistortionsListenerPrototype> */ ({
     "addListener": new NWNCDataDescriptor(function (value, category, config) {
       if (category === "prototype" || category === "instance") {
-        value = value.prototype;
+        value = /** @type {{ [key: string | symbol]: unknown }} */ (value).prototype;
       }
 
       if (category === "prototype" || category === "value") {
         this.valueAndProtoMap.set(value, config);
       } else if (category === "iterable") {
-        Array.from(value).forEach((item) => this.valueAndProtoMap.set(item, config));
+        Array.from(/** @type {ArrayLike<unknown>} */ (value)).forEach((item) =>
+          this.valueAndProtoMap.set(item, config)
+        );
       } else if (category === "instance") {
         this.instanceMap.set(value, config);
       } else if (category === "filter" && typeof value === "function") {
-        this.filterToConfigMap.set(value, config);
+        this.filterToConfigMap.set(/** @type {DistortionListenerFilter} */ (value), config);
       } else {
         throwAndLog(
           `Unsupported category ${category} for value`,

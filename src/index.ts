@@ -1,7 +1,13 @@
 export { Membrane } from "./Membrane";
 export { Constants } from "./moduleUtilities";
 
-export type { IDistortionsListenerConfig, DistortionsListener } from "./DistortionsListener";
+export type {
+  IDistortionsListenerConfig,
+  DistortionsListener,
+  DistortionListenerCategory,
+  DistortionListenerFilter,
+  DistortionsListenerValue
+} from "./DistortionsListener";
 export type {
   ILogger,
   LogLevel,

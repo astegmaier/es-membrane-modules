@@ -1,20 +1,25 @@
-type EventHandler = (...args: unknown[]) => void;
+export interface IEvent {
+  type: string;
+  currentPhase: number;
+}
 
-interface IListener {
+export type EventHandler = (event: IEvent) => void;
+
+export interface IListener {
   handleEvent: EventHandler;
 }
 
-interface IEvent {
+interface ITrackedEvent {
   type: any;
   listener: IListener;
   isBubbling: boolean;
 }
 
 export interface IMockEventTarget {
-  __events__: IEvent[];
+  __events__: ITrackedEvent[];
   parentNode?: IMockEventTarget | null;
   addEventListener(type: any, listener: EventHandler | IListener, isBubbling: boolean): void;
-  dispatchEvent(eventType: any): void;
+  dispatchEvent(eventType: string): void;
   handleEventAtTarget(eventType: any): void;
 }
 
@@ -25,7 +30,7 @@ export interface IMockEventTargetConstructor {
 export class EventTargetWet implements IMockEventTarget {
   parentNode?: IMockEventTarget | null;
 
-  __events__: IEvent[] = [];
+  __events__: ITrackedEvent[] = [];
 
   addEventListener(type: any, listener: EventHandler | IListener, isBubbling: boolean) {
     if (typeof listener == "function") {
@@ -45,7 +50,7 @@ export class EventTargetWet implements IMockEventTarget {
     });
   }
 
-  dispatchEvent(eventType: any) {
+  dispatchEvent(eventType: string) {
     let current = this.parentNode;
     let chain = [];
     while (current) {
@@ -53,7 +58,7 @@ export class EventTargetWet implements IMockEventTarget {
       current = current.parentNode;
     }
 
-    let event = {
+    let event: IEvent = {
       type: eventType,
       currentPhase: 1
     };

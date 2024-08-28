@@ -31,7 +31,26 @@
 
 import { MembraneMocks, DAMP } from "../../mocks";
 import type { IDampMocks, IDocument, IMockEventTarget, IMockOptions, IMocks } from "../../mocks";
-import type { AllListenerMetadata, Membrane, ObjectGraphHandler, ProxyListener } from "../../src";
+import type { AllListenerMetadata, Membrane, ProxyListener } from "../../src";
+
+type Filter = (element: string | symbol) => boolean;
+
+interface INameFilters {
+  doc: Filter;
+  listener: Filter;
+  target: Filter;
+  node: Filter;
+  element: Filter;
+  proto: {
+    function: Filter;
+    node: Filter;
+    element: Filter;
+  };
+}
+
+interface IMockOptionsWithWhitelist extends IMockOptions<IMocks & IDampMocks> {
+  whitelist: (meta: AllListenerMetadata, filter: Filter, field?: string) => void;
+}
 
 describe("Use case:  The membrane can be used to safely whitelist properties", function () {
   function buildTests(
@@ -72,27 +91,12 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
       "rootElement"
     ];
 
-    type Filter = (element: string | symbol) => boolean;
-
     function buildFilter(names: (string | symbol)[], prevFilter?: Filter): Filter {
       return function (elem) {
         if (prevFilter && prevFilter(elem)) {
           return true;
         }
         return names.includes(elem);
-      };
-    }
-
-    interface INameFilters {
-      doc: Filter;
-      listener: Filter;
-      target: Filter;
-      node: Filter;
-      element: Filter;
-      proto: {
-        function: Filter;
-        node: Filter;
-        element: Filter;
       };
     }
 
@@ -110,10 +114,6 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
     let parts: IMocks & IDampMocks, dryWetMB: Membrane, descWet: PropertyDescriptor | undefined;
     let EventListenerProto: IMockEventTarget;
 
-    interface IMockOptionsWithWhitelist extends IMockOptions<IMocks & IDampMocks> {
-      whitelist: (meta: AllListenerMetadata, filter: Filter, field?: string) => void;
-    }
-
     const mockOptions: IMockOptionsWithWhitelist = {
       whitelist: function (meta: AllListenerMetadata, filter: Filter, field = "wet") {
         dryWetMB.modifyRules.storeUnknownAsLocal(field, meta.target);
@@ -124,11 +124,7 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
         }
       },
 
-      wetHandlerCreated: function (
-        this: IMockOptionsWithWhitelist,
-        handler: ObjectGraphHandler,
-        Mocks: IMocks & IDampMocks
-      ) {
+      wetHandlerCreated: function (handler, Mocks) {
         parts = Mocks;
         dryWetMB = parts.membrane;
         EventListenerProto = Object.getPrototypeOf(parts.wet.Node.prototype);
@@ -172,10 +168,7 @@ describe("Use case:  The membrane can be used to safely whitelist properties", f
         handler.addProxyListener(secondWetListener);
       },
 
-      dryHandlerCreated: function (
-        this: IMockOptionsWithWhitelist,
-        handler: ObjectGraphHandler /*, Mocks */
-      ) {
+      dryHandlerCreated: function (handler /*, Mocks */) {
         var listener = function (this: IMockOptionsWithWhitelist, meta: any) {
           if (meta.target === parts.wet.doc) {
             // parts.dry.doc will be meta.proxy.

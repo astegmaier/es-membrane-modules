@@ -1,4 +1,5 @@
 import { Membrane } from "./Membrane";
+import { OwnKeysFilter } from "./ModifyRulesAPI";
 
 export interface IDistortionsListenerOwn {
   membrane: Membrane;
@@ -7,14 +8,14 @@ export interface IDistortionsListenerOwn {
   /* function: JSON configuration */
   instanceMap: Map<any, any>;
   /* function returning boolean: JSON configuration */
-  filterToConfigMap: Map<any, any>;
+  filterToConfigMap: Map<DistortionListenerFilter, IDistortionsListenerConfig>;
   ignorableValues: Set<any>;
 }
 
 export interface IDistortionsListenerConfig {
   formatVersion: string;
   dataVersion: string;
-  filterOwnKeys: boolean;
+  filterOwnKeys: boolean | OwnKeysFilter;
   proxyTraps: any[];
   storeUnknownAsLocal: boolean;
   requireLocalDelete: boolean;
@@ -22,11 +23,25 @@ export interface IDistortionsListenerConfig {
   truncateArgList: boolean;
 }
 
+export type DistortionListenerCategory = "prototype" | "instance" | "value" | "iterable" | "filter";
+
+export type DistortionListenerFilter = (value: any) => boolean;
+
+export type DistortionsListenerValue =
+  | { [key: string | symbol]: any }
+  | ((meta: any) => boolean)
+  | ArrayLike<unknown>;
+
 export interface IDistortionsListenerPrototype {
-  addListener(this: DistortionsListener, value: any, category: any, config: any): void;
+  addListener(
+    this: DistortionsListener,
+    value: DistortionsListenerValue,
+    category: DistortionListenerCategory,
+    config: IDistortionsListenerConfig
+  ): void;
   removeListener(this: DistortionsListener, value: any, category: any): void;
   listenOnce(this: DistortionsListener, meta: any, config: any): void;
-  sampleConfig(this: DistortionsListener, isFunction: boolean): IDistortionsListenerConfig;
+  sampleConfig(this: DistortionsListener, isFunction?: boolean): IDistortionsListenerConfig;
   bindToHandler(this: DistortionsListener, handler: any): void;
   ignorePrimordials(this: DistortionsListener): void;
   /**
