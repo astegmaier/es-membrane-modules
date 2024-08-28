@@ -1,7 +1,9 @@
 import { MembraneMocks } from "../../mocks";
+import type { IDocument, IMocks } from "../../mocks";
+import type { Membrane } from "../../src";
 
 describe("storeUnknownAsLocal overrides filterOwnKeys for .defineProperty()", function () {
-  function BlacklistFilter(name) {
+  function BlacklistFilter(name: string | symbol) {
     switch (name) {
       case "__events__":
       case "handleEventAtTarget":
@@ -26,7 +28,7 @@ describe("storeUnknownAsLocal overrides filterOwnKeys for .defineProperty()", fu
     configurable: false
   };
 
-  var parts, dryDocument, wetDocument, membrane;
+  let parts: IMocks, dryDocument: IDocument, wetDocument: IDocument, membrane: Membrane;
 
   beforeEach(function () {
     parts = MembraneMocks(false);
@@ -36,15 +38,15 @@ describe("storeUnknownAsLocal overrides filterOwnKeys for .defineProperty()", fu
   });
 
   afterEach(function () {
-    dryDocument = null;
-    wetDocument = null;
+    dryDocument = null as any;
+    wetDocument = null as any;
 
     membrane.getHandlerByName("dry").revokeEverything();
-    membrane = null;
-    parts = null;
+    membrane = null as any;
+    parts = null as any;
   });
 
-  function runTest(propName, wetValue) {
+  function runTest(propName: string, wetValue: unknown) {
     {
       let keys = Reflect.ownKeys(dryDocument);
       expect(keys.includes(propName)).toBe(true);
@@ -67,7 +69,7 @@ describe("storeUnknownAsLocal overrides filterOwnKeys for .defineProperty()", fu
     }
   }
 
-  function buildTest(storeUnknown, filterKeys, propName) {
+  function buildTest(storeUnknown: "dry" | "wet", filterKeys: "dry" | "wet", propName: string) {
     return [
       // description
       [
@@ -94,7 +96,7 @@ describe("storeUnknownAsLocal overrides filterOwnKeys for .defineProperty()", fu
 
         runTest(propName, 2);
       }
-    ];
+    ] as const;
   }
 
   /* Combinations:
@@ -102,8 +104,8 @@ describe("storeUnknownAsLocal overrides filterOwnKeys for .defineProperty()", fu
        filterOwnKeys: dry, wet
        property name: extra, blacklisted
     */
-  ["dry", "wet"].forEach(function (storeUnknown) {
-    ["dry", "wet"].forEach(function (filterOwn) {
+  (["dry", "wet"] as const).forEach(function (storeUnknown) {
+    (["dry", "wet"] as const).forEach(function (filterOwn) {
       ["extra", "blacklisted"].forEach(function (propName) {
         var [desc, test] = buildTest(storeUnknown, filterOwn, propName);
         it(desc, test);
@@ -113,7 +115,7 @@ describe("storeUnknownAsLocal overrides filterOwnKeys for .defineProperty()", fu
 });
 
 describe("requireLocalDelete overrides filterOwnKeys for .deleteProperty()", function () {
-  function BlacklistFilter(name) {
+  function BlacklistFilter(name: string | symbol) {
     switch (name) {
       case "__events__":
       case "handleEventAtTarget":
@@ -124,13 +126,6 @@ describe("requireLocalDelete overrides filterOwnKeys for .deleteProperty()", fun
     return true;
   }
 
-  const desc1 = {
-    value: 1,
-    writable: true,
-    enumerable: true,
-    configurable: true
-  };
-
   const desc2 = {
     value: 2,
     writable: true,
@@ -138,7 +133,7 @@ describe("requireLocalDelete overrides filterOwnKeys for .deleteProperty()", fun
     configurable: false
   };
 
-  var parts, dryDocument, wetDocument, membrane;
+  var parts: IMocks, dryDocument: IDocument, wetDocument: IDocument, membrane: Membrane;
 
   beforeEach(function () {
     parts = MembraneMocks(false);
@@ -148,15 +143,15 @@ describe("requireLocalDelete overrides filterOwnKeys for .deleteProperty()", fun
   });
 
   afterEach(function () {
-    dryDocument = null;
-    wetDocument = null;
+    dryDocument = null as any;
+    wetDocument = null as any;
 
     membrane.getHandlerByName("dry").revokeEverything();
-    membrane = null;
-    parts = null;
+    membrane = null as any;
+    parts = null as any;
   });
 
-  function runTest(propName, wetValue) {
+  function runTest(propName: string, wetValue: unknown) {
     {
       let keys = Reflect.ownKeys(dryDocument);
       expect(keys.includes(propName)).toBe(false);
@@ -176,7 +171,7 @@ describe("requireLocalDelete overrides filterOwnKeys for .deleteProperty()", fun
     }
   }
 
-  function buildTest(requireLocal, filterKeys, propName) {
+  function buildTest(requireLocal: "dry" | "wet", filterKeys: "dry" | "wet", propName: string) {
     return [
       // description
       [
@@ -191,7 +186,7 @@ describe("requireLocalDelete overrides filterOwnKeys for .deleteProperty()", fun
 
         var oldValue = Reflect.get(wetDocument, propName);
 
-        /* Define the property on the dry graph.  It should appear on the dry graph
+        /* Delete the property on the dry graph.  It should be removed from the dry graph
          * but not on the wet graph.
          */
         expect(Reflect.deleteProperty(dryDocument, propName)).toBe(true);
@@ -205,7 +200,7 @@ describe("requireLocalDelete overrides filterOwnKeys for .deleteProperty()", fun
 
         runTest(propName, 2);
       }
-    ];
+    ] as const;
   }
 
   /* Combinations:
@@ -213,8 +208,8 @@ describe("requireLocalDelete overrides filterOwnKeys for .deleteProperty()", fun
        filterOwnKeys: dry, wet
        property name: nodeName, blacklisted
     */
-  ["dry", "wet"].forEach(function (storeUnknown) {
-    ["dry", "wet"].forEach(function (filterOwn) {
+  (["dry", "wet"] as const).forEach(function (storeUnknown) {
+    (["dry", "wet"] as const).forEach(function (filterOwn) {
       ["nodeName", "blacklisted"].forEach(function (propName) {
         var [desc, test] = buildTest(storeUnknown, filterOwn, propName);
         it(desc, test);
