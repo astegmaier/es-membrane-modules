@@ -1,17 +1,25 @@
 import { MembraneMocks } from "../../mocks";
+import type { IDocument, IMocks } from "../../mocks";
+import type { Membrane } from "../../src";
 
 describe("Truncation of argument lists", function () {
   "use strict";
 
-  var wetDocument, dryDocument, membrane, parts;
+  let wetDocument: IDocument, dryDocument: IDocument, membrane: Membrane, parts: IMocks;
   const arg0 = "arg0",
     arg1 = "arg1",
     arg2 = "arg2";
 
-  var argCount, target, check, truncator;
+  let argCount: number,
+    target: {
+      (arg0: "arg0", arg1: "arg1", arg2: "arg2"): void;
+      new (arg0: "arg0", arg1: "arg1", arg2: "arg2"): {};
+    },
+    check: (arg0: "arg0", arg1: "arg1", arg2: "arg2") => void,
+    truncator: (limit1: any, limit2?: any) => void;
 
   // a and b are here solely to check for function arity.
-  function checkArgCount(a, b) {
+  function checkArgCount(_a: "arg0", _b: "arg1") {
     argCount = arguments.length;
     if (arguments.length > 0) {
       expect(arguments[0]).toBe(arg0);
@@ -37,12 +45,12 @@ describe("Truncation of argument lists", function () {
   });
 
   afterEach(function () {
-    wetDocument = null;
-    dryDocument = null;
-    check = null;
+    wetDocument = null as any;
+    dryDocument = null as any;
+    check = null as any;
   });
 
-  function defineTests(fieldName) {
+  function defineTests(_fieldName: unknown) {
     it("is disabled by default:  any number of arguments is allowed", function () {
       target(arg0, arg1, arg2);
       expect(argCount).toBe(3);
@@ -127,9 +135,9 @@ describe("Truncation of argument lists", function () {
     });
   }
 
-  function defineGraphTests(fieldName) {
+  function defineGraphTests(fieldName: "dry" | "wet") {
     beforeEach(function () {
-      truncator = function (limit) {
+      truncator = function (limit: boolean | number) {
         membrane.modifyRules.truncateArgList(fieldName, parts[fieldName].doc.checkArgCount, limit);
       };
     });
@@ -161,7 +169,7 @@ describe("Truncation of argument lists", function () {
 
   describe("on both the wet and dry graphs, the lower non-negative integer applies", function () {
     beforeEach(function () {
-      truncator = function (wetLimit, dryLimit) {
+      truncator = function (wetLimit: boolean | number, dryLimit: boolean | number) {
         membrane.modifyRules.truncateArgList("wet", parts.wet.doc.checkArgCount, wetLimit);
 
         membrane.modifyRules.truncateArgList("dry", parts.dry.doc.checkArgCount, dryLimit);
