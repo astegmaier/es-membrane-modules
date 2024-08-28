@@ -1,8 +1,15 @@
 import { MembraneMocks, DAMP } from "../../mocks";
+import type { IMockElement, IMocks, IDampMocks } from "../../mocks";
+import type { Membrane } from "../../src";
 
 describe("Deleting properties locally", function () {
   // Customize this for whatever variables you need.
-  var parts, membrane, dryRoot, wetRoot, dampRoot;
+  let parts: IMocks & IDampMocks,
+    membrane: Membrane,
+    dryRoot: IMockElement,
+    wetRoot: IMockElement,
+    dampRoot: IMockElement;
+
   beforeEach(function () {
     parts = MembraneMocks(true);
     dryRoot = parts.dry.doc.rootElement;
@@ -12,14 +19,14 @@ describe("Deleting properties locally", function () {
   });
 
   afterEach(function () {
-    dryRoot = null;
-    wetRoot = null;
-    dampRoot = null;
-    membrane = null;
-    parts = null;
+    dryRoot = null as any;
+    wetRoot = null as any;
+    dampRoot = null as any;
+    membrane = null as any;
+    parts = null as any;
   });
 
-  function checkProperties(expectedDryExtra) {
+  function checkProperties(expectedDryExtra?: 1 | 0, _expectedWetExtraArg?: 1 | 0) {
     const extraDryAsBool = Boolean(expectedDryExtra);
     const expectedWetExtra = arguments.length > 1 ? arguments[1] : 1;
     const extraWetAsBool = Boolean(expectedWetExtra);
@@ -35,10 +42,7 @@ describe("Deleting properties locally", function () {
 
     {
       let desc = Reflect.getOwnPropertyDescriptor(dryRoot, "extra");
-      let expectation = expect(desc);
-      if (extraDryAsBool) {
-        expectation = expectation.not;
-      }
+      let expectation = extraDryAsBool ? expect(desc).not : expect(desc);
       expectation.toBe(undefined);
       if (extraDryAsBool && desc) {
         expect(desc.value).toBe(expectedDryExtra);
@@ -47,10 +51,7 @@ describe("Deleting properties locally", function () {
 
     {
       let desc = Reflect.getOwnPropertyDescriptor(wetRoot, "extra");
-      let expectation = expect(desc);
-      if (extraWetAsBool) {
-        expectation = expectation.not;
-      }
+      let expectation = extraWetAsBool ? expect(desc).not : expect(desc);
       expectation.toBe(undefined);
       if (extraWetAsBool && desc) {
         expect(desc.value).toBe(expectedWetExtra);
