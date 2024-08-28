@@ -12,6 +12,7 @@
  */
 
 import { MembraneMocks } from "../../mocks";
+import type { IDocument } from "../../mocks";
 
 let MockupsForThisTest = function () {
   // This function you're free to customize any way you want.
@@ -23,8 +24,7 @@ it("Use case:  membrane.modifyRules.requireLocalDelete", function () {
   // Customize this for whatever variables you need.
   var parts = MockupsForThisTest();
   parts.membrane.modifyRules.requireLocalDelete("wet", parts.wet.doc);
-
-  delete parts.dry.doc.__events__;
+  delete (parts.dry.doc as Partial<IDocument>).__events__;
   expect("__events__" in parts.dry.doc).toBe(false);
 
   expect("__events__" in parts.wet.doc).toBe(true);
