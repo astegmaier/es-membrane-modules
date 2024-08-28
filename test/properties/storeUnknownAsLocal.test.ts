@@ -1,14 +1,20 @@
 import { MembraneMocks, DAMP } from "../../mocks";
+import type { IMockElement, IMocks, IDampMocks } from "../../mocks";
+import type { Membrane } from "../../src";
 
 describe("Storing unknown properties locally", function () {
-  function fixKeys(keys) {
+  function fixKeys(keys: (string | symbol)[]) {
     if (keys.includes("membraneGraphName")) {
       keys.splice(keys.indexOf("membraneGraphName"), 1);
     }
   }
 
   // Customize this for whatever variables you need.
-  var parts, membrane, dryRoot, wetRoot, dampRoot;
+  let parts: IMocks & IDampMocks & { wetIsLocal?: boolean },
+    membrane: Membrane,
+    dryRoot: IMockElement,
+    wetRoot: IMockElement,
+    dampRoot: IMockElement;
   beforeEach(function () {
     parts = MembraneMocks(true);
     dryRoot = parts.dry.doc.rootElement;
@@ -17,11 +23,11 @@ describe("Storing unknown properties locally", function () {
     membrane = parts.membrane;
   });
   afterEach(function () {
-    dryRoot = null;
-    wetRoot = null;
-    dampRoot = null;
-    membrane = null;
-    parts = null;
+    dryRoot = null as any;
+    wetRoot = null as any;
+    dampRoot = null as any;
+    membrane = null as any;
+    parts = null as any;
   });
 
   function addUnknownPropertySpecs() {
