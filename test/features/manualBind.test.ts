@@ -1,4 +1,5 @@
 import { Membrane } from "../../src";
+import type { ObjectGraphHandler } from "../../src";
 
 describe("Binding two values manually", function () {
   "use strict";
@@ -17,9 +18,13 @@ describe("Binding two values manually", function () {
     objD: { name: "objD" },
 
     str: "values.str"
-  };
+  } as const;
 
-  var membrane, graphA, graphB, graphC, graphD;
+  let membrane: Membrane,
+    graphA: ObjectGraphHandler,
+    graphB: ObjectGraphHandler,
+    graphC: ObjectGraphHandler,
+    graphD: ObjectGraphHandler;
   beforeEach(function () {
     membrane = new Membrane();
     graphA = membrane.getHandlerByName(graphNames.A, { mustCreate: true });
@@ -27,21 +32,21 @@ describe("Binding two values manually", function () {
   });
   afterEach(function () {
     graphA.revokeEverything();
-    graphA = null;
+    graphA = null as any;
     graphB.revokeEverything();
-    graphB = null;
+    graphB = null as any;
 
     if (graphC) {
       graphC.revokeEverything();
-      graphC = null;
+      graphC = null as any;
     }
 
     if (graphD) {
       graphD.revokeEverything();
-      graphD = null;
+      graphD = null as any;
     }
 
-    membrane = null;
+    membrane = null as any;
   });
 
   it("when both values are objects unknown to the membrane", function () {
@@ -152,7 +157,7 @@ describe("Binding two values manually", function () {
     }).toThrow();
 
     // Ensure values.objB is not in the membrane.
-    Reflect.ownKeys(graphNames).forEach(function (k) {
+    (Reflect.ownKeys(graphNames) as (keyof typeof graphNames)[]).forEach(function (k) {
       let [found, v] = membrane.getMembraneProxy(graphNames[k], values.objB);
       expect(found).toBe(false);
       void v;
@@ -168,7 +173,7 @@ describe("Binding two values manually", function () {
     }).toThrow();
 
     // Ensure values.objB is not in the membrane.
-    Reflect.ownKeys(graphNames).forEach(function (k) {
+    (Reflect.ownKeys(graphNames) as (keyof typeof graphNames)[]).forEach(function (k) {
       let [found, v] = membrane.getMembraneProxy(graphNames[k], values.objB);
       expect(found).toBe(false);
       void v;
@@ -184,7 +189,7 @@ describe("Binding two values manually", function () {
     }).toThrow();
 
     // Ensure values.objB is not in the membrane.
-    Reflect.ownKeys(graphNames).forEach(function (k) {
+    (Reflect.ownKeys(graphNames) as (keyof typeof graphNames)[]).forEach(function (k) {
       let [found, v] = membrane.getMembraneProxy(graphNames[k], values.objB);
       expect(found).toBe(false);
       void v;
@@ -193,7 +198,7 @@ describe("Binding two values manually", function () {
 
   it("fails when both values are primitive", function () {
     expect(function () {
-      membrane.bindValuesByHandlers(graphA, values.strA, graphB, "Goodbye");
+      membrane.bindValuesByHandlers(graphA, (values as any).strA, graphB, "Goodbye");
     }).toThrow();
 
     // we can't look up primitives in the membrane.
