@@ -1,10 +1,11 @@
 import { Membrane } from "../../src";
+import type { ObjectGraphHandler } from "../../src";
 
 describe("Pass-through filters", function () {
   "use strict";
   const MUSTCREATE = Object.freeze({ mustCreate: true });
   const p = {};
-  function passP(value) {
+  function passP(value: unknown) {
     if (value === p) {
       return true;
     }
@@ -134,13 +135,10 @@ describe("Pass-through filters", function () {
     });
 
     it("cannot be assigned as a non-function value", function () {
-      const membrane = new Membrane({ passThroughFilter: p });
+      const membrane = new Membrane({ passThroughFilter: p as any });
 
-      let desc = Reflect.getOwnPropertyDescriptor(membrane, "passThroughFilter");
+      let desc = Reflect.getOwnPropertyDescriptor(membrane, "passThroughFilter")!;
       expect(typeof desc).toBe("object");
-      if (!desc) {
-        return;
-      }
       expect(typeof desc.value).toBe("function");
       expect(desc.writable).toBe(false);
       expect(desc.enumerable).toBe(false);
@@ -164,16 +162,16 @@ describe("Pass-through filters", function () {
   });
 
   describe("on object graph wrappers", function () {
-    let membrane, wetHandler, dryHandler;
+    let membrane: Membrane, wetHandler: ObjectGraphHandler, dryHandler: ObjectGraphHandler;
     beforeEach(function () {
       membrane = new Membrane();
       wetHandler = membrane.getHandlerByName("wet", MUSTCREATE);
       dryHandler = membrane.getHandlerByName("dry", MUSTCREATE);
     });
     afterEach(function () {
-      membrane = undefined;
-      wetHandler = undefined;
-      dryHandler = undefined;
+      membrane = undefined as any;
+      wetHandler = undefined as any;
+      dryHandler = undefined as any;
     });
 
     it("do not wrap objects when returning true from both graphs", function () {
@@ -220,7 +218,7 @@ describe("Pass-through filters", function () {
 
     it("defers to previously wrapped values", function () {
       let count = 0;
-      function passP2(value) {
+      function passP2(value: unknown) {
         count++;
         if (value === p && count > 1) {
           return true;
@@ -244,7 +242,7 @@ describe("Pass-through filters", function () {
     it("allows a value to be wrapped if the filter returns false in the future (don't do this)", function () {
       // XXX ajvincent See above note.
       let count = 0;
-      function passP2(value) {
+      function passP2(value: unknown) {
         count++;
         if (value === p && count === 1) {
           return true;
@@ -272,11 +270,8 @@ describe("Pass-through filters", function () {
       wetHandler.passThroughFilter = passP;
       expect(wetHandler.mayReplacePassThrough).toBe(false);
 
-      let desc = Reflect.getOwnPropertyDescriptor(wetHandler, "passThroughFilter");
+      let desc = Reflect.getOwnPropertyDescriptor(wetHandler, "passThroughFilter")!;
       expect(typeof desc).toBe("object");
-      if (!desc) {
-        return false;
-      }
       expect(desc.configurable).toBe(false);
       expect(desc.enumerable).toBe(false);
       expect("get" in desc).toBe(true);
@@ -291,7 +286,7 @@ describe("Pass-through filters", function () {
     it("cannot be assigned as a non-function value", function () {
       let oldFilter = wetHandler.passThroughFilter;
       expect(function () {
-        wetHandler.passThroughFilter = {};
+        wetHandler.passThroughFilter = {} as any;
       }).toThrow();
 
       expect(wetHandler.passThroughFilter).toBe(oldFilter);
