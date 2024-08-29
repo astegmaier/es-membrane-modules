@@ -47,7 +47,6 @@ export interface IMembraneOwn {
   warnOnceSet: Set<any> | null;
   modifyRules: ModifyRulesAPI;
   passThroughFilter: (value: unknown) => boolean;
-  Primordials: typeof Primordials;
 }
 
 export interface IMembranePrototype {
@@ -254,4 +253,5 @@ export interface Membrane extends IMembraneOwn, IMembranePrototype {}
 
 export class Membrane {
   constructor(options?: MembraneOptions);
+  static Primordials: typeof Primordials;
 }

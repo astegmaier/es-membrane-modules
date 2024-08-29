@@ -17,18 +17,18 @@ describe("Primordial values", function () {
     Set,
     WeakMap,
     WeakSet
-  ];
-  var passThrough;
+  ] as const;
+  let passThrough: (value: unknown) => boolean;
   {
     const pSet = new Set(Membrane.Primordials);
-    passThrough = pSet.has.bind(pSet);
+    passThrough = pSet.has.bind(pSet) as (value: unknown) => boolean;
   }
 
   it("are available on the Membrane as a frozen array", function () {
     expect(Array.isArray(Membrane.Primordials)).toBe(true);
     expect(Object.isFrozen(Membrane.Primordials)).toBe(true);
     {
-      let desc = Reflect.getOwnPropertyDescriptor(Membrane, "Primordials");
+      let desc = Reflect.getOwnPropertyDescriptor(Membrane, "Primordials")!;
       expect(desc.writable).toBe(false);
       expect(desc.configurable).toBe(false);
     }
@@ -38,7 +38,7 @@ describe("Primordial values", function () {
     }
 
     topValues.forEach(function (k) {
-      expect(Membrane.Primordials.includes(k)).toBe(true);
+      expect(Membrane.Primordials.includes(k as any)).toBe(true);
     });
   });
 
