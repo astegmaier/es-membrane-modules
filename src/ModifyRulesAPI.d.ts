@@ -27,7 +27,7 @@ export interface IChainHandlerProtection {
 export const ChainHandlerProtection: IChainHandlerProtection;
 
 interface IChainHandler extends ObjectGraphHandler {
-  nextHandler: ObjectGraphHandler;
+  nextHandler: IChainHandler;
   baseHandler: ObjectGraphHandler;
   membrane: Membrane;
 }
@@ -54,12 +54,12 @@ export interface IModifyRulesAPIPrototype {
   /**
    * Create a ProxyHandler inheriting from Reflect or an ObjectGraphHandler.
    *
-   * @param existingHandler {ObjectGraphHandler} The prototype of the new handler.
+   * @param existingHandler {ObjectGraphHandler | Reflect} The prototype of the new handler.
    */
   createChainHandler(
     this: ModifyRulesAPI,
-    existingHandler: ObjectGraphHandler // ansteg TODO: the implementation suggests that it could also work if it was handed a Reflect object.
-  ): IChainHandler; // ansteg TODO: if it were handed a Reflect object, it would return a different type.
+    existingHandler: ObjectGraphHandler | typeof Reflect
+  ): IChainHandler; // ansteg TODO: if it were handed a Reflect object, it would return a different type (I think?)
 
   /**
    * Replace a proxy in the membrane.

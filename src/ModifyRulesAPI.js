@@ -146,7 +146,7 @@ ModifyRulesAPI.prototype = Object.seal({
   /**
    * Create a ProxyHandler inheriting from Reflect or an ObjectGraphHandler.
    *
-   * @param existingHandler {ObjectGraphHandler} The prototype of the new handler.
+   * @param existingHandler {ObjectGraphHandler | Reflect} The prototype of the new handler.
    */
   createChainHandler: function (existingHandler) {
     // Yes, the logic is a little convoluted, but it seems to work this way.
@@ -484,7 +484,7 @@ ModifyRulesAPI.prototype = Object.seal({
    * @param fieldName {String}   The name of the object graph the proxy is part
    *                             of.
    * @param proxy     {Proxy}    The proxy to affect.
-   * @param trapList  {String[]} A list of proxy (Reflect) traps to disable.
+   * @param trapList  {typeof allTraps} A list of proxy (Reflect) traps to disable.
    */
   disableTraps: function (fieldName, proxy, trapList) {
     this.assertLocalProxy(fieldName, proxy, "disableTraps");

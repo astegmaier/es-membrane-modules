@@ -50,7 +50,21 @@ export function isAccessorDescriptor(desc: any): desc is AccessorDescriptor<any,
 
 export function isGenericDescriptor(desc: any): boolean;
 
-export const allTraps: ReadonlyArray<string>;
+export const allTraps: [
+  "getPrototypeOf",
+  "setPrototypeOf",
+  "isExtensible",
+  "preventExtensions",
+  "getOwnPropertyDescriptor",
+  "defineProperty",
+  "has",
+  "get",
+  "set",
+  "deleteProperty",
+  "ownKeys",
+  "apply",
+  "construct"
+];
 
 export const Primordials: ReadonlyArray<
   | typeof Array

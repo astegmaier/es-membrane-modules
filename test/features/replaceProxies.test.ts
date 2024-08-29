@@ -1,8 +1,10 @@
 import { MembraneMocks } from "../../mocks";
+import type { IMocks } from "../../mocks";
+import type { IChainHandler, Membrane, ObjectGraphHandler } from "../../src";
 
 describe("replacing proxies tests: ", function () {
   "use strict";
-  let parts, membrane, dryHandler, replacedProxy;
+  let parts: IMocks, membrane: Membrane, dryHandler: ObjectGraphHandler, replacedProxy: any;
   beforeEach(function () {
     parts = MembraneMocks();
     membrane = parts.membrane;
@@ -10,9 +12,9 @@ describe("replacing proxies tests: ", function () {
     replacedProxy = null;
   });
   afterEach(function () {
-    parts = null;
-    membrane = null;
-    dryHandler = null;
+    parts = null as any;
+    membrane = null as any;
+    dryHandler = null as any;
     replacedProxy = null;
   });
 
@@ -29,14 +31,14 @@ describe("replacing proxies tests: ", function () {
     }).toThrow();
   });
 
-  let dryObjectTests = function (dryObjectGenerator) {
+  let dryObjectTests = function (dryObjectGenerator: (parts: IMocks) => object) {
     return function () {
-      let dryObject;
+      let dryObject: object;
       beforeEach(function () {
         dryObject = dryObjectGenerator(parts);
       });
       afterEach(function () {
-        dryObject = null;
+        dryObject = null as any;
       });
 
       it("with bare object fails", function () {
@@ -145,11 +147,11 @@ describe("replacing proxies tests: ", function () {
         it("and replacing all traps with forwarding traps succeeds", function () {
           let handler = membrane.modifyRules.createChainHandler(dryHandler);
           let numCalls = 0;
-          membrane.allTraps.forEach(function (trapName) {
-            handler[trapName] = function () {
+          membrane.allTraps.forEach(function <T extends keyof IChainHandler>(trapName: T) {
+            handler[trapName] = function (this: IChainHandler) {
               numCalls++;
               return this.nextHandler[trapName].apply(this, arguments);
-            };
+            } as IChainHandler[T];
           });
 
           replacedProxy = membrane.modifyRules.replaceProxy(dryObject, handler);
@@ -222,14 +224,14 @@ describe("replacing proxies tests: ", function () {
       expect(handler.nextHandler).toBe(Reflect);
       expect(handler.baseHandler).toBe(Reflect);
       let lastVisited = null;
-      membrane.allTraps.forEach(function (trapName) {
-        handler[trapName] = function () {
+      membrane.allTraps.forEach(function <T extends keyof IChainHandler>(trapName: T) {
+        handler[trapName] = function (this: IChainHandler) {
           try {
             var rv = this.nextHandler[trapName].apply(this, arguments);
             if (trapName == "ownKeys" && rv.includes("shouldNotBeAmongKeys")) {
               rv.splice(rv.indexOf("shouldNotBeAmongKeys"), 1);
             }
-            return rv;
+            return rv as IChainHandler[T];
           } finally {
             lastVisited = trapName;
           }
