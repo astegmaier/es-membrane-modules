@@ -14,7 +14,7 @@ export interface ListenerMetadata {
    * do NOT just call Proxy.revocable and set this property.  Instead, set the
    * handler property with the new proxy handler, and call .rebuildProxy().
    */
-  proxy: object;
+  proxy: unknown;
 
   /**
    * The unwrapped object or function we're building the proxy for.

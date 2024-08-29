@@ -146,7 +146,7 @@ ModifyRulesAPI.prototype = Object.seal({
   /**
    * Create a ProxyHandler inheriting from Reflect or an ObjectGraphHandler.
    *
-   * @param existingHandler {ProxyHandler | IChainHandler} The prototype of the new handler.
+   * @param existingHandler {ObjectGraphHandler} The prototype of the new handler.
    */
   createChainHandler: function (existingHandler) {
     // Yes, the logic is a little convoluted, but it seems to work this way.

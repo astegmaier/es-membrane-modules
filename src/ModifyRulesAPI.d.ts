@@ -1,5 +1,7 @@
 import type { DistortionsListener } from "./DistortionsListener";
 import type { Membrane } from "./Membrane";
+import { ObjectGraphHandler } from "./ObjectGraphHandler";
+import { WithThisValueForMethods } from "./utilityTypes";
 
 export const ChainHandlers: WeakSet<object>;
 
@@ -24,9 +26,9 @@ export interface IChainHandlerProtection {
 
 export const ChainHandlerProtection: IChainHandlerProtection;
 
-export interface IChainHandler extends ProxyHandler<any> {
-  nextHandler: any;
-  baseHandler: any;
+interface IChainHandler extends ObjectGraphHandler {
+  nextHandler: ObjectGraphHandler;
+  baseHandler: ObjectGraphHandler;
   membrane: Membrane;
 }
 
@@ -52,12 +54,12 @@ export interface IModifyRulesAPIPrototype {
   /**
    * Create a ProxyHandler inheriting from Reflect or an ObjectGraphHandler.
    *
-   * @param existingHandler {ProxyHandler} The prototype of the new handler.
+   * @param existingHandler {ObjectGraphHandler} The prototype of the new handler.
    */
   createChainHandler(
     this: ModifyRulesAPI,
-    existingHandler: ProxyHandler<any> | IChainHandler
-  ): IChainHandler;
+    existingHandler: ObjectGraphHandler // ansteg TODO: the implementation suggests that it could also work if it was handed a Reflect object.
+  ): IChainHandler; // ansteg TODO: if it were handed a Reflect object, it would return a different type.
 
   /**
    * Replace a proxy in the membrane.

@@ -8,19 +8,61 @@
 
 import { loggerLib } from "../../mocks";
 import { Membrane } from "../../src";
+import type {
+  AllListenerMetadata,
+  IChainHandler,
+  ObjectGraphHandler,
+  UseShadowTargetMode
+} from "../../src";
+
+interface ITestObject1 {
+  label: string;
+  arg1: unknown;
+  number: number;
+}
+
+interface ITestObject2 extends ITestObject1 {
+  arg2: (...args: unknown[]) => void;
+}
+
+interface ITestObject3 {
+  objectName?: string;
+  objName?: string;
+  child?: ITestObject3;
+  parent?: ITestObject3;
+  grandParent?: ITestObject3;
+}
+
+interface ITestObject1Constructor {
+  new (arg1: unknown): ITestObject1;
+  (arg1: unknown): ITestObject1;
+}
+
+interface ITestObject2Constructor {
+  new (arg1: unknown, arg2: (...args: unknown[]) => void): ITestObject2;
+  (arg1: unknown, arg2: (...args: unknown[]) => void): ITestObject2;
+}
+
+interface IAugmentedAppender extends loggerLib.Appender {
+  getMessages(): string[];
+}
 
 describe("An object graph handler's proxy listeners", function () {
-  var membrane, wetHandler, dryHandler, appender, ctor1;
+  let membrane: Membrane,
+    wetHandler: ObjectGraphHandler,
+    dryHandler: ObjectGraphHandler,
+    appender: IAugmentedAppender,
+    ctor1: ITestObject1Constructor;
   const logger = loggerLib.getLogger("test.membrane.proxylisteners");
 
-  function getMessageProp(event) {
+  function getMessageProp(event: any) {
     return event.message;
   }
-  function getMessages() {
+  function getMessages(this: loggerLib.Appender): string[] {
     return this.events.map(getMessageProp);
   }
 
-  function mustSkip(value) {
+  function mustSkip(value: unknown): boolean {
     return value === Object.prototype || value === ctor1 || value === ctor1.prototype;
   }
 
@@ -29,19 +71,19 @@ describe("An object graph handler's proxy listeners", function () {
     wetHandler = membrane.getHandlerByName("wet", { mustCreate: true });
     dryHandler = membrane.getHandlerByName("dry", { mustCreate: true });
 
-    appender = new loggerLib.Appender();
+    appender = new loggerLib.Appender() as IAugmentedAppender;
     logger.addAppender(appender);
     appender.getMessages = getMessages;
     appender.setThreshold("INFO");
 
-    ctor1 = function (arg1) {
+    ctor1 = function (this: ITestObject1, arg1: unknown) {
       try {
         this.label = "ctor1 instance";
         this.arg1 = arg1;
       } catch (ex) {
         // do nothing, this is not that important to our tests
       }
-    };
+    } as ITestObject1Constructor;
     ctor1.prototype.label = "ctor1 prototype";
     ctor1.prototype.number = 2;
   });
@@ -52,10 +94,10 @@ describe("An object graph handler's proxy listeners", function () {
     wetHandler.revokeEverything();
     dryHandler.revokeEverything();
 
-    membrane = null;
-    wetHandler = null;
-    dryHandler = null;
-    appender = null;
+    membrane = null as any;
+    wetHandler = null as any;
+    dryHandler = null as any;
+    appender = null as any;
   });
 
   /* XXX ajvincent I could use Jasmine spies, but for once, I don't like the
@@ -69,22 +111,24 @@ describe("An object graph handler's proxy listeners", function () {
     the listeners and the returned value.
     */
 
-    var meta0, meta1, meta2;
-    function listener1(meta) {
+    let meta0: AllListenerMetadata | undefined,
+      meta1: AllListenerMetadata | undefined,
+      meta2: AllListenerMetadata | undefined;
+    function listener1(meta: AllListenerMetadata) {
       if (mustSkip(meta.target)) {
         return;
       }
       meta1 = meta;
       logger.info("listener1");
     }
-    function listener2(meta) {
+    function listener2(meta: AllListenerMetadata) {
       if (mustSkip(meta.target)) {
         return;
       }
       meta2 = meta;
       logger.info("listener2");
     }
-    function listener0(meta) {
+    function listener0(meta: AllListenerMetadata) {
       if (mustSkip(meta.target)) {
         return;
       }
@@ -134,7 +178,7 @@ describe("An object graph handler's proxy listeners", function () {
       expect(meta2).toBe(meta1);
       expect(typeof meta2).toBe("object");
       expect(meta0).not.toBe(undefined);
-      expect(meta2.proxy).toBe(X);
+      expect(meta2!.proxy).toBe(X);
     });
 
     it("via wrapping a non-primitive property", function () {
@@ -166,7 +210,7 @@ describe("An object graph handler's proxy listeners", function () {
       expect(meta2).toBe(meta1);
       expect(typeof meta2).toBe("object");
       expect(meta0).not.toBe(undefined);
-      expect(meta2.proxy).toBe(Y);
+      expect(meta2!.proxy).toBe(Y);
     });
 
     it("via wrapping a primitive property", function () {
@@ -192,11 +236,11 @@ describe("An object graph handler's proxy listeners", function () {
     });
 
     it("via counter-wrapping a non-primitive argument", function () {
-      var cbVal;
+      let cbVal: { argIndex: number } | undefined;
       const Z = { argIndex: 0 },
         Z2 = { argIndex: 1 },
         rv = { isRV: true };
-      function callback(k) {
+      function callback(k: { argIndex: number }) {
         logger.info("Entering callback");
         cbVal = k;
         logger.info("Exiting callback");
@@ -208,9 +252,10 @@ describe("An object graph handler's proxy listeners", function () {
       var X = membrane.convertArgumentToProxy(wetHandler, dryHandler, x);
 
       {
-        let Y = X.arg1; // we've already tested this above
+        // @ts-ignore - TypeScript will complain that "'Y' is declared but its value is never read". But we still want to do this, since we're testing the side effects of reading 'arg1'.
+        let _Y = X.arg1; // we've already tested this above
         reset();
-        Y = null;
+        _Y = null;
       }
 
       logger.info("Calling X.arg1 start");
@@ -267,8 +312,8 @@ describe("An object graph handler's proxy listeners", function () {
     });
 
     it("via counter-wrapping a primitive argument", function () {
-      var cbVal;
-      function callback(k) {
+      let cbVal: unknown;
+      function callback(k: unknown) {
         cbVal = k;
       }
 
@@ -277,6 +322,7 @@ describe("An object graph handler's proxy listeners", function () {
       var X = membrane.convertArgumentToProxy(wetHandler, dryHandler, x);
 
       {
+        // @ts-ignore - TypeScript will complain that "'Y' is declared but its value is never read". But we still want to do this, since we're testing the side effects of reading 'arg1'.
         let Y = X.arg1; // we've already tested this above
         reset();
         Y = null;
@@ -304,7 +350,7 @@ describe("An object graph handler's proxy listeners", function () {
   describe("can override the proxy to return", function () {
     it("with a primitive", function () {
       var rv = "primitive";
-      dryHandler.addProxyListener(function (meta) {
+      dryHandler.addProxyListener(function (meta: AllListenerMetadata) {
         meta.proxy = rv;
       });
       var x = new ctor1("one");
@@ -344,13 +390,18 @@ describe("An object graph handler's proxy listeners", function () {
         configurable: true
       };
 
-      handler2.getOwnPropertyDescriptor = function (target, propName) {
+      handler2.getOwnPropertyDescriptor = function (
+        this: IChainHandler,
+        target: unknown,
+        propName: string | symbol
+      ) {
         if (propName == "extra") {
           return extraDesc;
         }
         return this.nextHandler.getOwnPropertyDescriptor(target, propName);
-      };
+      } as ObjectGraphHandler["getOwnPropertyDescriptor"]; // ansteg TODO: remove this cast after we convert ObjetGraphHandler to a proper class and define an interface for IChainHandler/IObjectGraphHandler that doesn't manually set the 'this' value for methods.
       dryHandler.addProxyListener(function (meta) {
+        handler2.externalHandler;
         meta.handler = handler2;
         meta.rebuildProxy();
       });
@@ -359,7 +410,7 @@ describe("An object graph handler's proxy listeners", function () {
       var X = membrane.convertArgumentToProxy(wetHandler, dryHandler, x);
 
       expect(X.extra).toBe(3);
-      expect(x.extra).toBe(undefined);
+      expect((x as any).extra).toBe(undefined);
     });
 
     it("with a new proxy built locally", function () {
@@ -379,7 +430,7 @@ describe("An object graph handler's proxy listeners", function () {
         configurable: true
       };
 
-      var handler2 = {};
+      var handler2: ProxyHandler<object> = {};
       handler2.getOwnPropertyDescriptor = function (target, propName) {
         if (propName == "extra") {
           return extraDesc;
@@ -387,7 +438,7 @@ describe("An object graph handler's proxy listeners", function () {
         return Reflect.getOwnPropertyDescriptor(target, propName);
       };
 
-      function listener(meta) {
+      function listener(meta: AllListenerMetadata) {
         meta.proxy = new Proxy(meta.target, handler2);
       }
 
@@ -396,9 +447,9 @@ describe("An object graph handler's proxy listeners", function () {
       var x = new ctor1("three");
       var X = membrane.convertArgumentToProxy(wetHandler, dryHandler, x);
 
-      let XDesc = Reflect.getOwnPropertyDescriptor(X, "extra");
+      let XDesc = Reflect.getOwnPropertyDescriptor(X, "extra")!;
       expect(XDesc.value).toBe(3);
-      expect(x.extra).toBe(undefined);
+      expect((x as any).extra).toBe(undefined);
     });
 
     /**
@@ -414,21 +465,21 @@ describe("An object graph handler's proxy listeners", function () {
      * "if (mode) { ... } else { ... }" blocks exist:  to distinguish between
      * sealed object tests and lazy getter tests.
      */
-    function useShadowTargetTests(mode) {
+    function useShadowTargetTests(mode: UseShadowTargetMode) {
       // begin test infrastructure
-      function ctor2(arg1, arg2) {
+      let ctor2 = function (this: ITestObject2, arg1: unknown, arg2: (...args: unknown[]) => void) {
         ctor1.apply(this, [arg1]);
         this.arg2 = arg2;
-      }
+      } as ITestObject2Constructor;
       ctor2.prototype = new ctor1("ctor2 base");
 
-      var lastLogArg;
-      function logTest(arg) {
+      let lastLogArg: unknown;
+      function logTest(arg: unknown) {
         logger.info("Executing logTest");
         lastLogArg = arg;
       }
 
-      function testListener(meta) {
+      function testListener(meta: AllListenerMetadata) {
         try {
           if ([x, logTest, ctor2, ctor2.prototype, a, b, c].includes(meta.target)) {
             logger.info("starting useShadowTarget");
@@ -440,8 +491,8 @@ describe("An object graph handler's proxy listeners", function () {
         }
       }
 
-      function lazyDescTest(obj, propName) {
-        const desc = Reflect.getOwnPropertyDescriptor(obj, propName);
+      function lazyDescTest(obj: object, propName: string | symbol) {
+        const desc = Reflect.getOwnPropertyDescriptor(obj, propName)!;
         const hasGetAndSet = mode !== "prepared" ? "undefined" : "function";
         expect(typeof desc.get).toBe(hasGetAndSet);
         expect(typeof desc.set).toBe(hasGetAndSet);
@@ -467,9 +518,9 @@ describe("An object graph handler's proxy listeners", function () {
         expect(desc.configurable).toBe(mode === "prepared");
       }
 
-      function directDescTest(proxy, target, propName) {
-        let desc = Reflect.getOwnPropertyDescriptor(proxy, propName);
-        let check = Reflect.getOwnPropertyDescriptor(target, propName);
+      function directDescTest(proxy: object, target: object, propName: string | symbol) {
+        let desc = Reflect.getOwnPropertyDescriptor(proxy, propName)!;
+        let check = Reflect.getOwnPropertyDescriptor(target, propName)!;
         expect(typeof desc.get).toBe("undefined");
         expect(typeof desc.set).toBe("undefined");
         expect(typeof desc.value).toBe(typeof check.value);
@@ -492,7 +543,14 @@ describe("An object graph handler's proxy listeners", function () {
       /* Most tests are done with x and X.  I do special cyclic value tests
       with a/b/c, and A/B/C.
       */
-      var x, X, a, A, b, B, c, C;
+      let x: ITestObject2,
+        X: ITestObject2,
+        a: ITestObject3,
+        A: ITestObject3,
+        b: ITestObject3,
+        B: ITestObject3,
+        c: ITestObject3,
+        C: ITestObject3;
       {
         x = new ctor2("one", logTest);
         logger.info("x created");
@@ -675,8 +733,8 @@ describe("An object graph handler's proxy listeners", function () {
         A = membrane.convertArgumentToProxy(wetHandler, dryHandler, a);
         B = membrane.convertArgumentToProxy(wetHandler, dryHandler, b);
 
-        expect(A.child.parent === A).toBe(true);
-        expect(B.parent.child === B).toBe(true);
+        expect(A.child!.parent === A).toBe(true);
+        expect(B.parent!.child === B).toBe(true);
       }
 
       // really push the cyclic test a step further, for scalability testing
@@ -695,9 +753,9 @@ describe("An object graph handler's proxy listeners", function () {
 
         C = membrane.convertArgumentToProxy(wetHandler, dryHandler, c);
 
-        expect(A.child.child.grandParent === A).toBe(true);
-        expect(B.child.grandParent.child === B).toBe(true);
-        expect(C.grandParent.child.child === C).toBe(true);
+        expect(A.child!.child!.grandParent === A).toBe(true);
+        expect(B.child!.grandParent!.child === B).toBe(true);
+        expect(C.grandParent!.child!.child === C).toBe(true);
       }
 
       /* XXX ajvincent Beyond this point, you should not step through in a
@@ -747,21 +805,28 @@ describe("An object graph handler's proxy listeners", function () {
     it("a sealed shadow target", useShadowTargetTests.bind(null, "sealed"));
     it("a frozen shadow target", useShadowTargetTests.bind(null, "frozen"));
 
-    function useShadowWithDefer(objOp) {
+    function useShadowWithDefer(objOp: "seal" | "freeze") {
       // begin test infrastructure
-      function ctor2(arg1, arg2) {
+      let ctor2 = function (this: ITestObject2, arg1: unknown, arg2: (...args: unknown[]) => void) {
         ctor1.apply(this, [arg1]);
         this.arg2 = arg2;
-      }
+      } as ITestObject2Constructor;
       ctor2.prototype = new ctor1("ctor2 base");
 
-      var lastLogArg;
-      function logTest(arg) {
+      function logTest() {
         logger.info("Executing logTest");
-        lastLogArg = arg;
       }
 
-      function testListener(meta) {
+      function callObjOp<T extends object>(objOp: "seal" | "freeze", p: T): object {
+        switch (objOp) {
+          case "seal":
+            return Object.seal(p);
+          case "freeze":
+            return Object.freeze(p);
+        }
+      }
+
+      function testListener(meta: AllListenerMetadata) {
         try {
           if ([p, logTest, ctor2, ctor2.prototype, a, b, c].includes(meta.target)) {
             logger.info("starting useShadowTarget");
@@ -778,7 +843,14 @@ describe("An object graph handler's proxy listeners", function () {
       dryHandler.addProxyListener(testListener);
 
       // I do special cyclic value tests with a/b/c, and A/B/C.
-      var p, P, a, A, b, B, c, C;
+      let p: ITestObject2,
+        P: ITestObject2,
+        a: ITestObject3,
+        A: ITestObject3,
+        b: ITestObject3,
+        B: ITestObject3,
+        c: ITestObject3,
+        C: ITestObject3;
       {
         // repeating earlier conditions
         p = new ctor2("one", logTest);
@@ -788,7 +860,7 @@ describe("An object graph handler's proxy listeners", function () {
         P = membrane.convertArgumentToProxy(wetHandler, dryHandler, p);
 
         logger.info(`starting ${objOp}`);
-        Object[objOp](P);
+        callObjOp(objOp, P);
         logger.info(`finished ${objOp}`);
 
         let messages = appender.getMessages();
@@ -811,7 +883,7 @@ describe("An object graph handler's proxy listeners", function () {
 
         expect(messages[7]).toBe(`finished ${objOp}`);
 
-        let desc = Reflect.getOwnPropertyDescriptor(P, "arg2");
+        let desc = Reflect.getOwnPropertyDescriptor(P, "arg2")!;
         expect(desc.configurable).toBe(false);
         expect("value" in desc).toBe(true);
       }
@@ -825,14 +897,14 @@ describe("An object graph handler's proxy listeners", function () {
 
         A = membrane.convertArgumentToProxy(wetHandler, dryHandler, a);
 
-        Object[objOp](A);
+        callObjOp(objOp, A);
 
         B = membrane.convertArgumentToProxy(wetHandler, dryHandler, b);
 
-        Object[objOp](B);
+        callObjOp(objOp, B);
 
-        expect(A.child.parent === A).toBe(true);
-        expect(B.parent.child === B).toBe(true);
+        expect(A.child!.parent === A).toBe(true);
+        expect(B.parent!.child === B).toBe(true);
       }
 
       // Cyclic object references, sealing after all proxies' creation.
@@ -846,11 +918,11 @@ describe("An object graph handler's proxy listeners", function () {
 
         B = membrane.convertArgumentToProxy(wetHandler, dryHandler, b);
 
-        Object[objOp](A);
-        Object[objOp](B);
+        callObjOp(objOp, A);
+        callObjOp(objOp, B);
 
-        expect(A.child.parent === A).toBe(true);
-        expect(B.parent.child === B).toBe(true);
+        expect(A.child!.parent === A).toBe(true);
+        expect(B.parent!.child === B).toBe(true);
       }
 
       // really push the cyclic test a step further, for scalability testing
@@ -869,13 +941,13 @@ describe("An object graph handler's proxy listeners", function () {
 
         C = membrane.convertArgumentToProxy(wetHandler, dryHandler, c);
 
-        Object[objOp](A);
-        Object[objOp](B);
-        Object[objOp](C);
+        callObjOp(objOp, A);
+        callObjOp(objOp, B);
+        callObjOp(objOp, C);
 
-        expect(A.child.child.grandParent === A).toBe(true);
-        expect(B.child.grandParent.child === B).toBe(true);
-        expect(C.grandParent.child.child === C).toBe(true);
+        expect(A.child!.child!.grandParent === A).toBe(true);
+        expect(B.child!.grandParent!.child === B).toBe(true);
+        expect(C.grandParent!.child!.child === C).toBe(true);
       }
     }
 
@@ -885,14 +957,14 @@ describe("An object graph handler's proxy listeners", function () {
   });
 
   describe("can stop iteration to further listeners", function () {
-    var meta1, meta2;
+    let meta1: AllListenerMetadata | undefined, meta2: AllListenerMetadata | undefined;
     beforeEach(function () {
       meta1 = undefined;
       meta2 = undefined;
     });
 
     it("by invoking meta.stopIteration();", function () {
-      function listener1(meta) {
+      function listener1(meta: AllListenerMetadata) {
         if (mustSkip(meta.target)) {
           return;
         }
@@ -904,7 +976,7 @@ describe("An object graph handler's proxy listeners", function () {
         logger.info("listener1: stopped = " + meta.stopped);
       }
 
-      function listener2(meta) {
+      function listener2(meta: AllListenerMetadata) {
         if (mustSkip(meta.target)) {
           return;
         }
@@ -936,13 +1008,13 @@ describe("An object graph handler's proxy listeners", function () {
 
       expect(meta2).toBe(undefined);
       expect(typeof meta1).toBe("object");
-      expect(meta1.proxy).toBe(X);
-      expect(meta1.stopped).toBe(true);
+      expect(meta1!.proxy).toBe(X);
+      expect(meta1!.stopped).toBe(true);
     });
 
     it("by invoking meta.throwException(exn);", function () {
       const dummyExn = new Error();
-      function listener1(meta) {
+      function listener1(meta: AllListenerMetadata) {
         if (mustSkip(meta.target)) {
           return;
         }
@@ -954,7 +1026,7 @@ describe("An object graph handler's proxy listeners", function () {
         logger.info("listener1: stopped = " + meta.stopped);
       }
 
-      function listener2(meta) {
+      function listener2(meta: AllListenerMetadata) {
         if (mustSkip(meta.target)) {
           return;
         }
@@ -986,12 +1058,12 @@ describe("An object graph handler's proxy listeners", function () {
 
       expect(meta2).toBe(undefined);
       expect(typeof meta1).toBe("object");
-      expect(meta1.stopped).toBe(true);
+      expect(meta1!.stopped).toBe(true);
     });
 
     it("but not by accidentally triggering an exception", function () {
       const dummyExn = new Error("dummy exception");
-      function listener1(meta) {
+      function listener1(meta: AllListenerMetadata) {
         if (mustSkip(meta.target)) {
           return;
         }
@@ -1000,7 +1072,7 @@ describe("An object graph handler's proxy listeners", function () {
         throw dummyExn; // this is supposed to be an accident
       }
 
-      function listener2(meta) {
+      function listener2(meta: AllListenerMetadata) {
         if (mustSkip(meta.target)) {
           return;
         }
@@ -1028,7 +1100,7 @@ describe("An object graph handler's proxy listeners", function () {
 
       expect(meta2).toBe(meta1);
       expect(typeof meta2).toBe("object");
-      expect(meta2.proxy).toBe(X);
+      expect(meta2!.proxy).toBe(X);
     });
   });
 });
