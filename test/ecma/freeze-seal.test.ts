@@ -1,4 +1,37 @@
 import { Membrane } from "../../src";
+import type { ObjectGraphHandler } from "../../src";
+
+interface ITestObject {
+  letter: string;
+  instance: number;
+  extra?: number;
+}
+
+interface ITestObjectConstructor {
+  new (): ITestObject;
+  (): ITestObject;
+}
+
+interface IFreezeSealGraph {
+  A: ITestObjectConstructor;
+  B: ITestObjectConstructor;
+  C: ITestObjectConstructor;
+
+  b: ITestObject;
+}
+
+interface IFreezeSealMocks {
+  wet: IFreezeSealGraph;
+
+  dry: IFreezeSealGraph;
+
+  handlers: {
+    wet: ObjectGraphHandler;
+    dry: ObjectGraphHandler;
+  };
+
+  membrane: Membrane;
+}
 
 /* XXX ajvincent This is actually one case where the MembraneMocks are not
  * appropriate, because they forcibly insert a "membraneGraphName" property in a
@@ -9,18 +42,23 @@ import { Membrane } from "../../src";
  */
 
 {
-  let FreezeSealMocks = function (defineListeners, adjustParts) {
-    function wetA() {}
+  let FreezeSealMocks = function (
+    defineListeners: (parts: IFreezeSealMocks) => void,
+    adjustParts: (parts: IFreezeSealMocks) => void
+  ) {
+    let wetA = function () {} as ITestObjectConstructor;
     wetA.prototype.letter = "A";
 
-    function wetB() {}
+    let wetB = function () {} as ITestObjectConstructor;
     wetB.prototype = new wetA();
     wetB.prototype.letter = "B";
 
-    function wetC() {}
+    let wetC = function () {} as ITestObjectConstructor;
     wetC.prototype.letter = "C";
 
-    const parts = {
+    const membrane = new Membrane();
+
+    const parts: IFreezeSealMocks = {
       wet: {
         A: wetA,
         B: wetB,
@@ -29,21 +67,21 @@ import { Membrane } from "../../src";
         b: new wetB()
       },
 
-      dry: {},
+      dry: {} as IFreezeSealGraph,
 
-      handlers: {},
+      handlers: {
+        wet: membrane.getHandlerByName("wet", { mustCreate: true }),
+        dry: membrane.getHandlerByName("dry", { mustCreate: true })
+      },
 
-      membrane: new Membrane()
+      membrane
     };
 
     parts.wet.b.instance = 1;
 
-    parts.handlers.wet = parts.membrane.getHandlerByName("wet", { mustCreate: true });
-    parts.handlers.dry = parts.membrane.getHandlerByName("dry", { mustCreate: true });
-
     defineListeners(parts);
 
-    let keys = Reflect.ownKeys(parts.wet);
+    let keys = Reflect.ownKeys(parts.wet) as (keyof IFreezeSealGraph)[];
     keys.forEach(function (k) {
       parts.dry[k] = parts.membrane.convertArgumentToProxy(
         parts.handlers.wet,
@@ -59,15 +97,19 @@ import { Membrane } from "../../src";
   /* These tests are specifically crafted for a perfect mirroring.  Very different
    * results will occur when the mirroring is not perfect.
    */
-  let freezeSealTests = function (expectedFrozen, defineListeners, adjustParts) {
-    var parts;
+  let freezeSealTests = function (
+    expectedFrozen: boolean,
+    defineListeners: (parts: IFreezeSealMocks) => void,
+    adjustParts: (parts: IFreezeSealMocks) => void
+  ) {
+    let parts: IFreezeSealMocks;
     beforeEach(function () {
       parts = FreezeSealMocks(defineListeners, adjustParts);
     });
     afterEach(function () {
       parts.handlers.wet.revokeEverything();
       parts.handlers.dry.revokeEverything();
-      parts = null;
+      parts = null as any;
     });
 
     it("works as expected when manipulating the wet side", function () {
@@ -90,24 +132,24 @@ import { Membrane } from "../../src";
       expect(parts.dry.b.extra).toBe(undefined);
 
       {
-        let desc = Reflect.getOwnPropertyDescriptor(parts.wet.b, "instance");
+        let desc = Reflect.getOwnPropertyDescriptor(parts.wet.b, "instance")!;
         expect(desc.configurable).toBe(false);
         expect(desc.writable).toBe(!expectedFrozen);
       }
 
       {
-        let desc = Reflect.getOwnPropertyDescriptor(parts.dry.b, "instance");
+        let desc = Reflect.getOwnPropertyDescriptor(parts.dry.b, "instance")!;
         expect(desc.configurable).toBe(false);
         expect(desc.writable).toBe(!expectedFrozen);
       }
 
       {
-        let oldDesc = Reflect.getOwnPropertyDescriptor(parts.wet.b, "instance");
+        let oldDesc = Reflect.getOwnPropertyDescriptor(parts.wet.b, "instance")!;
         let newDesc = {
           value: 2,
           writable: true,
-          enumerable: oldDesc.enumerable,
-          configurable: oldDesc.configurable
+          enumerable: !!oldDesc.enumerable,
+          configurable: !!oldDesc.configurable
         };
         let actual = Reflect.defineProperty(parts.wet.b, "instance", newDesc);
         expect(actual).toBe(!expectedFrozen);
@@ -167,24 +209,24 @@ import { Membrane } from "../../src";
       expect(parts.dry.b.extra).toBe(undefined);
 
       {
-        let desc = Reflect.getOwnPropertyDescriptor(parts.wet.b, "instance");
+        let desc = Reflect.getOwnPropertyDescriptor(parts.wet.b, "instance")!;
         expect(desc.configurable).toBe(false);
         expect(desc.writable).toBe(!expectedFrozen);
       }
 
       {
-        let desc = Reflect.getOwnPropertyDescriptor(parts.dry.b, "instance");
+        let desc = Reflect.getOwnPropertyDescriptor(parts.dry.b, "instance")!;
         expect(desc.configurable).toBe(false);
         expect(desc.writable).toBe(!expectedFrozen);
       }
 
       {
-        let oldDesc = Reflect.getOwnPropertyDescriptor(parts.dry.b, "instance");
+        let oldDesc = Reflect.getOwnPropertyDescriptor(parts.dry.b, "instance")!;
         let newDesc = {
           value: 2,
           writable: true,
-          enumerable: oldDesc.enumerable,
-          configurable: oldDesc.configurable
+          enumerable: !!oldDesc.enumerable,
+          configurable: !!oldDesc.configurable
         };
         let actual = Reflect.defineProperty(parts.dry.b, "instance", newDesc);
         expect(actual).toBe(!expectedFrozen);
