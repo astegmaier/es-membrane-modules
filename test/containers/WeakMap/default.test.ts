@@ -1,9 +1,16 @@
 import { Membrane } from "../../../src";
+import type { ObjectGraphHandler } from "../../../src";
 
 it("WeakMap instances by default in a membrane work like they do without a membrane", function () {
   "use strict";
 
-  let membrane, wetHandler, dryHandler, dampHandler, wetMap, dryMap, dampMap;
+  let membrane: Membrane,
+    wetHandler: ObjectGraphHandler,
+    dryHandler: ObjectGraphHandler,
+    dampHandler: ObjectGraphHandler,
+    wetMap: WeakMap<object, unknown>,
+    dryMap: WeakMap<object, unknown>,
+    dampMap: WeakMap<object, unknown>;
   {
     const MUSTCREATE = Object.freeze({ mustCreate: true });
     membrane = new Membrane();
@@ -14,10 +21,15 @@ it("WeakMap instances by default in a membrane work like they do without a membr
     wetMap = new WeakMap();
     dryMap = membrane.convertArgumentToProxy(wetHandler, dryHandler, wetMap);
     // we rarely create proxies this way in our tests, so this'll be useful
-    dampMap = membrane.convertArgumentToProxy(dryHandler, dampHandler, dryMap);
+    dampMap! = membrane.convertArgumentToProxy(dryHandler, dampHandler, dryMap);
   }
 
-  function checkMap(map, keys, values, shouldHave = true) {
+  function checkMap(
+    map: WeakMap<object, unknown>,
+    keys: object[],
+    values: unknown[],
+    shouldHave = true
+  ) {
     keys.forEach(function (key, index) {
       const value = values[index];
       expect(map.has(key)).toBe(shouldHave);
