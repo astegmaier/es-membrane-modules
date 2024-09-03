@@ -46,8 +46,8 @@ export class NWNCDataDescriptor<T = any> {
     public value: T,
     public enumerable = true
   ) {}
-  writable: false;
-  configurable: false;
+  writable?: false;
+  configurable?: false;
 }
 NWNCDataDescriptor.prototype.writable = false;
 NWNCDataDescriptor.prototype.configurable = false;
