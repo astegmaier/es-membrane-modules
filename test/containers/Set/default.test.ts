@@ -1,9 +1,16 @@
 import { Membrane } from "../../../src";
+import type { ObjectGraphHandler } from "../../../src";
 
 it("Set instances by default in a membrane work like they do without a membrane", function () {
   "use strict";
 
-  let membrane, wetHandler, dryHandler, dampHandler, wetSet, drySet, dampSet;
+  let membrane: Membrane,
+    wetHandler: ObjectGraphHandler,
+    dryHandler: ObjectGraphHandler,
+    dampHandler: ObjectGraphHandler,
+    wetSet: Set<unknown>,
+    drySet: Set<unknown>,
+    dampSet: Set<unknown>;
   {
     const MUSTCREATE = Object.freeze({ mustCreate: true });
     membrane = new Membrane();
@@ -17,17 +24,17 @@ it("Set instances by default in a membrane work like they do without a membrane"
     dampSet = membrane.convertArgumentToProxy(dryHandler, dampHandler, drySet);
   }
 
-  function expectSize(s) {
+  function expectSize(s: number) {
     expect(wetSet.size).toBe(s);
     expect(drySet.size).toBe(s);
     expect(dampSet.size).toBe(s);
   }
 
-  function checkSet(set, values, shouldHave = true) {
+  function checkSet(set: Set<unknown>, values: unknown[], shouldHave = true) {
     values.forEach(function (value) {
       expect(set.has(value)).toBe(shouldHave);
 
-      let items = new Set(set.values());
+      let items: Set<unknown> | [unknown, unknown][] = new Set(set.values());
       expect(items.has(value)).toBe(shouldHave);
 
       items = Array.from(set.entries());
@@ -41,7 +48,7 @@ it("Set instances by default in a membrane work like they do without a membrane"
         foundKey = 0,
         foundAll = 0,
         thisArg = { isThis: true };
-      set.forEach(function (v, k, s) {
+      set.forEach(function (this: Set<unknown>, v, k, s) {
         expect(this).toBe(thisArg);
         expect(s).toBe(s);
 
