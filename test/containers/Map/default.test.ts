@@ -1,9 +1,16 @@
 import { Membrane } from "../../../src";
+import type { ObjectGraphHandler } from "../../../src";
 
 it("Map instances by default in a membrane work like they do without a membrane", function () {
   "use strict";
 
-  let membrane, wetHandler, dryHandler, dampHandler, wetMap, dryMap, dampMap;
+  let membrane: Membrane,
+    wetHandler: ObjectGraphHandler,
+    dryHandler: ObjectGraphHandler,
+    dampHandler: ObjectGraphHandler,
+    wetMap: Map<unknown, unknown>,
+    dryMap: Map<unknown, unknown>,
+    dampMap: Map<unknown, unknown>;
   {
     const MUSTCREATE = Object.freeze({ mustCreate: true });
     membrane = new Membrane();
@@ -17,19 +24,24 @@ it("Map instances by default in a membrane work like they do without a membrane"
     dampMap = membrane.convertArgumentToProxy(dryHandler, dampHandler, dryMap);
   }
 
-  function expectSize(s) {
+  function expectSize(s: number) {
     expect(wetMap.size).toBe(s);
     expect(dryMap.size).toBe(s);
     expect(dampMap.size).toBe(s);
   }
 
-  function checkMap(map, keys, values, shouldHave = true) {
+  function checkMap(
+    map: Map<unknown, unknown>,
+    keys: unknown[],
+    values: unknown[],
+    shouldHave = true
+  ) {
     keys.forEach(function (key, index) {
       const value = values[index];
       expect(map.has(key)).toBe(shouldHave);
       expect(map.get(key)).toBe(shouldHave ? value : undefined);
 
-      let items = new Set(map.keys());
+      let items: Set<unknown> | [unknown, unknown][] = new Set(map.keys());
       expect(items.has(key)).toBe(shouldHave);
 
       items = new Set(map.values());
@@ -46,7 +58,7 @@ it("Map instances by default in a membrane work like they do without a membrane"
         foundKey = 0,
         foundAll = 0,
         thisArg = { isThis: true };
-      map.forEach(function (v, k, m) {
+      map.forEach(function (this: Map<unknown, unknown>, v, k, m) {
         expect(this).toBe(thisArg);
         expect(m).toBe(map);
 
