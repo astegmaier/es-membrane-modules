@@ -1,16 +1,42 @@
 import { loggerLib } from "../../../mocks";
 import { Membrane } from "../../../src";
+import type { IChainHandler, ObjectGraphHandler } from "../../../src";
+
+interface IElement {
+  name: string;
+}
+
+interface IArrayGraph {
+  alpha: IElement;
+  beta: IElement;
+  gamma: IElement;
+  delta: IElement;
+  epsilon: IElement;
+  omega: IElement;
+  array: IElement[];
+}
+
+interface IArrayMocks {
+  wet: IArrayGraph;
+  dry: Partial<IArrayGraph>;
+  handlers: {
+    wet: ObjectGraphHandler;
+    dry: ObjectGraphHandler;
+  };
+  membrane: Membrane;
+}
 
 describe("TC39 demonstrations of Array objects in membranes: ", function () {
   "use strict";
-  let parts, logger;
-  function buildElement(name) {
+  let parts: IArrayMocks, logger: ReturnType<typeof loggerLib.getLogger>;
+  function buildElement(name: string): IElement {
     let rv = { name };
     Object.freeze(rv);
     return rv;
   }
 
   beforeEach(function () {
+    const membrane = new Membrane();
     parts = {
       wet: {
         alpha: buildElement("alpha"),
@@ -21,21 +47,21 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
         omega: buildElement("omega"),
         array: []
       },
-      dry: {},
-      handlers: {},
-      membrane: new Membrane()
+      dry: {} as IArrayGraph,
+      handlers: {
+        wet: membrane.getHandlerByName("wet", { mustCreate: true }),
+        dry: membrane.getHandlerByName("dry", { mustCreate: true })
+      },
+      membrane
     };
 
     parts.wet.array.push(parts.wet.alpha);
     parts.wet.array.push(parts.wet.beta);
     parts.wet.array.push(parts.wet.gamma);
-
-    parts.handlers.wet = parts.membrane.getHandlerByName("wet", { mustCreate: true });
-    parts.handlers.dry = parts.membrane.getHandlerByName("dry", { mustCreate: true });
   });
 
   function populateDry() {
-    Reflect.ownKeys(parts.wet).forEach(function (key) {
+    (Reflect.ownKeys(parts.wet) as (keyof IArrayGraph)[]).forEach(function (key) {
       parts.dry[key] = parts.membrane.convertArgumentToProxy(
         parts.handlers.wet,
         parts.handlers.dry,
@@ -49,14 +75,13 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
   afterEach(function () {
     parts.handlers.dry.revokeEverything();
     parts.handlers.wet.revokeEverything();
-    parts = null;
-    logger = null;
+    parts = null as any;
+    logger = null as any;
   });
 
   it("Without distortions, mirroring functions normally", function () {
     populateDry();
-
-    parts.dry.array.splice(1, 1, parts.dry.delta, parts.dry.epsilon);
+    parts.dry.array!.splice(1, 1, parts.dry.delta!, parts.dry.epsilon!);
     expect(parts.wet.array).toEqual([
       parts.wet.alpha,
       parts.wet.delta,
@@ -97,7 +122,7 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
      * membrane ignores the storeUnknownAsLocal setting for the array.
      */
 
-    parts.dry.array.splice(1, 1, parts.dry.delta, parts.dry.epsilon);
+    parts.dry.array!.splice(1, 1, parts.dry.delta!, parts.dry.epsilon!);
     expect(parts.wet.array).toEqual([
       parts.wet.alpha,
       parts.wet.delta,
@@ -114,7 +139,7 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
   });
 
   it("Array.prototype.splice behaves oddly with storeUnknownAsLocal", function () {
-    let appender, chain;
+    let appender: loggerLib.Appender, chain: IChainHandler;
 
     // this is all boilerplate for internal debugging
     if (false) {
@@ -123,43 +148,51 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
       logger.addAppender(appender);
 
       chain = parts.membrane.modifyRules.createChainHandler(parts.handlers.dry);
-      parts.membrane.allTraps.forEach(function (trap) {
-        chain[trap] = function () {
+      parts.membrane.allTraps.forEach(function <T extends keyof IChainHandler>(trap: T) {
+        chain[trap] = function (this: IChainHandler) {
           logger.info(trap + " enter");
           const rv = this.nextHandler[trap].apply(this, arguments);
           logger.info(trap + " leave");
           return rv;
-        };
+        } as IChainHandler[T];
       });
 
-      ["get", "getOwnPropertyDescriptor"].forEach(function (trap) {
-        chain[trap] = function (target, propertyName) {
+      (["get", "getOwnPropertyDescriptor"] as const).forEach(function <
+        T extends "get" | "getOwnPropertyDescriptor"
+      >(trap: T) {
+        chain[trap] = function (
+          this: IChainHandler,
+          _target: object,
+          propertyName: string | symbol
+        ) {
           try {
-            logger.info(trap + " enter " + propertyName);
+            logger.info(trap + " enter " + propertyName.toString());
           } catch (e) {
             logger.info(trap + " enter");
           }
-          const rv = this.nextHandler[trap].apply(this, arguments);
+          const rv = this.nextHandler[trap].apply(this, arguments as any);
           try {
-            logger.info(trap + " leave " + propertyName);
+            logger.info(trap + " leave " + propertyName.toString());
           } catch (e) {
             logger.info(trap + " leave");
           }
           return rv;
-        };
+        } as IChainHandler[T];
       });
 
-      ["set", "defineProperty"].forEach(function (trap) {
-        chain[trap] = function (target, propertyName) {
+      (["set", "defineProperty"] as const).forEach(function <T extends "set" | "defineProperty">(
+        trap: T
+      ) {
+        chain[trap] = function (target: object, propertyName: string | symbol) {
           const hasDesc = Boolean(this.nextHandler.getOwnPropertyDescriptor(target, propertyName));
           try {
-            logger.info(`${trap} enter ${propertyName} (has: ${hasDesc})`);
+            logger.info(`${trap} enter ${propertyName.toString()} (has: ${hasDesc})`);
           } catch (e) {
             logger.info(`${trap} enter (has: ${hasDesc})`);
           }
-          const rv = this.nextHandler[trap].apply(this, arguments);
+          const rv = this.nextHandler[trap].apply(this, arguments as any);
           try {
-            logger.info(trap + " leave " + propertyName);
+            logger.info(trap + " leave " + propertyName.toString());
           } catch (e) {
             logger.info(trap + " leave");
           }
@@ -184,7 +217,7 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
     populateDry();
 
     // debugging
-    if (appender) {
+    if (appender!) {
       appender.clear();
     }
 
@@ -200,11 +233,11 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
 
     Array.prototype.splice.apply(parts.dry.array, [1, 1, parts.dry.delta, parts.dry.epsilon]);
 
-    expect(parts.dry.array.length).toBe(4);
-    expect(parts.dry.array[0]).toBe(parts.dry.alpha);
-    expect(parts.dry.array[1]).toBe(parts.dry.delta);
-    expect(parts.dry.array[2]).toBe(parts.dry.epsilon);
-    expect(parts.dry.array[3]).toBe(parts.dry.gamma);
+    expect(parts.dry.array!.length).toBe(4);
+    expect(parts.dry.array![0]).toBe(parts.dry.alpha);
+    expect(parts.dry.array![1]).toBe(parts.dry.delta);
+    expect(parts.dry.array![2]).toBe(parts.dry.epsilon);
+    expect(parts.dry.array![3]).toBe(parts.dry.gamma);
 
     expect(parts.wet.array.length).toBe(4);
     expect(parts.wet.array[0]).toBe(parts.wet.alpha);

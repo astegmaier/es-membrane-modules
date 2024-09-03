@@ -1,7 +1,6 @@
 import type { DistortionsListener } from "./DistortionsListener";
 import type { Membrane } from "./Membrane";
 import { ObjectGraphHandler } from "./ObjectGraphHandler";
-import { WithThisValueForMethods } from "./utilityTypes";
 
 export const ChainHandlers: WeakSet<object>;
 

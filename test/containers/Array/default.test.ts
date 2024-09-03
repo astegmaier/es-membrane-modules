@@ -1,6 +1,10 @@
+interface IElement {
+  name: string;
+}
+
 describe.skip("Arrays by default in a membrane", function () {
-  let originalArray;
-  function buildElement(name) {
+  let originalArray: IElement[];
+  function buildElement(name: string): IElement {
     let rv = { name };
     Object.freeze(rv);
     return rv;
@@ -11,7 +15,7 @@ describe.skip("Arrays by default in a membrane", function () {
     wetPi = buildElement("pi"),
     wetChi = buildElement("chi");
   beforeEach(function () {
-    originalArray = [wetAlpha, wetBeta, wetGamma, wetPi, wetChi];
+    originalArray! = [wetAlpha, wetBeta, wetGamma, wetPi, wetChi];
   });
 
   it.skip("All array methods still work", () => {
