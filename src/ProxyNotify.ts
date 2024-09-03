@@ -1,23 +1,94 @@
-/** @import {IProxyParts} from "./ProxyMapping" */
 import assert from "./assert";
 import { DataDescriptor, AccessorDescriptor } from "./sharedUtilities.js";
 import { ProxyMapping } from "./ProxyMapping.js";
-import { ObjectGraphHandler } from "./ObjectGraphHandler.js";
 import { makeRevokeDeleteRefs } from "./moduleUtilities.js";
 import { throwAndLog } from "./throwAndLog";
+import type { ILogger } from "./Membrane";
+import type { ObjectGraphHandler } from "./ObjectGraphHandler";
+import type { IProxyParts } from "./ProxyMapping";
+
+export interface ListenerMetadata {
+  /**
+   * The proxy or value the Membrane will return to the caller.
+   *
+   * @note If you set this property with a non-proxy value, the value will NOT
+   * be protected by the membrane.
+   *
+   * If you wish to replace the proxy with another Membrane-based proxy,
+   * including a new proxy with a chained proxy handler (see ModifyRulesAPI),
+   * do NOT just call Proxy.revocable and set this property.  Instead, set the
+   * handler property with the new proxy handler, and call .rebuildProxy().
+   */
+  proxy: unknown;
+
+  /**
+   * The unwrapped object or function we're building the proxy for.
+   */
+  target: object;
+
+  isOriginGraph: boolean;
+
+  /**
+   * The proxy handler.  This should be an ObjectGraphHandler.
+   */
+  handler: ObjectGraphHandler;
+
+  /**
+   * A reference to the membrane logger, if there is one.
+   */
+  logger: ILogger;
+
+  /**
+   * Rebuild the proxy object.
+   */
+  rebuildProxy(): void;
+
+  /**
+   * Direct the membrane to use the shadow target instead of the full proxy.
+   *
+   * @param mode {String} One of several values:
+   *   - "frozen" means return a frozen shadow target.
+   *   - "sealed" means return a sealed shadow target.
+   *   - "prepared" means return a shadow target with lazy getters for all
+   *     available properties and for its prototype.
+   */
+  useShadowTarget(mode: UseShadowTargetMode): void;
+}
+
+export interface InvokedListenerMetadata {
+  /**
+   * Notify no more listeners.
+   */
+  stopIteration(): void;
+
+  stopped: boolean;
+
+  /**
+   * Explicitly throw an exception from the listener, through the membrane.
+   */
+  throwException(exception: any): void;
+}
+
+export interface AllListenerMetadata extends ListenerMetadata, InvokedListenerMetadata {}
+
+export type UseShadowTargetMode = "frozen" | "sealed" | "prepared";
 
 /**
  * Notify all proxy listeners of a new proxy.
  *
  * @param parts    {IProxyParts} The field object from a ProxyMapping's proxiedFields.
  * @param handler  {ObjectGraphHandler} The handler for the proxy.
- * @param isOrigin {Boolean} True if the handler is the origin graph handler.
- * @param options  {Object} Special options to pass on to the listeners.
+ * @param isOrigin {boolean} True if the handler is the origin graph handler.
+ * @param options  {any} Special options to pass on to the listeners.
  *
  * @private
  */
-export function ProxyNotify(parts, handler, isOrigin, options) {
-  "use strict";
+export function ProxyNotify(
+  parts: IProxyParts,
+  handler: ObjectGraphHandler,
+  isOrigin: boolean,
+  options?: any
+): void {
   if (typeof options === "undefined") {
     options = {};
   }
@@ -83,7 +154,7 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
     /**
      * Rebuild the proxy object.
      */
-    "rebuildProxy": new DataDescriptor(function () {
+    "rebuildProxy": new DataDescriptor(function (this: AllListenerMetadata) {
       if (!this.stopped) {
         parts.proxy = modifyRules.replaceProxy(parts.proxy, handler);
       }
@@ -98,19 +169,19 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
      *   - "prepared" means return a shadow target with lazy getters for all
      *     available properties and for its prototype.
      */
-    "useShadowTarget": new DataDescriptor((mode) => {
-      ProxyNotify.useShadowTarget.apply(meta, [parts, handler, mode]);
+    "useShadowTarget": new DataDescriptor((mode: UseShadowTargetMode) => {
+      useShadowTarget.apply(meta, [parts, handler, mode]);
     })
   });
 
-  const callbacks = [];
+  const callbacks: ((proxy?: object) => void)[] = [];
   const inConstruction = handler.proxiesInConstruction;
   inConstruction.set(parts.value, callbacks);
 
   try {
     invokeProxyListeners(listeners, meta);
   } finally {
-    callbacks.forEach(function (c) {
+    callbacks.forEach((c) => {
       try {
         c(parts.proxy);
       } catch (e) {
@@ -122,10 +193,13 @@ export function ProxyNotify(parts, handler, isOrigin, options) {
   }
 }
 
-/** @type {import("./ProxyNotify").ProxyNotify.useShadowTarget} */
-ProxyNotify.useShadowTarget = function (parts, handler, mode) {
-  "use strict";
-  let newHandler = {};
+function useShadowTarget(
+  this: AllListenerMetadata,
+  parts: IProxyParts,
+  handler: ObjectGraphHandler,
+  mode: UseShadowTargetMode
+): void {
+  let newHandler = {} as ProxyHandler<object>;
 
   if (mode === "frozen") {
     Object.freeze(parts.proxy);
@@ -133,7 +207,7 @@ ProxyNotify.useShadowTarget = function (parts, handler, mode) {
     Object.seal(parts.proxy);
   } else if (mode === "prepared") {
     // Establish the list of own properties.
-    const keys = Reflect.ownKeys(parts.proxy);
+    const keys = Reflect.ownKeys(parts.proxy!); // ansteg TODO: is there a bug here? parts.proxy might not be defined.
     keys.forEach(function (key) {
       handler.defineLazyGetter(parts.value, parts.shadowTarget, key);
     });
@@ -142,7 +216,7 @@ ProxyNotify.useShadowTarget = function (parts, handler, mode) {
      * but testing showed that fails a later test.)
      */
     let proto = handler.getPrototypeOf(parts.shadowTarget);
-    Reflect.setPrototypeOf(parts.shadowTarget, proto);
+    Reflect.setPrototypeOf(parts.shadowTarget!, proto); // ansteg TODO: is there a bug here? parts.shadowTarget might not be defined.
 
     // Lazy preventExtensions.
     newHandler.preventExtensions = function (st) {
@@ -166,7 +240,7 @@ ProxyNotify.useShadowTarget = function (parts, handler, mode) {
     newHandler = Reflect;
   } // yay, maximum optimization
 
-  let newParts = Proxy.revocable(parts.shadowTarget, newHandler);
+  let newParts = Proxy.revocable(parts.shadowTarget!, newHandler); // ansteg TODO: is there a bug here? parts.shadowTarget might not be defined.
   parts.proxy = newParts.proxy;
   parts.revoke = newParts.revoke;
 
@@ -180,13 +254,15 @@ ProxyNotify.useShadowTarget = function (parts, handler, mode) {
   );
   masterMap.set(parts.proxy, map);
   makeRevokeDeleteRefs(parts, map, handler.fieldName);
-};
+}
 
-/** @type {import("./ProxyNotify").invokeProxyListeners} */
-export function invokeProxyListeners(listeners, meta) {
+export function invokeProxyListeners(
+  listeners: ((meta: AllListenerMetadata) => void)[],
+  meta: ListenerMetadata
+): void {
   listeners = listeners.slice(0);
   var index = 0,
-    exn = null,
+    exn: unknown = null,
     exnFound = false,
     stopped = false;
 
@@ -203,7 +279,7 @@ export function invokeProxyListeners(listeners, meta) {
     /**
      * Explicitly throw an exception from the listener, through the membrane.
      */
-    "throwException": new DataDescriptor(function (e) {
+    "throwException": new DataDescriptor(function (e: unknown) {
       stopped = true;
       exnFound = true;
       exn = e;
@@ -214,7 +290,7 @@ export function invokeProxyListeners(listeners, meta) {
 
   while (!stopped && index < listeners.length) {
     try {
-      listeners[index](meta);
+      listeners[index]!(meta as AllListenerMetadata);
     } catch (e) {
       if (meta.logger) {
         /* We don't want an accidental exception to break the iteration.
@@ -224,7 +300,7 @@ export function invokeProxyListeners(listeners, meta) {
         */
         try {
           meta.logger.error(
-            typeof e === "object" && e !== null ? e.message : "unknown error",
+            typeof e === "object" && e !== null ? (e as any).message : "unknown error",
             "invokeProxyListeners",
             e
           );
@@ -243,4 +319,4 @@ export function invokeProxyListeners(listeners, meta) {
 }
 
 Object.freeze(ProxyNotify);
-Object.freeze(ProxyNotify.useShadowTarget);
+Object.freeze(useShadowTarget);
