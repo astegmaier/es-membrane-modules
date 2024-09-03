@@ -8,7 +8,7 @@ import { ILogger } from "./Membrane";
 export function throwAndLog(
   message: string,
   codeLocation: string,
-  logger: ILogger | undefined
+  logger: ILogger | undefined | null
 ): never {
   const error = new Error(message);
   logger?.error(message, codeLocation, error);
