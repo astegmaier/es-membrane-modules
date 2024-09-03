@@ -26,18 +26,19 @@ export class AccessorDescriptor<
   Getter extends () => any = any,
   Setter extends (v: any) => void = any
 > {
-  constructor(get: Getter, set?: Setter, enumerable = true, configurable = true) {
-    this.get = get;
-    if (set) {
-      this.set = set;
+  constructor(
+    getter: Getter,
+    setter?: Setter,
+    public enumerable = true,
+    public configurable = true
+  ) {
+    this.get = getter;
+    if (setter) {
+      this.set = setter;
     }
-    this.enumerable = enumerable;
-    this.configurable = configurable;
   }
   public get: Getter;
   public set?: Setter;
-  public enumerable: boolean;
-  public configurable: boolean;
 }
 
 export class NWNCDataDescriptor<T = any> {
