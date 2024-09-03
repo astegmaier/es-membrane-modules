@@ -1,6 +1,7 @@
 import type { DistortionsListener } from "./DistortionsListener";
 import type { Membrane } from "./Membrane";
 import { ObjectGraphHandler } from "./ObjectGraphHandler";
+import { Trap } from "./sharedUtilities";
 
 export const ChainHandlers: WeakSet<object>;
 
@@ -160,7 +161,7 @@ export interface IModifyRulesAPIPrototype {
    * @param proxy     {Proxy}    The proxy to affect.
    * @param trapList  {String[]} A list of proxy (Reflect) traps to disable.
    */
-  disableTraps(this: ModifyRulesAPI, fieldName: string, proxy: any, trapList: string[]): void;
+  disableTraps(this: ModifyRulesAPI, fieldName: string, proxy: any, trapList: Trap[]): void;
 
   createDistortionsListener(this: ModifyRulesAPI): DistortionsListener;
 }

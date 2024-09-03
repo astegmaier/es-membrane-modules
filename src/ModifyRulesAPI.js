@@ -1,5 +1,6 @@
 /** @import { IModifyRulesAPIPrototype, IChainHandler } from "./ModifyRulesAPI" */
 /** @import { IProxyParts } from "./ProxyMapping" */
+/** @import { Trap } from "./sharedUtilities" */
 import { DataDescriptor, isDataDescriptor, allTraps } from "./sharedUtilities.js";
 import { ObjectGraphHandler } from "./ObjectGraphHandler.js";
 import { getRealTarget, inGraphHandler, makeRevokeDeleteRefs } from "./moduleUtilities.js";
@@ -484,7 +485,7 @@ ModifyRulesAPI.prototype = Object.seal({
    * @param fieldName {String}   The name of the object graph the proxy is part
    *                             of.
    * @param proxy     {Proxy}    The proxy to affect.
-   * @param trapList  {typeof allTraps} A list of proxy (Reflect) traps to disable.
+   * @param trapList  {Trap[]} A list of proxy (Reflect) traps to disable.
    */
   disableTraps: function (fieldName, proxy, trapList) {
     this.assertLocalProxy(fieldName, proxy, "disableTraps");
