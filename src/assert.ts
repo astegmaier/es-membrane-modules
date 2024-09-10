@@ -12,7 +12,7 @@ export default function assert(
   value: unknown,
   message: string,
   codeLocation: string,
-  logger: ILogger | undefined
+  logger: ILogger | undefined | null
 ): asserts value {
   if (!value) {
     throwAndLog(message, codeLocation, logger);

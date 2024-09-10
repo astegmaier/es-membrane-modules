@@ -1,4 +1,4 @@
-/** @import { IModifyRulesAPIPrototype, IChainHandler } from "./ModifyRulesAPI" */
+/** @import { IModifyRulesAPIPrototype, IChainHandler, OwnKeysFilter } from "./ModifyRulesAPI" */
 /** @import { IProxyParts } from "./ProxyMapping" */
 /** @import { Trap } from "./sharedUtilities" */
 import { DataDescriptor, isDataDescriptor, allTraps } from "./sharedUtilities.js";
@@ -298,8 +298,7 @@ ModifyRulesAPI.prototype = Object.seal({
     } else {
       shadowTarget = map.getShadowTarget(cachedField);
     }
-    /** @type {IProxyParts} */
-    let parts = Proxy.revocable(shadowTarget, handler);
+    let parts = /** @type {IProxyParts} */ (Proxy.revocable(shadowTarget, handler));
     parts.value = original;
     parts.override = true;
     parts.shadowTarget = shadowTarget;
@@ -375,7 +374,7 @@ ModifyRulesAPI.prototype = Object.seal({
    *                                  the proxy uses.
    * @param proxy     {Proxy}    The proxy (or underlying object) needing local
    *                             property protection.
-   * @param filter    {Function|Set<any>|Array<any>} The filtering function.  (May be an Array or
+   * @param filter    {OwnKeysFilter} The filtering function.  (May be an Array or
    *                             a Set, which becomes a whitelist filter.)
    * @param options   {Object} Broken down as follows:
    * - none defined at present

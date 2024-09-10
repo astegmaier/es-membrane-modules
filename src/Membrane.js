@@ -197,7 +197,7 @@ Reflect.defineProperty(
           Reflect.preventExtensions(shadowTarget);
         }
       } else {
-        parts = Proxy.revocable(shadowTarget, handler);
+        parts = /** @type {IProxyParts} */ (Proxy.revocable(shadowTarget, handler));
         parts.value = value;
       }
 

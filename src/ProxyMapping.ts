@@ -1,11 +1,32 @@
-/** @import { IProxyMappingPrototype } from "./ProxyMapping" */
-/** @import { DataDescriptorsOf } from "./sharedUtilities" */
 import assert from "./assert";
-import { DataDescriptor } from "./sharedUtilities.js";
 import { valueType, NOT_YET_DETERMINED } from "./moduleUtilities.js";
 import { throwAndLog } from "./throwAndLog";
+import type { ILogger, Membrane } from "./Membrane";
 
-const DogfoodMembrane = undefined;
+// ansteg TODO: I commented out references to DogfoodMembrane, but maybe I want to re-add it after I understand what it was trying to do?
+// const DogfoodMembrane = undefined;
+
+// TODO: clarify which of these are required v. optional
+/**
+ * {
+ *   value: value,
+ *   proxy: proxy,
+ *   revoke: revoke
+ *   (other properties as necessary)
+ * }
+ */
+export interface IProxyParts {
+  value: object;
+  shadowTarget?: object;
+  proxy?: object;
+  revoke?: () => void;
+  localDescriptors?: Map<symbol | string, PropertyDescriptor>;
+  deletedLocals?: Set<symbol | string>;
+  cachedOwnKeys?: { keys: any; original: any };
+  ownKeysFilter?: (propertyName: string | symbol) => boolean;
+  truncateArgList?: boolean | number;
+  override?: boolean;
+}
 
 /**
  * @private
@@ -14,395 +35,402 @@ const DogfoodMembrane = undefined;
  * membrane module!  (Neither should instances Membrane or ObjectGraphHandler,
  * but the ProxyMapping is strictly for internal use of the module.)
  */
-
-export function ProxyMapping(originField, logger) {
-  this.originField = originField;
-  this.proxiedFields = {
-    /* field: {
-     *   value: value,
-     *   proxy: proxy,
-     *   revoke: revoke
-     *   (other properties as necessary)
-     * }
-     */
-  };
-
-  this.originalValue = NOT_YET_DETERMINED;
-
-  // ansteg: to avoid leaking the logger, we are being defensive about introducing new hard references to the logger
-  this.loggerWeakRef = logger ? new WeakRef(logger) : undefined;
-
+export class ProxyMapping {
+  originField: symbol | string; // TODO: can this be just 'string'?
+  proxiedFields: { [fieldName: symbol | string]: IProxyParts } = {};
+  originalValue: object = NOT_YET_DETERMINED;
   /**
    * @private
    *
    * Local flags determining behavior.
    */
-  //this.localFlags = null
-}
-{
-  // ProxyMapping definition
-  Object.defineProperties(
-    ProxyMapping.prototype,
-    /** @type {DataDescriptorsOf<IProxyMappingPrototype>} */ ({
-      "getOriginal": new DataDescriptor(function () {
-        if (this.originalValue === NOT_YET_DETERMINED) {
-          throwAndLog(
-            "getOriginal called but the original value hasn't been set!",
-            "ProxyMapping:getOriginal",
-            this.loggerWeakRef?.deref()
-          );
-        }
-        return this.getProxy(this.originField);
-      }),
+  private localFlags?: Set<any>;
+  localFlagsSymbols?: Map<any, any>;
+  loggerWeakRef: WeakRef<ILogger> | undefined;
 
-      "hasField": new DataDescriptor(function (field) {
-        return Reflect.ownKeys(this.proxiedFields).includes(field);
-      }),
+  constructor(originField: symbol | string, logger: ILogger) {
+    this.originField = originField;
+    // ansteg: to avoid leaking the logger, we are being defensive about introducing new hard references to the logger
+    this.loggerWeakRef = logger ? new WeakRef(logger) : undefined;
+  }
+  getOriginal(): any {
+    if (this.originalValue === NOT_YET_DETERMINED) {
+      throwAndLog(
+        "getOriginal called but the original value hasn't been set!",
+        "ProxyMapping:getOriginal",
+        this.loggerWeakRef?.deref()
+      );
+    }
+    return this.getProxy(this.originField);
+  }
 
-      "getValue": new DataDescriptor(function (field) {
-        var rv = this.proxiedFields[field];
-        if (!rv) {
-          throwAndLog(
-            "getValue called for unknown field!",
-            "ProxyMapping:getValue",
-            this.loggerWeakRef?.deref()
-          );
-        }
-        return rv.value;
-      }),
+  hasField(field: symbol | string): boolean {
+    return Reflect.ownKeys(this.proxiedFields).includes(field);
+  }
 
-      "getProxy": new DataDescriptor(function (field) {
-        var rv = this.proxiedFields[field];
-        if (!rv) {
-          throwAndLog(
-            "getProxy called for unknown field!",
-            "ProxyMapping:getProxy",
-            this.loggerWeakRef?.deref()
-          );
-        }
-        return !rv.override && field === this.originField ? rv.value : rv.proxy;
-      }),
+  getValue(field: symbol | string): any {
+    var rv = this.proxiedFields[field];
+    if (!rv) {
+      throwAndLog(
+        "getValue called for unknown field!",
+        "ProxyMapping:getValue",
+        this.loggerWeakRef?.deref()
+      );
+    }
+    return rv.value;
+  }
 
-      "hasProxy": new DataDescriptor(function (proxy) {
-        let fields = Object.getOwnPropertyNames(this.proxiedFields);
-        for (let i = 0; i < fields.length; i++) {
-          if (this.getProxy(fields[i]) === proxy) {
-            return true;
-          }
-        }
-        return false;
-      }),
+  getProxy(field: symbol | string): any {
+    var rv = this.proxiedFields[field];
+    if (!rv) {
+      throwAndLog(
+        "getProxy called for unknown field!",
+        "ProxyMapping:getProxy",
+        this.loggerWeakRef?.deref()
+      );
+    }
+    return !rv.override && field === this.originField ? rv.value : rv.proxy;
+  }
 
-      "getShadowTarget": new DataDescriptor(function (field) {
-        var rv = this.proxiedFields[field];
-        if (!rv) {
-          throwAndLog(
-            "getShadowTarget called for unknown field!",
-            "ProxyMapping:getShadowTarget",
-            this.loggerWeakRef?.deref()
-          );
-        }
-        return rv.shadowTarget;
-      }),
-
-      "isShadowTarget": new DataDescriptor(function (shadowTarget) {
-        return Reflect.ownKeys(this.proxiedFields).some(function (field) {
-          return this.proxiedFields[field].shadowTarget === shadowTarget;
-        }, this);
-      }),
-
-      /**
-       * Add a value to the mapping.
-       *
-       * @param membrane {Membrane} The owning membrane.
-       * @param field    {Symbol|String}   The field name of the object graph.
-       * @param parts    {Object} containing:
-       *   @param value    {Variant}  The value to add.
-       *   @param proxy    {Proxy}    A proxy associated with the object graph and
-       *                              the value.
-       *   @param revoke   {Function} A revocation function for the proxy, if
-       *                              available.
-       *   @param override {Boolean}  True if the field should be overridden.
-       */
-      "set": new DataDescriptor(function (membrane, field, parts) {
-        let override = typeof parts.override === "boolean" && parts.override;
-        if (!override && this.hasField(field)) {
-          throwAndLog(
-            "set called for previously defined field!",
-            "ProxyMapping:set",
-            membrane?.logger
-          );
-        }
-
-        this.proxiedFields[field] = parts;
-
-        if (override || field !== this.originField) {
-          if (valueType(parts.proxy) !== "primitive") {
-            if (DogfoodMembrane && membrane !== DogfoodMembrane) {
-              DogfoodMembrane.ProxyToMembraneMap.add(parts.proxy);
-            }
-            membrane.map.set(parts.proxy, this);
-          }
-        } else if (this.originalValue === NOT_YET_DETERMINED) {
-          this.originalValue = parts.value;
-          delete parts.proxy;
-          delete parts.revoke;
-        }
-
-        if (!membrane.map.has(parts.value)) {
-          if (DogfoodMembrane && membrane !== DogfoodMembrane) {
-            DogfoodMembrane.ProxyToMembraneMap.add(parts.value);
-          }
-
-          if (valueType(parts.value) !== "primitive") {
-            membrane.map.set(parts.value, this);
-          }
-        } else {
-          assert(
-            this === membrane.map.get(parts.value),
-            "ProxyMapping mismatch?",
-            "ProxyMapping:set",
-            membrane?.logger
-          );
-        }
-      }),
-
-      "remove": new DataDescriptor(function (field) {
-        delete this.proxiedFields[field];
-      }),
-
-      "selfDestruct": new DataDescriptor(function (membrane) {
-        let fields = Object.getOwnPropertyNames(this.proxiedFields);
-        for (let i = fields.length - 1; i >= 0; i--) {
-          let field = fields[i];
-          if (field !== this.originField) {
-            membrane.map.delete(this.proxiedFields[field].proxy);
-          }
-          membrane.map.delete(this.proxiedFields[field].value);
-          delete this.proxiedFields[field];
-        }
-        // ansteg: originalValue was preventing garbage collection when the proxy is revoked.
-        // TODO: this is also a band-aid solution - we need to make sure that values and proxies can get garbage-collected
-        // if they go out of scope (in non-membrane code) _before_ the membrane is revoked.
-        // We might be able to remove originalValue completely - it doesn't seem to be read in any serious way.
-        delete this.originalValue;
-      }),
-
-      "revoke": new DataDescriptor(function () {
-        let fields = Object.getOwnPropertyNames(this.proxiedFields);
-        // fields[0] === this.originField
-        for (let i = 1; i < fields.length; i++) {
-          this.proxiedFields[fields[i]].revoke();
-        }
-      }),
-
-      "setLocalFlag": new DataDescriptor(
-        /**
-         * fieldName: {Symbol|String} The object graph's field name.
-         * flagName:  {String} The flag to set.
-         * value:     {Boolean} The value to set.
-         */
-        function (fieldName, flagName, value) {
-          if (typeof fieldName == "string") {
-            if (!this.localFlags) {
-              this.localFlags = new Set();
-            }
-
-            let flag = flagName + ":" + fieldName;
-            if (value) {
-              this.localFlags.add(flag);
-            } else {
-              this.localFlags.delete(flag);
-            }
-          } else if (typeof fieldName == "symbol") {
-            // It's harder to combine symbols and strings into a string...
-            if (!this.localFlagsSymbols) {
-              this.localFlagsSymbols = new Map();
-            }
-            let obj = this.localFlagsSymbols.get(fieldName) || {};
-            obj[flagName] = value;
-            this.localFlagsSymbols.set(fieldName, obj);
-          } else {
-            throwAndLog(
-              "fieldName is neither a symbol nor a string!",
-              "ProxyMapping:setLocalFlag",
-              this.loggerWeakRef?.deref()
-            );
-          }
-        }
-      ),
-
-      "getLocalFlag": new DataDescriptor(
-        /**
-         * fieldName: {Symbol|String} The object graph's field name.
-         * flagName:  {String} The flag to set.
-         *
-         * @returns {Boolean} The value to set.
-         */
-        function (fieldName, flagName) {
-          if (typeof fieldName == "string") {
-            if (!this.localFlags) {
-              return false;
-            }
-            let flag = flagName + ":" + fieldName;
-            return this.localFlags.has(flag);
-          } else if (typeof fieldName == "symbol") {
-            if (!this.localFlagsSymbols) {
-              return false;
-            }
-            let obj = this.localFlagsSymbols.get(fieldName);
-            if (!obj || !obj[flagName]) {
-              return false;
-            }
-            return true;
-          } else {
-            throwAndLog(
-              "fieldName is neither a symbol nor a string!",
-              "ProxyMapping:getLocalFlag",
-              this.loggerWeakRef?.deref()
-            );
-          }
-        }
-      ),
-
-      "getLocalDescriptor": new DataDescriptor(function (fieldName, propName) {
-        let desc;
-        let metadata = this.proxiedFields[fieldName];
-        if (metadata.localDescriptors) {
-          desc = metadata.localDescriptors.get(propName);
-        }
-        return desc;
-      }),
-
-      "setLocalDescriptor": new DataDescriptor(function (fieldName, propName, desc) {
-        this.unmaskDeletion(fieldName, propName);
-        let metadata = this.proxiedFields[fieldName];
-
-        if (!metadata.localDescriptors) {
-          metadata.localDescriptors = new Map();
-        }
-
-        metadata.localDescriptors.set(propName, desc);
+  hasProxy(proxy: any): boolean {
+    let fields = Object.getOwnPropertyNames(this.proxiedFields);
+    for (let i = 0; i < fields.length; i++) {
+      if (this.getProxy(fields[i]!) === proxy) {
         return true;
-      }),
+      }
+    }
+    return false;
+  }
 
-      "deleteLocalDescriptor": new DataDescriptor(function (
-        fieldName,
-        propName,
-        recordLocalDelete
-      ) {
-        let metadata = this.proxiedFields[fieldName];
-        if (recordLocalDelete) {
-          if (!metadata.deletedLocals) {
-            metadata.deletedLocals = new Set();
-          }
-          metadata.deletedLocals.add(propName);
-        } else {
-          this.unmaskDeletion(fieldName, propName);
-        }
+  getShadowTarget(field: symbol | string): any {
+    var rv = this.proxiedFields[field];
+    if (!rv) {
+      throwAndLog(
+        "getShadowTarget called for unknown field!",
+        "ProxyMapping:getShadowTarget",
+        this.loggerWeakRef?.deref()
+      );
+    }
+    return rv.shadowTarget;
+  }
 
-        if ("localDescriptors" in metadata) {
-          metadata.localDescriptors.delete(propName);
-          if (metadata.localDescriptors.size === 0) {
-            delete metadata.localDescriptors;
-          }
-        }
-      }),
+  isShadowTarget(shadowTarget: any): boolean {
+    return Reflect.ownKeys(this.proxiedFields).some(function (this: ProxyMapping, field) {
+      // ansteg TODO: I added a type assertion (this.proxiedFields[field]!), but this may be masking a real bug.
+      return this.proxiedFields[field]!.shadowTarget === shadowTarget;
+    }, this);
+  }
 
-      "cachedOwnKeys": new DataDescriptor(function (fieldName) {
-        if (!this.hasField(fieldName)) {
-          return null;
-        }
-        let metadata = this.proxiedFields[fieldName];
-        if ("cachedOwnKeys" in metadata) {
-          return metadata.cachedOwnKeys;
-        }
-        return null;
-      }),
+  /**
+   * Add a value to the mapping.
+   *
+   * @param membrane {Membrane} The owning membrane.
+   * @param field    {symbol|string}   The field name of the object graph.
+   * @param parts    {IProxyParts} containing:
+   *   {
+   *      value    {Variant}  The value to add.
+   *      proxy    {Proxy}    A proxy associated with the object graph and the value.
+   *      revoke   {Function} A revocation function for the proxy, if available.
+   *      override {Boolean}  True if the field should be overridden.
+   *   }
+   */
+  set(membrane: Membrane, field: symbol | string, parts: IProxyParts) {
+    let override = typeof parts.override === "boolean" && parts.override;
+    if (!override && this.hasField(field)) {
+      throwAndLog("set called for previously defined field!", "ProxyMapping:set", membrane?.logger);
+    }
 
-      "setCachedOwnKeys": new DataDescriptor(function (fieldName, keys, original) {
-        this.proxiedFields[fieldName].cachedOwnKeys = {
-          keys: keys,
-          original: original
-        };
-      }),
+    this.proxiedFields[field] = parts;
 
-      "localOwnKeys": new DataDescriptor(function (fieldName) {
-        let metadata = this.proxiedFields[fieldName],
-          rv = [];
-        if ("localDescriptors" in metadata) {
-          rv = Array.from(metadata.localDescriptors.keys());
-        }
-        return rv;
-      }),
+    if (override || field !== this.originField) {
+      if (valueType(parts.proxy) !== "primitive") {
+        // if (DogfoodMembrane && membrane !== DogfoodMembrane) {
+        //   DogfoodMembrane.ProxyToMembraneMap.add(parts.proxy);
+        // }
+        membrane.map.set(parts.proxy, this);
+      }
+    } else if (this.originalValue === NOT_YET_DETERMINED) {
+      this.originalValue = parts.value;
+      delete parts.proxy;
+      delete parts.revoke;
+    }
 
-      "appendDeletedNames": new DataDescriptor(function (fieldName, set) {
-        if (!this.hasField(fieldName)) {
-          return;
-        }
-        var locals = this.proxiedFields[fieldName].deletedLocals;
-        if (!locals || !locals.size) {
-          return;
-        }
-        var iter = locals.values(),
-          next;
-        do {
-          next = iter.next();
-          if (!next.done) {
-            set.add(next.value);
-          }
-        } while (!next.done);
-      }),
+    if (!membrane.map.has(parts.value)) {
+      // if (DogfoodMembrane && membrane !== DogfoodMembrane) {
+      //   DogfoodMembrane.ProxyToMembraneMap.add(parts.value);
+      // }
 
-      "wasDeletedLocally": new DataDescriptor(function (fieldName, propName) {
-        if (!this.hasField(fieldName)) {
-          return false;
-        }
-        var locals = this.proxiedFields[fieldName].deletedLocals;
-        return Boolean(locals) && locals.has(propName);
-      }),
+      if (valueType(parts.value) !== "primitive") {
+        membrane.map.set(parts.value, this);
+      }
+    } else {
+      assert(
+        this === membrane.map.get(parts.value),
+        "ProxyMapping mismatch?",
+        "ProxyMapping:set",
+        membrane?.logger
+      );
+    }
+  }
 
-      "unmaskDeletion": new DataDescriptor(function (fieldName, propName) {
-        if (!this.hasField(fieldName)) {
-          return;
-        }
-        var metadata = this.proxiedFields[fieldName];
-        if (!metadata.deletedLocals) {
-          return;
-        }
-        metadata.deletedLocals.delete(propName);
-        if (metadata.deletedLocals.size === 0) {
-          delete metadata.deletedLocals;
-        }
-      }),
+  remove(field: symbol | string): void {
+    delete this.proxiedFields[field];
+  }
 
-      "getOwnKeysFilter": new DataDescriptor(function (fieldName) {
-        if (!this.hasField(fieldName)) {
-          return null;
-        }
-        var metadata = this.proxiedFields[fieldName];
-        return typeof metadata.ownKeysFilter == "function" ? metadata.ownKeysFilter : null;
-      }),
+  selfDestruct(membrane: Membrane): void {
+    let fields = Object.getOwnPropertyNames(this.proxiedFields);
+    for (let i = fields.length - 1; i >= 0; i--) {
+      let field = fields[i]!;
+      if (field !== this.originField) {
+        // ansteg TODO: I added a type assertion (this.proxiedFields[field]!), but this may be masking a real bug.
+        membrane.map.delete(this.proxiedFields[field]!.proxy);
+      }
+      // ansteg TODO: I added a type assertion (this.proxiedFields[field]!), but this may be masking a real bug.
+      membrane.map.delete(this.proxiedFields[field]!.value);
+      delete this.proxiedFields[field];
+    }
+    // ansteg: originalValue was preventing garbage collection when the proxy is revoked.
+    // TODO: this is also a band-aid solution - we need to make sure that values and proxies can get garbage-collected
+    // if they go out of scope (in non-membrane code) _before_ the membrane is revoked.
+    // We might be able to remove originalValue completely - it doesn't seem to be read in any serious way.
+    // @ts-ignore -- this is a special case where we are shutting down.
+    delete this.originalValue;
+  }
 
-      "setOwnKeysFilter": new DataDescriptor(function (fieldName, filter) {
-        this.proxiedFields[fieldName].ownKeysFilter = filter;
-      }),
+  revoke(): void {
+    let fields = Object.getOwnPropertyNames(this.proxiedFields);
+    // fields[0] === this.originField
+    for (let i = 1; i < fields.length; i++) {
+      // ansteg TODO: I added a type assertions here, but this may be masking a real bug.
+      this.proxiedFields[fields[i]!]!.revoke!();
+    }
+  }
 
-      "getTruncateArgList": new DataDescriptor(function (fieldName) {
-        if (!this.hasField(fieldName)) {
-          return false;
-        }
-        var metadata = this.proxiedFields[fieldName];
-        return typeof metadata.truncateArgList !== "undefined" ? metadata.truncateArgList : false;
-      }),
+  /**
+   * fieldName: {symbol|string} The object graph's field name.
+   * flagName:  {string} The flag to set.
+   * value:     {boolean} The value to set.
+   */
+  setLocalFlag(fieldName: symbol | string, flagName: string, value: boolean): void {
+    if (typeof fieldName == "string") {
+      if (!this.localFlags) {
+        this.localFlags = new Set();
+      }
 
-      "setTruncateArgList": new DataDescriptor(function (fieldName, value) {
-        this.proxiedFields[fieldName].truncateArgList = value;
-      })
-    })
-  );
+      let flag = flagName + ":" + fieldName;
+      if (value) {
+        this.localFlags.add(flag);
+      } else {
+        this.localFlags.delete(flag);
+      }
+    } else if (typeof fieldName == "symbol") {
+      // It's harder to combine symbols and strings into a string...
+      if (!this.localFlagsSymbols) {
+        this.localFlagsSymbols = new Map();
+      }
+      let obj = this.localFlagsSymbols.get(fieldName) || {};
+      obj[flagName] = value;
+      this.localFlagsSymbols.set(fieldName, obj);
+    } else {
+      throwAndLog(
+        "fieldName is neither a symbol nor a string!",
+        "ProxyMapping:setLocalFlag",
+        this.loggerWeakRef?.deref()
+      );
+    }
+  }
 
-  Object.seal(ProxyMapping.prototype);
-} // end ProxyMapping definition
+  /**
+   * fieldName: {symbol|string} The object graph's field name.
+   * flagName:  {string} The flag to set.
+   *
+   * @returns {boolean} The value to set.
+   */
+  getLocalFlag(fieldName: symbol | string, flagName: string): boolean {
+    if (typeof fieldName == "string") {
+      if (!this.localFlags) {
+        return false;
+      }
+      let flag = flagName + ":" + fieldName;
+      return this.localFlags.has(flag);
+    } else if (typeof fieldName == "symbol") {
+      if (!this.localFlagsSymbols) {
+        return false;
+      }
+      let obj = this.localFlagsSymbols.get(fieldName);
+      if (!obj || !obj[flagName]) {
+        return false;
+      }
+      return true;
+    } else {
+      throwAndLog(
+        "fieldName is neither a symbol nor a string!",
+        "ProxyMapping:getLocalFlag",
+        this.loggerWeakRef?.deref()
+      );
+    }
+  }
 
+  getLocalDescriptor(
+    fieldName: symbol | string,
+    propName: symbol | string
+  ): PropertyDescriptor | undefined {
+    let desc: PropertyDescriptor | undefined;
+    let metadata = this.proxiedFields[fieldName];
+    if (metadata?.localDescriptors) {
+      desc = metadata.localDescriptors.get(propName);
+    }
+    return desc;
+  }
+
+  setLocalDescriptor(
+    fieldName: symbol | string,
+    propName: symbol | string,
+    desc: PropertyDescriptor
+  ): true {
+    this.unmaskDeletion(fieldName, propName);
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    let metadata = this.proxiedFields[fieldName]!;
+
+    if (!metadata.localDescriptors) {
+      metadata.localDescriptors = new Map();
+    }
+
+    metadata.localDescriptors.set(propName, desc);
+    return true;
+  }
+
+  deleteLocalDescriptor(
+    fieldName: symbol | string,
+    propName: symbol | string,
+    recordLocalDelete: boolean
+  ): void {
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    let metadata = this.proxiedFields[fieldName]!;
+    if (recordLocalDelete) {
+      if (!metadata.deletedLocals) {
+        metadata.deletedLocals = new Set();
+      }
+      metadata.deletedLocals.add(propName);
+    } else {
+      this.unmaskDeletion(fieldName, propName);
+    }
+
+    if ("localDescriptors" in metadata) {
+      metadata.localDescriptors.delete(propName);
+      if (metadata.localDescriptors.size === 0) {
+        delete metadata.localDescriptors;
+      }
+    }
+  }
+
+  cachedOwnKeys(fieldName: symbol | string): any {
+    if (!this.hasField(fieldName)) {
+      return null;
+    }
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    let metadata = this.proxiedFields[fieldName]!;
+    if ("cachedOwnKeys" in metadata) {
+      return metadata.cachedOwnKeys;
+    }
+    return null;
+  }
+
+  setCachedOwnKeys(fieldName: symbol | string, keys: (symbol | string)[], original: any): void {
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    this.proxiedFields[fieldName]!.cachedOwnKeys = {
+      keys: keys,
+      original: original
+    };
+  }
+
+  localOwnKeys(fieldName: symbol | string): (symbol | string)[] {
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    let metadata = this.proxiedFields[fieldName]!,
+      rv: (symbol | string)[] = [];
+    if ("localDescriptors" in metadata) {
+      rv = Array.from(metadata.localDescriptors.keys());
+    }
+    return rv;
+  }
+
+  appendDeletedNames(fieldName: symbol | string, set: Set<symbol | string>): void {
+    if (!this.hasField(fieldName)) {
+      return;
+    }
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    var locals = this.proxiedFields[fieldName]!.deletedLocals;
+    if (!locals || !locals.size) {
+      return;
+    }
+    var iter = locals.values(),
+      next;
+    do {
+      next = iter.next();
+      if (!next.done) {
+        set.add(next.value);
+      }
+    } while (!next.done);
+  }
+
+  wasDeletedLocally(fieldName: symbol | string, propName: symbol | string): boolean {
+    if (!this.hasField(fieldName)) {
+      return false;
+    }
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    var locals = this.proxiedFields[fieldName]!.deletedLocals;
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    return Boolean(locals) && locals!.has(propName);
+  }
+
+  unmaskDeletion(fieldName: symbol | string, propName: symbol | string): void {
+    if (!this.hasField(fieldName)) {
+      return;
+    }
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    var metadata = this.proxiedFields[fieldName]!;
+    if (!metadata.deletedLocals) {
+      return;
+    }
+    metadata.deletedLocals.delete(propName);
+    if (metadata.deletedLocals.size === 0) {
+      delete metadata.deletedLocals;
+    }
+  }
+
+  getOwnKeysFilter(
+    fieldName: symbol | string
+  ): ((propertyName: string | symbol) => boolean) | null {
+    if (!this.hasField(fieldName)) {
+      return null;
+    }
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    var metadata = this.proxiedFields[fieldName]!;
+    return typeof metadata.ownKeysFilter == "function" ? metadata.ownKeysFilter : null;
+  }
+
+  setOwnKeysFilter(
+    fieldName: symbol | string,
+    filter: (propertyName: string | symbol) => boolean
+  ): void {
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    this.proxiedFields[fieldName]!.ownKeysFilter = filter;
+  }
+
+  getTruncateArgList(fieldName: symbol | string): boolean | number {
+    if (!this.hasField(fieldName)) {
+      return false;
+    }
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    var metadata = this.proxiedFields[fieldName]!;
+    return typeof metadata.truncateArgList !== "undefined" ? metadata.truncateArgList : false;
+  }
+
+  setTruncateArgList(fieldName: symbol | string, value: boolean | number): void {
+    // ansteg TODO: I added a type assertion, but this may be masking a real bug.
+    this.proxiedFields[fieldName]!.truncateArgList = value;
+  }
+}
+
+Object.seal(ProxyMapping.prototype);
 Object.seal(ProxyMapping);
