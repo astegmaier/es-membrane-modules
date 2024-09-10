@@ -46,8 +46,13 @@ export function makeShadowTarget(
   return rv;
 }
 
-export function getRealTarget(target: object): any {
-  return ShadowKeyMap.has(target) ? ShadowKeyMap.get(target) : target;
+/**
+ * Convert a shadow target to a real proxy target.
+ * @param shadowTarget The supposed target.
+ * @returns The target this shadow target maps to.
+ */
+export function getRealTarget<T extends object>(shadowTarget: T): T {
+  return ShadowKeyMap.has(shadowTarget) ? ShadowKeyMap.get(shadowTarget) : shadowTarget;
 }
 
 export function stringifyArg(arg: unknown): string {

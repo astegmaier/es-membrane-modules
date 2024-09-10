@@ -201,7 +201,7 @@ export class ObjectGraphHandler implements ProxyHandler<object> {
       if (typeof hasOwn !== "undefined") {
         return true;
       }
-      target = this.getPrototypeOf(shadow);
+      target = this.getPrototypeOf(shadow)!; // ansteg TODO: I added a type assertion, but this may be masking a real bug.
       if (target === null) {
         break;
       }
@@ -1203,7 +1203,7 @@ export class ObjectGraphHandler implements ProxyHandler<object> {
   apply(shadowTarget: object, thisArg: unknown, argumentsList: unknown[]): unknown {
     this.validateTrapAndShadowTarget("apply", shadowTarget);
 
-    var target = getRealTarget(shadowTarget);
+    var target = getRealTarget(shadowTarget) as (...args: unknown[]) => unknown;
     var _this: unknown,
       args: unknown[] = [];
     let targetMap = this.membrane.map.get(target)!; // ansteg TODO: I added a type assertion, but this may be masking a real bug.
@@ -1301,7 +1301,7 @@ export class ObjectGraphHandler implements ProxyHandler<object> {
   construct(shadowTarget: object, argumentsList: any[], ctorTarget: Function): object {
     this.validateTrapAndShadowTarget("construct", shadowTarget);
 
-    var target = getRealTarget(shadowTarget);
+    var target = getRealTarget(shadowTarget) as (...args: unknown[]) => unknown;
     var args: unknown[] = [];
     let targetMap = this.membrane.map.get(target)!; // ansteg TODO: I added a type assertion, but this may be masking a real bug.
     let argHandler = this.membrane.getHandlerByName(targetMap.originField);

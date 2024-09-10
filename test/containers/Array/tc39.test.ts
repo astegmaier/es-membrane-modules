@@ -204,7 +204,7 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
       try {
         parts.membrane.modifyRules.storeUnknownAsLocal("dry", meta.proxy);
         if (chain) {
-          parts.membrane.modifyRules.replaceProxy(meta.proxy, chain);
+          parts.membrane.modifyRules.replaceProxy(meta.proxy!, chain); // ansteg TODO: I added a type assertion, but this may be masking a real bug.
         }
       } catch (e) {
         meta.throwException(e);

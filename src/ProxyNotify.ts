@@ -156,7 +156,7 @@ export function ProxyNotify(
      */
     "rebuildProxy": new DataDescriptor(function (this: AllListenerMetadata) {
       if (!this.stopped) {
-        parts.proxy = modifyRules.replaceProxy(parts.proxy, handler);
+        parts.proxy = modifyRules.replaceProxy(parts.proxy!, handler); // ansteg TODO: I added a type assertion, but this may be masking a real bug.
       }
     }),
 
