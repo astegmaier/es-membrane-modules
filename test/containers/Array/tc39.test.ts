@@ -148,18 +148,16 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
       logger.addAppender(appender);
 
       chain = parts.membrane.modifyRules.createChainHandler(parts.handlers.dry);
-      parts.membrane.allTraps.forEach(function <T extends keyof IChainHandler>(trap: T) {
+      parts.membrane.allTraps.forEach((trap) => {
         chain[trap] = function (this: IChainHandler) {
           logger.info(trap + " enter");
-          const rv = this.nextHandler[trap].apply(this, arguments);
+          const rv = (this.nextHandler[trap] as any).apply(this, arguments);
           logger.info(trap + " leave");
           return rv;
-        } as IChainHandler[T];
+        };
       });
 
-      (["get", "getOwnPropertyDescriptor"] as const).forEach(function <
-        T extends "get" | "getOwnPropertyDescriptor"
-      >(trap: T) {
+      (["get", "getOwnPropertyDescriptor"] as const).forEach((trap) => {
         chain[trap] = function (
           this: IChainHandler,
           _target: object,
@@ -170,19 +168,17 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
           } catch (e) {
             logger.info(trap + " enter");
           }
-          const rv = this.nextHandler[trap].apply(this, arguments as any);
+          const rv = (this.nextHandler[trap] as any).apply(this, arguments as any);
           try {
             logger.info(trap + " leave " + propertyName.toString());
           } catch (e) {
             logger.info(trap + " leave");
           }
           return rv;
-        } as IChainHandler[T];
+        };
       });
 
-      (["set", "defineProperty"] as const).forEach(function <T extends "set" | "defineProperty">(
-        trap: T
-      ) {
+      (["set", "defineProperty"] as const).forEach((trap) => {
         chain[trap] = function (target: object, propertyName: string | symbol) {
           const hasDesc = Boolean(this.nextHandler.getOwnPropertyDescriptor(target, propertyName));
           try {
@@ -190,7 +186,7 @@ describe("TC39 demonstrations of Array objects in membranes: ", function () {
           } catch (e) {
             logger.info(`${trap} enter (has: ${hasDesc})`);
           }
-          const rv = this.nextHandler[trap].apply(this, arguments as any);
+          const rv = (this.nextHandler[trap] as any).apply(this, arguments as any);
           try {
             logger.info(trap + " leave " + propertyName.toString());
           } catch (e) {

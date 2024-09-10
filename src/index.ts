@@ -21,7 +21,12 @@ export type {
   ModifyRulesAPI,
   OwnKeysFilter
 } from "./ModifyRulesAPI";
-export type { ObjectGraphHandler, ProxyListener } from "./ObjectGraphHandler";
+export type {
+  BoundMethods,
+  FunctionListener,
+  ObjectGraphHandler,
+  ProxyListener
+} from "./ObjectGraphHandler";
 export type { IProxyParts, ProxyMapping } from "./ProxyMapping";
 export type {
   ListenerMetadata,

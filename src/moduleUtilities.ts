@@ -159,7 +159,7 @@ export function MembraneMayLog(this: Membrane): boolean {
 export function AssertIsPropertyKey(
   propName: string | symbol,
   codeLocation: string,
-  logger: ILogger | undefined
+  logger: ILogger | undefined | null
 ): propName is string | symbol {
   var type = typeof propName;
   if (type != "string" && type != "symbol") {

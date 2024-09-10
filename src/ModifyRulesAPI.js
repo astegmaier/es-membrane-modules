@@ -172,7 +172,7 @@ ModifyRulesAPI.prototype = Object.seal({
       baseHandler = this.membrane.getHandlerByName(existingHandler.fieldName);
       description =
         "our membrane's " +
-        /** @type {ObjectGraphHandler} */ (baseHandler).fieldName +
+        /** @type {ObjectGraphHandler} */ (baseHandler).fieldName.toString() +
         " ObjectGraphHandler";
     } else if (baseHandler !== Reflect) {
       // XXX ajvincent Fix this error message!!

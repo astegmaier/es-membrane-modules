@@ -209,13 +209,13 @@ function useShadowTarget(
     // Establish the list of own properties.
     const keys = Reflect.ownKeys(parts.proxy!); // ansteg TODO: is there a bug here? parts.proxy might not be defined.
     keys.forEach(function (key) {
-      handler.defineLazyGetter(parts.value, parts.shadowTarget, key);
+      handler.defineLazyGetter(parts.value, parts.shadowTarget!, key); // ansteg TODO: is there a bug here? parts.shadowTarget might not be defined.
     });
 
     /* Establish the prototype.  (I tried using a lazy getPrototypeOf,
      * but testing showed that fails a later test.)
      */
-    let proto = handler.getPrototypeOf(parts.shadowTarget);
+    let proto = handler.getPrototypeOf(parts.shadowTarget!); // ansteg TODO: is there a bug here? parts.shadowTarget might not be defined.
     Reflect.setPrototypeOf(parts.shadowTarget!, proto); // ansteg TODO: is there a bug here? parts.shadowTarget might not be defined.
 
     // Lazy preventExtensions.

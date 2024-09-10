@@ -2,7 +2,7 @@ import { ModifyRulesAPI } from "./ModifyRulesAPI";
 import { allTraps, Primordials } from "./sharedUtilities";
 import { Constants } from "./moduleUtilities";
 import { ProxyMapping } from "./ProxyMapping";
-import { ObjectGraphHandler } from "./ObjectGraphHandler";
+import { FunctionListener, ObjectGraphHandler } from "./ObjectGraphHandler";
 
 export type LogLevel = "FATAL" | "ERROR" | "WARN" | "INFO" | "DEBUG" | "TRACE";
 
@@ -43,7 +43,7 @@ export interface IMembraneOwn {
   map: WeakMap<any, ProxyMapping>;
   handlersByFieldName: { [fieldName: string | symbol]: any };
   logger: ILogger | null;
-  __functionListeners__: any[];
+  __functionListeners__: FunctionListener[];
   warnOnceSet: Set<any> | null;
   modifyRules: ModifyRulesAPI;
   passThroughFilter: (value: unknown) => boolean;
@@ -223,17 +223,17 @@ export interface IMembranePrototype {
    *
    * @param listener {Function} The listener to add.
    *
-   * @see ObjectGraphHandler.prototype.notifyFunctionListeners for what each
+   * @see ObjectGraphHandler.notifyFunctionListeners for what each
    * listener will get for its arguments.
    */
-  addFunctionListener(this: Membrane, listener: (...args: any[]) => any): void;
+  addFunctionListener(this: Membrane, listener: FunctionListener): void;
 
   /**
    * Add a listener for function entry, return and throw operations.
    *
    * @param listener {Function} The listener to remove.
    */
-  removeFunctionListener(this: Membrane, listener: (...args: any[]) => any): void;
+  removeFunctionListener(this: Membrane, listener: FunctionListener): void;
 
   /**
    * A flag indicating if internal properties of the Membrane are private.

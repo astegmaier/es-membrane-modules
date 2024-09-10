@@ -161,7 +161,12 @@ export interface IModifyRulesAPIPrototype {
    * @param proxy     {Proxy}    The proxy to affect.
    * @param trapList  {String[]} A list of proxy (Reflect) traps to disable.
    */
-  disableTraps(this: ModifyRulesAPI, fieldName: string, proxy: any, trapList: Trap[]): void;
+  disableTraps(
+    this: ModifyRulesAPI,
+    fieldName: symbol | string, // ansteg TODO: should fieldName actually be constrained to a string type?
+    proxy: any,
+    trapList: Trap[]
+  ): void;
 
   createDistortionsListener(this: ModifyRulesAPI): DistortionsListener;
 }

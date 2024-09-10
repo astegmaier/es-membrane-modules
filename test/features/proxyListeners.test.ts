@@ -392,14 +392,14 @@ describe("An object graph handler's proxy listeners", function () {
 
       handler2.getOwnPropertyDescriptor = function (
         this: IChainHandler,
-        target: unknown,
+        target: object,
         propName: string | symbol
       ) {
         if (propName == "extra") {
           return extraDesc;
         }
         return this.nextHandler.getOwnPropertyDescriptor(target, propName);
-      } as ObjectGraphHandler["getOwnPropertyDescriptor"]; // ansteg TODO: remove this cast after we convert ObjetGraphHandler to a proper class and define an interface for IChainHandler/IObjectGraphHandler that doesn't manually set the 'this' value for methods.
+      };
       dryHandler.addProxyListener(function (meta) {
         handler2.externalHandler;
         meta.handler = handler2;

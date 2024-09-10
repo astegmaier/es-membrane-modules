@@ -1,5 +1,6 @@
 /** @import { IMembranePrototype, IBuildMappingOptions, IGetHandlerByNameOptions } from "./Membrane" */
 /** @import { IProxyParts } from "./ProxyMapping" */
+/** @import { FunctionListener } from "./ObjectGraphHandler" */
 import assert from "./assert";
 import {
   returnFalse,
@@ -650,7 +651,7 @@ Reflect.defineProperty(
     /**
      * Add a listener for function entry, return and throw operations.
      *
-     * @param listener {Function} The listener to add.
+     * @param listener {FunctionListener} The listener to add.
      *
      * @see ObjectGraphHandler.prototype.notifyFunctionListeners for what each
      * listener will get for its arguments.
@@ -667,7 +668,7 @@ Reflect.defineProperty(
     /**
      * Add a listener for function entry, return and throw operations.
      *
-     * @param listener {Function} The listener to remove.
+     * @param listener {FunctionListener} The listener to remove.
      */
     removeFunctionListener: function (listener) {
       let index = this.__functionListeners__.indexOf(listener);
