@@ -29,6 +29,7 @@ export type {
 } from "./ObjectGraphHandler";
 export type { IProxyParts, ProxyMapping } from "./ProxyMapping";
 export type {
+  IProxyNotifyOptions,
   ListenerMetadata,
   InvokedListenerMetadata,
   AllListenerMetadata,

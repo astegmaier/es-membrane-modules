@@ -7,6 +7,15 @@ import type { ILogger } from "./Membrane";
 import type { ObjectGraphHandler } from "./ObjectGraphHandler";
 import type { IProxyParts } from "./ProxyMapping";
 
+export interface IProxyNotifyOptions {
+  trapName?: string;
+  callable?: string;
+  isThis?: boolean;
+  argIndex?: number;
+  originHandler?: ObjectGraphHandler;
+  targetHandler?: ObjectGraphHandler;
+}
+
 export interface ListenerMetadata {
   /**
    * The proxy or value the Membrane will return to the caller.
@@ -87,7 +96,7 @@ export function ProxyNotify(
   parts: IProxyParts,
   handler: ObjectGraphHandler,
   isOrigin: boolean,
-  options?: any
+  options?: IProxyNotifyOptions
 ): void {
   if (typeof options === "undefined") {
     options = {};

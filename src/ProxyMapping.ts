@@ -6,7 +6,7 @@ import type { ILogger, Membrane } from "./Membrane";
 // ansteg TODO: I commented out references to DogfoodMembrane, but maybe I want to re-add it after I understand what it was trying to do?
 // const DogfoodMembrane = undefined;
 
-// TODO: clarify which of these are required v. optional
+// ansteg TODO: clarify which of these are required v. optional
 /**
  * {
  *   value: value,
@@ -36,7 +36,7 @@ export interface IProxyParts {
  * but the ProxyMapping is strictly for internal use of the module.)
  */
 export class ProxyMapping {
-  originField: symbol | string; // TODO: can this be just 'string'?
+  originField: symbol | string; // ansteg TODO: can this be just 'string'?
   proxiedFields: { [fieldName: symbol | string]: IProxyParts } = {};
   originalValue: object = NOT_YET_DETERMINED;
   /**
@@ -48,7 +48,7 @@ export class ProxyMapping {
   localFlagsSymbols?: Map<any, any>;
   loggerWeakRef: WeakRef<ILogger> | undefined;
 
-  constructor(originField: symbol | string, logger: ILogger) {
+  constructor(originField: symbol | string, logger: ILogger | null) {
     this.originField = originField;
     // ansteg: to avoid leaking the logger, we are being defensive about introducing new hard references to the logger
     this.loggerWeakRef = logger ? new WeakRef(logger) : undefined;

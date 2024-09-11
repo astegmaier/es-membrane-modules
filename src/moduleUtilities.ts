@@ -30,7 +30,7 @@ export var ShadowKeyMap = new WeakMap<object, any>();
 export function makeShadowTarget(
   value: object,
   codeLocation: string,
-  logger: ILogger | undefined
+  logger: ILogger | undefined | null
 ): object {
   var rv;
   if (Array.isArray(value)) {
