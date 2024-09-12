@@ -1,6 +1,6 @@
-import { NWNCDataDescriptor, allTraps, Primordials } from "./sharedUtilities.js";
+import { NWNCDataDescriptor, allTraps, Primordials } from "./sharedUtilities";
 import { throwAndLog } from "./throwAndLog";
-import type { Membrane } from "./Membrane.js";
+import type { Membrane } from "./Membrane";
 import type { OwnKeysFilter } from "./ModifyRulesAPI";
 
 export interface IDistortionsListenerConfig {

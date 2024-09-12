@@ -1,4 +1,4 @@
-import { DataDescriptor } from "./sharedUtilities.js";
+import { DataDescriptor } from "./sharedUtilities";
 import { throwAndLog } from "./throwAndLog";
 import type { ILogger, Membrane } from "./Membrane";
 import type { IProxyParts } from "./ProxyMapping";

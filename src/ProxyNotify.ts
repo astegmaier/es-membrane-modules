@@ -1,7 +1,7 @@
 import assert from "./assert";
-import { DataDescriptor, AccessorDescriptor } from "./sharedUtilities.js";
-import { ProxyMapping } from "./ProxyMapping.js";
-import { makeRevokeDeleteRefs } from "./moduleUtilities.js";
+import { DataDescriptor, AccessorDescriptor } from "./sharedUtilities";
+import { ProxyMapping } from "./ProxyMapping";
+import { makeRevokeDeleteRefs } from "./moduleUtilities";
 import { throwAndLog } from "./throwAndLog";
 import type { ILogger } from "./Membrane";
 import type { ObjectGraphHandler } from "./ObjectGraphHandler";

@@ -6,10 +6,10 @@ import {
   isDataDescriptor,
   allTraps,
   Primordials
-} from "./sharedUtilities.js";
-import { IProxyNotifyOptions, ProxyNotify } from "./ProxyNotify.js";
-import { ProxyMapping } from "./ProxyMapping.js";
-import { ObjectGraphHandler } from "./ObjectGraphHandler.js";
+} from "./sharedUtilities";
+import { IProxyNotifyOptions, ProxyNotify } from "./ProxyNotify";
+import { ProxyMapping } from "./ProxyMapping";
+import { ObjectGraphHandler } from "./ObjectGraphHandler";
 import {
   valueType,
   makeShadowTarget,
@@ -17,11 +17,11 @@ import {
   makeRevokeDeleteRefs,
   MembraneMayLog,
   Constants
-} from "./moduleUtilities.js";
-import { ChainHandlers, ModifyRulesAPI } from "./ModifyRulesAPI.js";
+} from "./moduleUtilities";
+import { ChainHandlers, ModifyRulesAPI } from "./ModifyRulesAPI";
 import { throwAndLog } from "./throwAndLog";
 import type { FunctionListener } from "./ObjectGraphHandler";
-import type { IProxyParts } from "./ProxyMapping.js";
+import type { IProxyParts } from "./ProxyMapping";
 
 export type LogLevel = "FATAL" | "ERROR" | "WARN" | "INFO" | "DEBUG" | "TRACE";
 

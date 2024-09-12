@@ -5,9 +5,9 @@ import {
   NWNCDataDescriptor,
   isDataDescriptor,
   isAccessorDescriptor
-} from "./sharedUtilities.js";
-import { ProxyMapping } from "./ProxyMapping.js";
-import { valueType, getRealTarget, AssertIsPropertyKey } from "./moduleUtilities.js";
+} from "./sharedUtilities";
+import { ProxyMapping } from "./ProxyMapping";
+import { valueType, getRealTarget, AssertIsPropertyKey } from "./moduleUtilities";
 import { throwAndLog } from "./throwAndLog";
 import type { ILogger, Membrane } from "./Membrane";
 import type { AllListenerMetadata } from "./ProxyNotify";
