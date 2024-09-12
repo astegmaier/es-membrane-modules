@@ -3,7 +3,8 @@
   "compilerOptions": {
     "rootDir": "./",
     "outDir": "../.tsc-cache/test",
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "allowUnreachableCode": true
   },
   "include": ["**/*"],
   "references": [{ "path": "../src" }, { "path": "../mocks" }]
