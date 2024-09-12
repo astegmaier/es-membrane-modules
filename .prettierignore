@@ -1,7 +1,5 @@
-/*
-!/src/
-!/src/**
-!/mocks/
-!/mocks/**
-!/test/
-!/test/**
+tsconfig.base.json
+LICENSE
+yarn.lock
+.gitignore
+.prettierignore
