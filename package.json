@@ -35,20 +35,15 @@
   "types": "dist/cjs/index.d.ts",
   "scripts": {
     "test": "node --expose-gc ./node_modules/jest/bin/jest.js",
-    "typecheck": "npm run typecheck:src && npm run typecheck:test && npm run typecheck:mocks",
-    "typecheck:test": "tsc --project test/tsconfig.json",
-    "typecheck:src": "tsc --project src/tsconfig.json --noEmit",
-    "typecheck:mocks": "tsc --project mocks/tsconfig.json",
+    "watch": "tsc --build --watch",
     "rebuild": "npm run clean && npm run build",
     "build": "npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc --project src/tsconfig.json && npm run copy:dts:cjs",
-    "build:esm": "tsc --project src/tsconfig.json --module es6 --outDir dist/esm && npm run copy:dts:esm",
-    "copy:dts:cjs": "copyfiles -u 1 \"src/**/*.d.ts\" dist/cjs",
-    "copy:dts:esm": "copyfiles -u 1 \"src/**/*.d.ts\" dist/esm",
-    "clean": "rimraf dist failing-test-heapsnapshots",
+    "build:cjs": "tsc --build",
+    "build:esm": "tsc --project tsconfig.esm.json",
+    "clean": "rimraf dist failing-test-heapsnapshots .tsc-cache",
     "format": "prettier --write **/*",
     "lint": "eslint",
-    "prepublish": "npm run clean && npm run typecheck && npm run lint && npm run format && npm run test && npm run build"
+    "prepublish": "npm run clean && npm run lint && npm run format && npm run test && npm run build"
   },
   "dependencies": {},
   "devDependencies": {
