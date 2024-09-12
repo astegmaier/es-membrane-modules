@@ -1,4 +1,4 @@
-import { NOT_IMPLEMENTED_DESC } from "../../src/sharedUtilities";
+import { NOT_IMPLEMENTED_DESC } from "../../src/utils/sharedUtilities";
 import type { IMockEventTarget, IMockEventTargetConstructor } from "./EventTargetWet";
 
 interface IWetMarker {

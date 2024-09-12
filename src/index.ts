@@ -1,5 +1,5 @@
 export { Membrane } from "./Membrane";
-export { Constants } from "./moduleUtilities";
+export { Constants } from "./utils/moduleUtilities";
 
 export type {
   IDistortionsListenerConfig,

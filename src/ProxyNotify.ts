@@ -1,8 +1,8 @@
-import { assert } from "./assert";
-import { DataDescriptor, AccessorDescriptor } from "./sharedUtilities";
+import { assert } from "./utils/assert";
+import { DataDescriptor, AccessorDescriptor } from "./utils/sharedUtilities";
 import { ProxyMapping } from "./ProxyMapping";
-import { makeRevokeDeleteRefs } from "./moduleUtilities";
-import { throwAndLog } from "./throwAndLog";
+import { makeRevokeDeleteRefs } from "./utils/moduleUtilities";
+import { throwAndLog } from "./utils/throwAndLog";
 import type { ILogger } from "./Membrane";
 import type { ObjectGraphHandler } from "./ObjectGraphHandler";
 import type { IProxyParts } from "./ProxyMapping";

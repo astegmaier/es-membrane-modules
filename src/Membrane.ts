@@ -1,4 +1,4 @@
-import { assert } from "./assert";
+import { assert } from "./utils/assert";
 import {
   returnFalse,
   DataDescriptor,
@@ -6,7 +6,7 @@ import {
   isDataDescriptor,
   allTraps,
   Primordials
-} from "./sharedUtilities";
+} from "./utils/sharedUtilities";
 import { IProxyNotifyOptions, ProxyNotify } from "./ProxyNotify";
 import { ProxyMapping } from "./ProxyMapping";
 import { ObjectGraphHandler } from "./ObjectGraphHandler";
@@ -17,9 +17,9 @@ import {
   makeRevokeDeleteRefs,
   MembraneMayLog,
   Constants
-} from "./moduleUtilities";
+} from "./utils/moduleUtilities";
 import { ChainHandlers, ModifyRulesAPI } from "./ModifyRulesAPI";
-import { throwAndLog } from "./throwAndLog";
+import { throwAndLog } from "./utils/throwAndLog";
 import type { FunctionListener } from "./ObjectGraphHandler";
 import type { IProxyParts } from "./ProxyMapping";
 

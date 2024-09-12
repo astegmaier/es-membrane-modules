@@ -1,10 +1,10 @@
-import { DataDescriptor, isDataDescriptor, allTraps } from "./sharedUtilities";
+import { DataDescriptor, isDataDescriptor, allTraps } from "./utils/sharedUtilities";
 import { ObjectGraphHandler } from "./ObjectGraphHandler";
-import { getRealTarget, inGraphHandler, makeRevokeDeleteRefs } from "./moduleUtilities";
+import { getRealTarget, inGraphHandler, makeRevokeDeleteRefs } from "./utils/moduleUtilities";
 import { DistortionsListener } from "./DistortionsListener";
-import { throwAndLog } from "./throwAndLog";
+import { throwAndLog } from "./utils/throwAndLog";
 import type { Membrane } from "./Membrane";
-import type { Trap, DataDescriptorsOf } from "./sharedUtilities";
+import type { Trap, DataDescriptorsOf } from "./utils/sharedUtilities";
 import type { IProxyParts, ProxyMapping } from "./ProxyMapping";
 
 const DogfoodMembrane = undefined as Membrane | undefined;

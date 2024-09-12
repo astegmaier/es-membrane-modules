@@ -1,7 +1,7 @@
 import { DataDescriptor } from "./sharedUtilities";
 import { throwAndLog } from "./throwAndLog";
-import type { ILogger, Membrane } from "./Membrane";
-import type { IProxyParts } from "./ProxyMapping";
+import type { ILogger, Membrane } from "../Membrane";
+import type { IProxyParts } from "../ProxyMapping";
 
 export function valueType(value: unknown): "function" | "object" | "primitive" {
   if (value === null) {

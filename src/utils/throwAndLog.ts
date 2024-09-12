@@ -1,4 +1,4 @@
-import { ILogger } from "./Membrane";
+import type { ILogger } from "../Membrane";
 /**
  * Logs an error, then throws it.
  * @param message The message used for the error.

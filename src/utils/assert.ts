@@ -1,4 +1,4 @@
-import { ILogger } from "./Membrane";
+import type { ILogger } from "../Membrane";
 import { throwAndLog } from "./throwAndLog";
 
 /**
