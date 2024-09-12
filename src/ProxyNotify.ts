@@ -1,4 +1,4 @@
-import assert from "./assert";
+import { assert } from "./assert";
 import { DataDescriptor, AccessorDescriptor } from "./sharedUtilities";
 import { ProxyMapping } from "./ProxyMapping";
 import { makeRevokeDeleteRefs } from "./moduleUtilities";

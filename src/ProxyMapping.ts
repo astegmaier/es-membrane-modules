@@ -1,4 +1,4 @@
-import assert from "./assert";
+import { assert } from "./assert";
 import { valueType, NOT_YET_DETERMINED } from "./moduleUtilities";
 import { throwAndLog } from "./throwAndLog";
 import type { ILogger, Membrane } from "./Membrane";

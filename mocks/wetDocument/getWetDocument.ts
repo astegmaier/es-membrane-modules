@@ -1,4 +1,4 @@
-import assert from "../assert";
+import { assert } from "../assert";
 import { IMockElement, IMockElementConstructor } from "./getElementWet";
 import { IMockNode, IMockNodeConstructor } from "./getNodeWet";
 import type { IMockEventTarget, IMockEventTargetConstructor } from "./EventTargetWet";

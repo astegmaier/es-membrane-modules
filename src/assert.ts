@@ -8,7 +8,7 @@ import { throwAndLog } from "./throwAndLog";
  * @param codeLocation The location in the code where the error was thrown. Separate method names with a colon (e.g. ClassName:methodName).
  * @param logger The logger that will be used to log the exception, if thrown.
  */
-export default function assert(
+export function assert(
   value: unknown,
   message: string,
   codeLocation: string,
