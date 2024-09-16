@@ -34,30 +34,30 @@ export type BoundMethods = {
  * object graph, defined by the fieldName.
  */
 export class ObjectGraphHandler implements ProxyHandler<object> {
-  readonly membrane: Membrane;
+  readonly membrane!: Membrane;
 
-  readonly fieldName: symbol | string;
+  readonly fieldName!: symbol | string;
 
-  readonly boundMethods: BoundMethods;
+  readonly boundMethods!: BoundMethods;
 
   private readonly loggerWeakRef: WeakRef<ILogger> | undefined;
 
   /* Temporary until membraneGraphName is defined on Object.prototype through the object graph. */
-  private readonly graphNameDescriptor: DataDescriptor<symbol | string>;
+  private readonly graphNameDescriptor!: DataDescriptor<symbol | string>;
 
   /*
    * original value: [callback() {}, ...]
    * see .defineLazyGetter, ProxyNotify for details.
    */
-  readonly proxiesInConstruction = new WeakMap<any, any>();
+  readonly proxiesInConstruction!: WeakMap<any, any>;
 
-  private __revokeFunctions__: any[] = [];
+  private __revokeFunctions__!: any[];
 
-  private __isDead__: boolean = false;
+  private __isDead__!: boolean;
 
-  readonly __proxyListeners__: ProxyListener[] = [];
+  readonly __proxyListeners__!: ProxyListener[];
 
-  readonly __functionListeners__: FunctionListener[] = [];
+  readonly __functionListeners__!: FunctionListener[];
 
   constructor(membrane: Membrane, fieldName: symbol | string) {
     {
@@ -80,26 +80,39 @@ export class ObjectGraphHandler implements ProxyHandler<object> {
       );
     }, this);
     Object.freeze(boundMethods);
-    this.boundMethods = boundMethods;
 
     // ansteg: to avoid leaking the logger, we are being defensive about introducing new hard references to the logger or the membrane.
     this.loggerWeakRef = membrane.logger ? new WeakRef(membrane.logger) : undefined;
 
-    this.membrane = membrane;
-    this.fieldName = fieldName;
-    this.graphNameDescriptor = new DataDescriptor(fieldName);
+    Object.defineProperties(this, {
+      "membrane": new NWNCDataDescriptor(membrane, false),
 
-    Object.defineProperty(this, "membrane", {
-      enumerable: false,
-      writable: false,
-      configurable: false
+      "fieldName": new NWNCDataDescriptor(fieldName, false),
+
+      "boundMethods": new NWNCDataDescriptor(boundMethods, false),
+
+      /* Temporary until membraneGraphName is defined on Object.prototype through
+       * the object graph.
+       */
+      "graphNameDescriptor": new NWNCDataDescriptor(new DataDescriptor(fieldName), false),
+
+      // see .defineLazyGetter, ProxyNotify for details.
+      "proxiesInConstruction": new NWNCDataDescriptor(
+        new WeakMap(/* original value: [callback() {}, ...]*/),
+        false
+      ),
+
+      // ansteg TODO: this used to be:
+      //"__revokeFunctions__": new NWNCDataDescriptor([], false),
+      // I changed it to make the field modifiable so that I can clear it when the handler is revoked. But maybe it should just be a private field long-term.
+      "__revokeFunctions__": new DataDescriptor([], true, false, false),
+
+      "__isDead__": new DataDescriptor(false, true, true, true),
+
+      "__proxyListeners__": new NWNCDataDescriptor([], false),
+
+      "__functionListeners__": new NWNCDataDescriptor([], false)
     });
-    Object.defineProperty(this, "fieldName", {
-      enumerable: false,
-      writable: false,
-      configurable: false
-    });
-    Object.defineProperty(this, "graphNameDescriptor", { enumerable: false, configurable: false });
   }
 
   private _passThroughFilter: (value: unknown) => boolean = returnFalse;

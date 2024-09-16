@@ -176,15 +176,10 @@ export const ChainHandlerProtection: IChainHandlerProtection = Object.create(Ref
 } satisfies DataDescriptorsOf<IChainHandlerProtection>);
 
 export class ModifyRulesAPI {
-  membrane: Membrane;
+  membrane!: Membrane;
 
   constructor(membrane: Membrane) {
-    this.membrane = membrane;
-    Object.defineProperty(this, "membrane", {
-      enumerable: false,
-      configurable: false,
-      writable: false
-    });
+    Object.defineProperty(this, "membrane", new DataDescriptor(membrane, false, false, false));
     Object.seal(this);
   }
 
