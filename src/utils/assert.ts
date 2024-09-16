@@ -1,5 +1,6 @@
-import type { ILogger } from "../Membrane";
 import { throwAndLog } from "./throwAndLog";
+
+import type { ILogger } from "../Membrane";
 
 /**
  * Throws an error with the given message if the value is not truthy, and logs the error before throwing.

@@ -1,7 +1,8 @@
-import { assert } from "./utils/assert";
-import { valueType, NOT_YET_DETERMINED } from "./utils/moduleUtilities";
-import { throwAndLog } from "./utils/throwAndLog";
 import type { ILogger, Membrane } from "./Membrane";
+
+import { assert } from "./utils/assert";
+import { NOT_YET_DETERMINED, valueType } from "./utils/moduleUtilities";
+import { throwAndLog } from "./utils/throwAndLog";
 
 // ansteg TODO: I commented out references to DogfoodMembrane, but maybe I want to re-add it after I understand what it was trying to do?
 // const DogfoodMembrane = undefined;

@@ -1,27 +1,30 @@
+import { ChainHandlers, ModifyRulesAPI } from "./ModifyRulesAPI";
+import { ObjectGraphHandler } from "./ObjectGraphHandler";
+import { ProxyMapping } from "./ProxyMapping";
+import { ProxyNotify } from "./ProxyNotify";
+
 import { assert } from "./utils/assert";
 import {
-  returnFalse,
-  DataDescriptor,
-  NWNCDataDescriptor,
-  isDataDescriptor,
-  allTraps,
-  Primordials
-} from "./utils/sharedUtilities";
-import { IProxyNotifyOptions, ProxyNotify } from "./ProxyNotify";
-import { ProxyMapping } from "./ProxyMapping";
-import { ObjectGraphHandler } from "./ObjectGraphHandler";
-import {
-  valueType,
-  makeShadowTarget,
-  NOT_YET_DETERMINED,
+  Constants,
   makeRevokeDeleteRefs,
+  makeShadowTarget,
   MembraneMayLog,
-  Constants
+  NOT_YET_DETERMINED,
+  valueType
 } from "./utils/moduleUtilities";
-import { ChainHandlers, ModifyRulesAPI } from "./ModifyRulesAPI";
+import {
+  allTraps,
+  DataDescriptor,
+  isDataDescriptor,
+  NWNCDataDescriptor,
+  Primordials,
+  returnFalse
+} from "./utils/sharedUtilities";
 import { throwAndLog } from "./utils/throwAndLog";
+
 import type { FunctionListener } from "./ObjectGraphHandler";
 import type { IProxyParts } from "./ProxyMapping";
+import type { IProxyNotifyOptions } from "./ProxyNotify";
 
 export type LogLevel = "FATAL" | "ERROR" | "WARN" | "INFO" | "DEBUG" | "TRACE";
 

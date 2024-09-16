@@ -1,14 +1,16 @@
+import { ProxyMapping } from "./ProxyMapping";
+
 import { assert } from "./utils/assert";
 import {
-  returnFalse,
   DataDescriptor,
-  NWNCDataDescriptor,
+  isAccessorDescriptor,
   isDataDescriptor,
-  isAccessorDescriptor
+  NWNCDataDescriptor,
+  returnFalse
 } from "./utils/sharedUtilities";
-import { ProxyMapping } from "./ProxyMapping";
-import { valueType, getRealTarget, AssertIsPropertyKey } from "./utils/moduleUtilities";
+import { AssertIsPropertyKey, getRealTarget, valueType } from "./utils/moduleUtilities";
 import { throwAndLog } from "./utils/throwAndLog";
+
 import type { ILogger, Membrane } from "./Membrane";
 import type { AllListenerMetadata } from "./ProxyNotify";
 

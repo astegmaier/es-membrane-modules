@@ -1,5 +1,6 @@
-import { NWNCDataDescriptor, allTraps, Primordials } from "./utils/sharedUtilities";
+import { allTraps, NWNCDataDescriptor, Primordials } from "./utils/sharedUtilities";
 import { throwAndLog } from "./utils/throwAndLog";
+
 import type { Membrane } from "./Membrane";
 import type { OwnKeysFilter } from "./ModifyRulesAPI";
 
