@@ -7,8 +7,8 @@ class TestMessage {
     public cbToken: string,
     public reason: string,
     public trapName: string,
-    public fromField: string,
-    public toField: string,
+    public fromField: symbol | string,
+    public toField: symbol | string,
     public target: any,
     public rvOrExn: any
   ) {}
@@ -76,8 +76,8 @@ describe("Function listeners", function () {
     cbToken: string,
     reason: string,
     trapName: string,
-    fromField: string,
-    toField: string,
+    fromField: symbol | string,
+    toField: symbol | string,
     target: any,
     rvOrExn: any
   ) {

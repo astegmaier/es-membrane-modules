@@ -495,9 +495,12 @@ describe("basic concepts: ", function () {
     const traceMap = new Map(/* value: name */) as ITraceMap;
     {
       traceMap.addMember = function (value: object, name: string) {
-        if (!this.has(value)) this.set(value, name);
-        if (typeof value === "function" && !this.has(value.prototype))
+        if (!this.has(value)) {
+          this.set(value, name);
+        }
+        if (typeof value === "function" && !this.has(value.prototype)) {
           this.set(value.prototype, name + ".prototype");
+        }
       };
 
       {

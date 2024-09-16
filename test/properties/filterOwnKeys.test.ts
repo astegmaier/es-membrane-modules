@@ -20,7 +20,7 @@
  */
 
 import { MembraneMocks, loggerLib, DAMP } from "../../mocks";
-import { DataDescriptor, isDataDescriptor } from "../../src/sharedUtilities";
+import { DataDescriptor, isDataDescriptor } from "../../src/utils/sharedUtilities";
 import type { IDampMocks, IDocument, IMocks } from "../../mocks";
 import type { Membrane, Constants, OwnKeysFilter } from "../../src";
 

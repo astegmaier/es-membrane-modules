@@ -1,4 +1,5 @@
-import { ILogger } from "./Membrane";
+import type { ILogger } from "../Membrane";
+
 /**
  * Logs an error, then throws it.
  * @param message The message used for the error.
@@ -8,7 +9,7 @@ import { ILogger } from "./Membrane";
 export function throwAndLog(
   message: string,
   codeLocation: string,
-  logger: ILogger | undefined
+  logger: ILogger | undefined | null
 ): never {
   const error = new Error(message);
   logger?.error(message, codeLocation, error);

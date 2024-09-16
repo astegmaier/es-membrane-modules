@@ -1,8 +1,10 @@
-/** @import {ILogger} from "./Membrane"  */
-import { DataDescriptor } from "./sharedUtilities.js";
+import { DataDescriptor } from "./sharedUtilities";
 import { throwAndLog } from "./throwAndLog";
 
-export function valueType(value) {
+import type { ILogger, Membrane } from "../Membrane";
+import type { IProxyParts } from "../ProxyMapping";
+
+export function valueType(value: unknown): "function" | "object" | "primitive" {
   if (value === null) {
     return "primitive";
   }
@@ -13,21 +15,24 @@ export function valueType(value) {
   return type;
 }
 
-export var ShadowKeyMap = new WeakMap();
+export var ShadowKeyMap = new WeakMap<object, any>();
 
 /**
  * Define a shadow target, so we can manipulate the proxy independently of the
  * original target.
  *
- * @argument value {Object} The original target.
+ * @argument value {object} The original target.
  * @argument codeLocation {String} A string to identify the location of the error.
  * @argument logger {ILogger | undefined} a logger to use in case of errors.
  *
- * @returns {Object} A shadow target to minimally emulate the real one.
+ * @returns {object} A shadow target to minimally emulate the real one.
  * @private
  */
-export function makeShadowTarget(value, codeLocation, logger) {
-  "use strict";
+export function makeShadowTarget(
+  value: object,
+  codeLocation: string,
+  logger: ILogger | undefined | null
+): object {
   var rv;
   if (Array.isArray(value)) {
     rv = [];
@@ -42,11 +47,16 @@ export function makeShadowTarget(value, codeLocation, logger) {
   return rv;
 }
 
-export function getRealTarget(target) {
-  return ShadowKeyMap.has(target) ? ShadowKeyMap.get(target) : target;
+/**
+ * Convert a shadow target to a real proxy target.
+ * @param shadowTarget The supposed target.
+ * @returns The target this shadow target maps to.
+ */
+export function getRealTarget<T extends object>(shadowTarget: T): T {
+  return ShadowKeyMap.has(shadowTarget) ? ShadowKeyMap.get(shadowTarget) : shadowTarget;
 }
 
-export function stringifyArg(arg) {
+export function stringifyArg(arg: unknown): string {
   if (arg === null) {
     return "null";
   }
@@ -70,7 +80,7 @@ export function stringifyArg(arg) {
 /**
  * @deprecated
  */
-export function inGraphHandler(trapName, callback) {
+export function inGraphHandler<T>(_trapName: any, callback: T): T {
   return callback;
   /* This seemed like a good idea at the time.  I wanted to know
      when the membrane was executing internal code or not.  But practically
@@ -121,10 +131,10 @@ export function inGraphHandler(trapName, callback) {
   //*/
 }
 
-export const NOT_YET_DETERMINED = {};
+export const NOT_YET_DETERMINED = {} as { not_yet_determined: true };
 Object.defineProperty(NOT_YET_DETERMINED, "not_yet_determined", new DataDescriptor(true));
 
-export function makeRevokeDeleteRefs(parts, mapping, field) {
+export function makeRevokeDeleteRefs(parts: IProxyParts, mapping: any, field: any): any {
   let oldRevoke = parts.revoke;
   if (!oldRevoke) {
     return;
@@ -145,14 +155,18 @@ export function makeRevokeDeleteRefs(parts, mapping, field) {
  * Helper function to determine if anyone may log.
  * @private
  *
- * @returns {Boolean} True if logging is permitted.
+ * @returns {boolean} True if logging is permitted.
  */
 // This function is here because I can blacklist moduleUtilities during debugging.
-export function MembraneMayLog() {
+export function MembraneMayLog(this: Membrane): boolean {
   return typeof this.logger == "object" && Boolean(this.logger);
 }
 
-export function AssertIsPropertyKey(propName, codeLocation, logger) {
+export function AssertIsPropertyKey(
+  propName: string | symbol,
+  codeLocation: string,
+  logger: ILogger | undefined | null
+): propName is string | symbol {
   var type = typeof propName;
   if (type != "string" && type != "symbol") {
     throwAndLog("propName is not a symbol or a string!", codeLocation, logger);

@@ -147,11 +147,11 @@ describe("replacing proxies tests: ", function () {
         it("and replacing all traps with forwarding traps succeeds", function () {
           let handler = membrane.modifyRules.createChainHandler(dryHandler);
           let numCalls = 0;
-          membrane.allTraps.forEach(function <T extends keyof IChainHandler>(trapName: T) {
+          membrane.allTraps.forEach((trapName) => {
             handler[trapName] = function (this: IChainHandler) {
               numCalls++;
-              return this.nextHandler[trapName].apply(this, arguments);
-            } as IChainHandler[T];
+              return (this.nextHandler[trapName] as any).apply(this, arguments);
+            };
           });
 
           replacedProxy = membrane.modifyRules.replaceProxy(dryObject, handler);
@@ -224,14 +224,14 @@ describe("replacing proxies tests: ", function () {
       expect(handler.nextHandler).toBe(Reflect);
       expect(handler.baseHandler).toBe(Reflect);
       let lastVisited = null;
-      membrane.allTraps.forEach(function <T extends keyof IChainHandler>(trapName: T) {
+      membrane.allTraps.forEach((trapName) => {
         handler[trapName] = function (this: IChainHandler) {
           try {
-            var rv = this.nextHandler[trapName].apply(this, arguments);
+            var rv = (this.nextHandler[trapName] as any).apply(this, arguments);
             if (trapName == "ownKeys" && rv.includes("shouldNotBeAmongKeys")) {
               rv.splice(rv.indexOf("shouldNotBeAmongKeys"), 1);
             }
-            return rv as IChainHandler[T];
+            return rv;
           } finally {
             lastVisited = trapName;
           }
