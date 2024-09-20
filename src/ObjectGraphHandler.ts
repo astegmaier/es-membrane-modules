@@ -887,6 +887,31 @@ export class ObjectGraphHandler implements ProxyHandler<object> {
         this.setOwnKeys(shadowTarget); // fix up property list
 
         if (!desc.configurable) {
+          // Before we define a non-configurable 'data' property (i.e. a descriptor with a 'value' rather than 'get' or 'set')
+          // on the shadow target, we need to make sure that the descriptor precisely matches the real target,
+          // because we won't be able to change it later.
+          //
+          // There are interesting semantics on how partial descriptors apply to pre-existing properties,
+          // but instead of writing out all the cases in code, we achieve the same result by simply
+          // copying the end result from the real target. See partial-define-property.test.ts
+          //
+          // This is particularly important if we are transitioning a data property to non-writable,
+          // in which case we must make sure that the 'value' field is populated correctly in the shadowTarget.
+          const targetDesc = Reflect.getOwnPropertyDescriptor(_this, propName)!;
+          const shadowDesc = Reflect.getOwnPropertyDescriptor(shadowTarget, propName);
+          if (
+            isDataDescriptor(targetDesc) &&
+            !isAccessorDescriptor(shadowDesc) && // It's important _not_ to try to overwrite accessor descriptors that may have been defined in this.defineLazyGetter()
+            targetMap.originField !== this.fieldName
+          ) {
+            targetDesc.value = this.membrane.convertArgumentToProxy(
+              this.membrane.getHandlerByName(targetMap.originField),
+              this,
+              targetDesc.value
+            );
+            desc = targetDesc;
+          }
+
           Reflect.defineProperty(shadowTarget, propName, desc);
         }
       }

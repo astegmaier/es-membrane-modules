@@ -676,9 +676,10 @@ export class Membrane {
 
     var keys = Object.keys(desc);
 
-    var wrappedDesc: PropertyDescriptor = {
-      configurable: Boolean(desc.configurable)
-    };
+    const wrappedDesc: PropertyDescriptor = {};
+    if ("configurable" in desc) {
+      wrappedDesc.configurable = Boolean(desc.configurable);
+    }
     if ("enumerable" in desc) {
       wrappedDesc.enumerable = Boolean(desc.enumerable);
     }
