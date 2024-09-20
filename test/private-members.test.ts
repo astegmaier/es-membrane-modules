@@ -3,7 +3,7 @@
 // in this article: https://eisenbergeffect.medium.com/the-prickly-case-of-javascript-proxies-b6c3833b738 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-import { createMembrane } from "./testUtils/createMembrane";
+import { createMembraneProxy } from "./testUtils/createMembraneProxy";
 
 const mockConsoleLog = jest.fn();
 
@@ -50,7 +50,7 @@ describe("Membranes that proxy classes with private members", () => {
   it("does not throw with es-membrane", () => {
     const dryPerson = new Person("John", "Doe");
 
-    const { membrane: wetPerson } = createMembrane(dryPerson);
+    const { proxy: wetPerson } = createMembraneProxy(dryPerson);
 
     wetPerson.introduceYourselfTo("Jane"); // this has the potential to blow up if the Reflect calls within the proxy trap pass a receiver around unnecessarily.
     expect(mockConsoleLog).toHaveBeenCalledWith("Hello Jane! My name is John Doe.");
