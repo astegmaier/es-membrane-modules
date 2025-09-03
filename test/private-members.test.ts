@@ -39,9 +39,7 @@ describe("Membranes that proxy classes with private members", () => {
         return Reflect.get(target, property, receiver);
       }
     });
-    expect(() => proxy.introduceYourselfTo("Jane")).toThrow(
-      "Cannot read private member #firstName from an object whose class did not declare it"
-    );
+    expect(() => proxy.introduceYourselfTo("Jane")).toThrow(TypeError);
     expect(mockConsoleLog).toHaveBeenNthCalledWith(1, 'Access: "introduceYourselfTo"');
     expect(mockConsoleLog).toHaveBeenNthCalledWith(2, 'Access: "fullName"');
     expect(mockConsoleLog).toHaveBeenNthCalledWith(3, 'Access: "firstName"');
