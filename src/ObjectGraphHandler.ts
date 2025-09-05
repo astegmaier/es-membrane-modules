@@ -579,6 +579,15 @@ export class ObjectGraphHandler implements ProxyHandler<object> {
           proto
         );
       } else {
+        // ansteg TODO: These commented-out lines ensured that a mapping exists for the entire prototype chain, even if there isn't a proxy for it
+        //              Thus, it seemed to resolve _some_ of the issues with the failing cross-realm-class-inheritance.test.ts test.
+        //              i.e. it _does_ allow the inherited class to succeed in being constructed.
+        //              But the next layer of the onion is that, even with these lines,
+        //              expect(dryChildInstanceProto).toBe(DryChildClass.prototype) will fail.
+        // const mapping = this.membrane.map.get(proto);
+        // if (!mapping && proto !== null) {
+        //   this.membrane.buildMapping(this, proto);
+        // }
         proxy = proto;
       }
 
