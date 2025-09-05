@@ -134,7 +134,11 @@ describe("cross-realm class inheritance", () => {
     class DryChildClass extends DryBaseClass {}
     const WetChildClass = membrane.convertArgumentToProxy(dryHandler, wetHandler, DryChildClass);
 
-    const dryChildInstance = new DryChildClass(); // anstegTODO: This throws in node 22.17.0 but not in 18.20.8
+    // ansteg TODO: This throws in node 22.17.0 but not in 18.20.8
+    // If we apply the commented-out hacky fix at ObjectGraphHandler:getPrototypeOf:582, this will succeed, BUT, there is a difference in node versions:
+    //   - in 18.20.8 - the instance is a proxy.
+    //   - in 22.17.0 - the instance is an object with a proxy as the prototype. <-- this is wrong.
+    const dryChildInstance = new DryChildClass();
 
     const dryChildInstanceProto = Reflect.getPrototypeOf(dryChildInstance);
     expect(dryChildInstanceProto).toBe(DryChildClass.prototype); // ansteg TODO: See commented-out hack in ObjectGraphHandler:getPrototypeOf:582. Even if we fix the issue with class construction, this line will fail.
