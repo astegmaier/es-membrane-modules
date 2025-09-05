@@ -98,10 +98,14 @@ describe("cross-realm class inheritance", () => {
     const mockConsole = jest.fn();
 
     class WetBaseClass {
-      public baseClassProp: string;
+      public baseClassProp: string; // <-- adding this causes it to succeed 18.20.8. but it still throws in 22.17.0. This is because 18.20.8 bypasses the 'has' trap on ObjectGraphHandler, while 22.17.0 invokes the 'has', which has the same problematic logic to walk the prototype chain.
       constructor() {
         mockConsole("hello from WetBaseClass");
-        this.baseClassProp = "baz"; // <-- adding this causes causes an error.
+        // In 18.20.8 (where the initializer for baseClassProp has succeeded), this will also succeed,
+        // because the existence of the property descriptor for 'baseClassProp'
+        // bypasses the problematic logic that tries to walk the prototype chain in the `set` handler.
+        // In 22.17.0, this will always fail.
+        this.baseClassProp = "baz";
       }
     }
 
@@ -112,7 +116,7 @@ describe("cross-realm class inheritance", () => {
 
     class DryChildClass extends DryBaseClass {}
 
-    const dryChildInstance = new DryChildClass(); // TODO: This throws in node 22.17.0 but not in 18.20.8. Why?
+    const dryChildInstance = new DryChildClass(); // TODO: This throws in node 22.17.0 but not in 18.20.8
 
     const dryChildInstanceProto = Reflect.getPrototypeOf(dryChildInstance);
     expect(dryChildInstanceProto).toBe(DryChildClass.prototype);
