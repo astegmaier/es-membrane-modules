@@ -67,8 +67,6 @@ describe("cross-realm class inheritance", () => {
     class WetBaseClass {
       constructor() {
         mockConsole("hello from WetBaseClass");
-        // // @ts-expect-error
-        // this.baseClassProp = "gaga"; // <-- this causes an error.
       }
     }
 
@@ -88,7 +86,8 @@ describe("cross-realm class inheritance", () => {
 
     const dryChildInstance = new DryChildClass();
 
-    expect(Reflect.getPrototypeOf(dryChildInstance)).toBe(DryChildClass.prototype);
+    const dryChildInstanceProto = Reflect.getPrototypeOf(dryChildInstance);
+    expect(dryChildInstanceProto).toBe(DryChildClass.prototype);
     expect(mockConsole).toHaveBeenNthCalledWith(1, "hello from WetBaseClass");
     expect(mockConsole).toHaveBeenNthCalledWith(2, "hello from DryChildClass");
     expect(dryChildInstance.childInitializedProp).toBe("foo");
@@ -113,7 +112,11 @@ describe("cross-realm class inheritance", () => {
 
     class DryChildClass extends DryBaseClass {}
 
-    // TODO: we need to understand why this is happening.
-    expect(() => new DryChildClass()).toThrow("Must find membrane value for prototype");
+    const dryChildInstance = new DryChildClass(); // TODO: This throws in node 22.17.0 but not in 18.20.8. Why?
+
+    const dryChildInstanceProto = Reflect.getPrototypeOf(dryChildInstance);
+    expect(dryChildInstanceProto).toBe(DryChildClass.prototype);
+    expect(mockConsole).toHaveBeenCalledWith("hello from WetBaseClass");
+    expect(dryChildInstance.baseClassProp).toBe("baz");
   });
 });
