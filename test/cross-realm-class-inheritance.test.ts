@@ -94,62 +94,13 @@ describe("cross-realm class inheritance", () => {
     expect(dryChildInstance.childConstructorProp).toBe("bar");
   });
 
-  it("CANNOT extend the class definition of a cross-membrane base class - with base class initialization", () => {
-    const mockConsole = jest.fn();
-
-    class WetBaseClass {
-      public baseClassProp: string; // <-- adding this causes it to succeed 18.20.8. but it still throws in 22.17.0. This is because 18.20.8 bypasses the 'has' trap on ObjectGraphHandler, while 22.17.0 invokes the 'has', which has the same problematic logic to walk the prototype chain.
-      constructor() {
-        mockConsole("hello from WetBaseClass");
-
-        const thisProto: any = Reflect.getPrototypeOf(this);
-        const thisProtoProto: any = Reflect.getPrototypeOf(thisProto);
-        const thisProtoProtoProto: any = Reflect.getPrototypeOf(thisProtoProto);
-        const newTargetProto: any = Reflect.getPrototypeOf(new.target);
-
-        expect(thisProto).toBe(WetChildClass.prototype);
-        expect(thisProto.constructor).toBe(WetChildClass);
-        expect(thisProto.constructor.name).toBe("rv"); // <-- this SHOULD be 'WetChildClass'
-        expect(new.target).toBe(WetChildClass);
-        expect(new.target.name).toBe("rv"); // <-- this SHOULD be 'WetChildClass'
-        expect(thisProtoProto).toBe(WetBaseClass.prototype);
-        expect(thisProtoProto.constructor).toBe(WetBaseClass);
-        expect(newTargetProto).toBe(WetBaseClass);
-        expect(thisProtoProtoProto).toBe(Object.prototype);
-        expect(Reflect.getPrototypeOf(thisProtoProtoProto)).toBe(null);
-
-        // In 18.20.8 (where the initializer for baseClassProp has succeeded), this will also succeed,
-        // because the existence of the property descriptor for 'baseClassProp'
-        // bypasses the problematic logic that tries to walk the prototype chain in the `set` handler.
-        // In 22.17.0, this will always fail.
-        this.baseClassProp = "baz";
-      }
-    }
-
-    const membrane = new Membrane();
-    const dryHandler = membrane.getHandlerByName("dry", { mustCreate: true });
-    const wetHandler = membrane.getHandlerByName("wet", { mustCreate: true });
-    const DryBaseClass = membrane.convertArgumentToProxy(wetHandler, dryHandler, WetBaseClass);
-
-    class DryChildClass extends DryBaseClass {}
-    const WetChildClass = membrane.convertArgumentToProxy(dryHandler, wetHandler, DryChildClass);
-
-    // ansteg TODO: This throws in node 22.17.0 but not in 18.20.8
-    // If we apply the commented-out hacky fix at ObjectGraphHandler:getPrototypeOf:582, this will succeed, BUT, there is a difference in node versions:
-    //   - in 18.20.8 - the instance is a proxy.
-    //   - in 22.17.0 - the instance is an object with a proxy as the prototype. <-- this is wrong.
-    const dryChildInstance = new DryChildClass();
-
-    const dryChildInstanceProto = Reflect.getPrototypeOf(dryChildInstance);
-    expect(dryChildInstanceProto).toBe(DryChildClass.prototype); // ansteg TODO: See commented-out hack in ObjectGraphHandler:getPrototypeOf:582. Even if we fix the issue with class construction, this line will fail.
-    expect(mockConsole).toHaveBeenCalledWith("hello from WetBaseClass");
-    expect(dryChildInstance.baseClassProp).toBe("baz");
-  });
-
   it("Non-membrane test with base-class initialization", () => {
+    // This test illustrates the default non-proxy behavior, so we can compare membrane behavior against it below.
     class BaseClass {
       public baseClassProp: string;
       constructor() {
+        // 'this' is a value with a prototype chain that looks like this:
+        // {} > ChildClass.prototype > BaseClass.prototype > Object.prototype > null
         const thisProto: any = Reflect.getPrototypeOf(this);
         const thisProtoProto: any = Reflect.getPrototypeOf(thisProto);
         const thisProtoProtoProto: any = Reflect.getPrototypeOf(thisProtoProto);
@@ -174,9 +125,131 @@ describe("cross-realm class inheritance", () => {
 
     class ChildClass extends BaseClass {}
 
-    const childClassInstance = new ChildClass();
-    expect(Reflect.getOwnPropertyDescriptor(childClassInstance, "baseClassProp")!.value).toBe(
-      "baz"
-    );
+    const childInstance = new ChildClass();
+
+    const childInstanceProto = Reflect.getPrototypeOf(childInstance);
+    expect(childInstanceProto).toBe(ChildClass.prototype);
+    expect(childInstance.baseClassProp).toBe("baz");
+    // this.baseClassProp is defined directly on the ChildClass instance, not on the prototype chain.
+    expect(Reflect.getOwnPropertyDescriptor(childInstance, "baseClassProp")!.value).toBe("baz");
+  });
+
+  it("can extend the class definition of a cross-membrane base class - with a base class constructor initializer", () => {
+    const mockConsole = jest.fn();
+
+    class WetBaseClass {
+      constructor() {
+        mockConsole("hello from WetBaseClass");
+
+        const thisProto: any = Reflect.getPrototypeOf(this);
+        const thisProtoProto: any = Reflect.getPrototypeOf(thisProto);
+        const thisProtoProtoProto: any = Reflect.getPrototypeOf(thisProtoProto);
+        const newTargetProto: any = Reflect.getPrototypeOf(new.target);
+
+        expect(thisProto).toBe(WetChildClass.prototype);
+        expect(thisProto.constructor).toBe(WetChildClass);
+        expect(thisProto.constructor.name).toBe("rv"); // <-- this SHOULD be 'WetChildClass'
+        expect(new.target).toBe(WetChildClass);
+        expect(new.target.name).toBe("rv"); // <-- this SHOULD be 'WetChildClass'
+        expect(thisProtoProto).toBe(WetBaseClass.prototype);
+        expect(thisProtoProto.constructor).toBe(WetBaseClass);
+        expect(newTargetProto).toBe(WetBaseClass);
+        expect(thisProtoProtoProto).toBe(Object.prototype);
+        expect(Reflect.getPrototypeOf(thisProtoProtoProto)).toBe(null);
+
+        // This test will fail in node 22.17.0 AND 18.20.8, because it invokes the problematic 'set' trap in both cases.
+        (this as any).baseClassProp = "baz";
+      }
+    }
+
+    const membrane = new Membrane();
+    const dryHandler = membrane.getHandlerByName("dry", { mustCreate: true });
+    const wetHandler = membrane.getHandlerByName("wet", { mustCreate: true });
+    const DryBaseClass = membrane.convertArgumentToProxy(wetHandler, dryHandler, WetBaseClass);
+
+    class DryChildClass extends DryBaseClass {}
+    const WetChildClass = membrane.convertArgumentToProxy(dryHandler, wetHandler, DryChildClass);
+
+    const dryChildInstance = new DryChildClass();
+
+    const dryChildInstanceProto = Reflect.getPrototypeOf(dryChildInstance);
+    expect(dryChildInstanceProto).toBe(DryChildClass.prototype);
+    expect(mockConsole).toHaveBeenCalledWith("hello from WetBaseClass");
+    expect(dryChildInstance.baseClassProp).toBe("baz");
+    expect(Reflect.getOwnPropertyDescriptor(dryChildInstance, "baseClassProp")!.value).toBe("baz");
+  });
+
+  it("can extend the class definition of a cross-membrane base class - with base class property initializer", () => {
+    class WetBaseClass {
+      // Doing initialization here instead of on the constructor causes the test to succeed in node 18.20.8.
+      // But it still throws in node 22.17.0. This is because 18.20.8 bypasses the 'has' trap on ObjectGraphHandler,
+      // while 22.17.0 invokes the 'has', which has the same problematic logic to walk the prototype chain.
+      public baseClassProp: string = "baz";
+    }
+
+    const membrane = new Membrane();
+    const dryHandler = membrane.getHandlerByName("dry", { mustCreate: true });
+    const wetHandler = membrane.getHandlerByName("wet", { mustCreate: true });
+    const DryBaseClass = membrane.convertArgumentToProxy(wetHandler, dryHandler, WetBaseClass);
+
+    class DryChildClass extends DryBaseClass {}
+
+    const dryChildInstance = new DryChildClass();
+
+    const dryChildInstanceProto = Reflect.getPrototypeOf(dryChildInstance);
+    expect(dryChildInstanceProto).toBe(DryChildClass.prototype);
+    expect(dryChildInstance.baseClassProp).toBe("baz");
+    expect(Reflect.getOwnPropertyDescriptor(dryChildInstance, "baseClassProp")!.value).toBe("baz");
+  });
+
+  it("can extend the class definition of a cross-membrane base class - with constructor initializer + base class property definition", () => {
+    class WetBaseClass {
+      // Adding a property definition here will define the property as undefined _before_ 'this' is passed
+      // to the constructor. In Node 18.20.8, this causes the test to succeed.
+      // However, in node 22.17.0, the test still fails, because defining the property here invokes the 'has' trap
+      // on ObjectGraphHandler (unlike what 18.20.8 will do), which has the same problematic logic to walk the
+      // prototype chain as the 'set' trap (invoked by the constructor) does.
+      public baseClassProp: string;
+      constructor() {
+        this.baseClassProp = "baz";
+      }
+    }
+
+    const membrane = new Membrane();
+    const dryHandler = membrane.getHandlerByName("dry", { mustCreate: true });
+    const wetHandler = membrane.getHandlerByName("wet", { mustCreate: true });
+    const DryBaseClass = membrane.convertArgumentToProxy(wetHandler, dryHandler, WetBaseClass);
+
+    class DryChildClass extends DryBaseClass {}
+
+    const dryChildInstance = new DryChildClass();
+
+    const dryChildInstanceProto = Reflect.getPrototypeOf(dryChildInstance);
+    expect(dryChildInstanceProto).toBe(DryChildClass.prototype);
+    expect(dryChildInstance.baseClassProp).toBe("baz");
+    expect(Reflect.getOwnPropertyDescriptor(dryChildInstance, "baseClassProp")!.value).toBe("baz");
+  });
+
+  it("correctly wraps values that might be initialized in a cross-membrane base class", () => {
+    const membrane = new Membrane();
+    const dryHandler = membrane.getHandlerByName("dry", { mustCreate: true });
+    const wetHandler = membrane.getHandlerByName("wet", { mustCreate: true });
+
+    const wetProperty = { hello: "world" };
+    const dryProperty = membrane.convertArgumentToProxy(wetHandler, dryHandler, wetProperty);
+
+    class WetBaseClass {
+      constructor() {
+        // We deliberately omitted the property initializer, so we can test "pure" constructor initialization.
+        (this as any).baseClassProp = wetProperty;
+      }
+    }
+    const DryBaseClass = membrane.convertArgumentToProxy(wetHandler, dryHandler, WetBaseClass);
+
+    class DryChildClass extends DryBaseClass {}
+
+    const dryChildInstance = new DryChildClass();
+
+    expect(dryChildInstance.baseClassProp).toBe(dryProperty);
   });
 });
