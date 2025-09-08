@@ -11,6 +11,7 @@ export type {
 export type {
   ILogger,
   LogLevel,
+  AdditionalProps,
   MembraneOptions,
   IBuildMappingOptions,
   IGetHandlerByNameOptions

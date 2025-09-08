@@ -28,14 +28,34 @@ import type { IProxyNotifyOptions } from "./ProxyNotify";
 
 export type LogLevel = "FATAL" | "ERROR" | "WARN" | "INFO" | "DEBUG" | "TRACE";
 
+export type AdditionalProps = {
+  [propName: string]: string | symbol | number | boolean | null | undefined;
+};
+
 export interface ILogger {
-  fatal(message: string, codeLocation?: string, error?: unknown): void;
-  error(message: string, codeLocation?: string, error?: unknown): void;
-  warn(message: string, codeLocation?: string): void;
-  info(message: string, codeLocation?: string): void;
-  debug(message: string, codeLocation?: string): void;
-  trace(message: string, codeLocation?: string): void;
-  log(level: LogLevel, message: string, codeLocation?: string, error?: unknown): void;
+  fatal(
+    message: string,
+    codeLocation?: string,
+    error?: unknown,
+    additionalProps?: AdditionalProps
+  ): void;
+  error(
+    message: string,
+    codeLocation?: string,
+    error?: unknown,
+    additionalProps?: AdditionalProps
+  ): void;
+  warn(message: string, codeLocation?: string, additionalProps?: AdditionalProps): void;
+  info(message: string, codeLocation?: string, additionalProps?: AdditionalProps): void;
+  debug(message: string, codeLocation?: string, additionalProps?: AdditionalProps): void;
+  trace(message: string, codeLocation?: string, additionalProps?: AdditionalProps): void;
+  log(
+    level: LogLevel,
+    message: string,
+    codeLocation?: string,
+    error?: unknown,
+    additionalProps?: AdditionalProps
+  ): void;
 }
 
 export interface MembraneOptions {

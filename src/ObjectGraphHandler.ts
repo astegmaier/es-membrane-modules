@@ -10,8 +10,9 @@ import {
 } from "./utils/sharedUtilities";
 import { AssertIsPropertyKey, getRealTarget, valueType } from "./utils/moduleUtilities";
 import { throwAndLog } from "./utils/throwAndLog";
+import { safeStringify } from "./safeStringify";
 
-import type { ILogger, Membrane } from "./Membrane";
+import type { AdditionalProps, ILogger, Membrane } from "./Membrane";
 import type { AllListenerMetadata } from "./ProxyNotify";
 
 export type FunctionListener = (
@@ -332,12 +333,36 @@ export class ObjectGraphHandler implements ProxyHandler<object> {
           if (!foundProto) {
             return Reflect.get(proto, propName, receiver);
           }
-          assert(
-            other === proto,
-            "Retrieved prototypes must match",
-            "ObjectGraphHandler:get",
-            this.membrane?.logger
-          );
+          if (other !== proto) {
+            const error = new Error("Retrieved prototypes must match");
+            let additionalProps: AdditionalProps = {};
+            try {
+              const originalRealTarget = getRealTarget(shadowTarget);
+              additionalProps = {
+                esMembraneFieldName: this.fieldName,
+                esMembranePropName: propName,
+                esMembraneOriginalTarget: safeStringify(originalRealTarget),
+                esMembraneOriginalOriginField:
+                  this.membrane.map.get(originalRealTarget)?.originField,
+                esMembraneProtoLookups: protoLookups,
+                esMembraneCurrentProto: safeStringify(
+                  this.membrane.getMembraneValue(this.fieldName, proto)[1]
+                ),
+                esMembraneCurrentProtoOriginField: this.membrane.map.get(proto)?.originField,
+                esMembranePrevProto: safeStringify(getRealTarget(shadow)),
+                esMembranePrevProtoOriginField: targetMap?.originField
+              };
+            } catch (e) {
+              additionalProps = { errorGeneratingAdditionalProps: safeStringify(e) };
+            }
+            this.membrane?.logger?.error(
+              error.message,
+              "ObjectGraphHandler:get",
+              error,
+              additionalProps
+            );
+            throw error;
+          }
         }
 
         if (Reflect.isExtensible(shadow)) {
