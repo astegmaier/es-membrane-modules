@@ -4,6 +4,7 @@
   "description": "A fork of es-membrane that uses modules, classes, and typescript.",
   "license": "ISC",
   "author": "Andrew Stegmaier",
+  "packageManager": "yarn@1.22.22",
   "contributors": [
     {
       "name": "Alexander J. Vincent",
