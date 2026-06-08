@@ -26,6 +26,34 @@ class Person {
   introduceYourselfTo(other = "friend") {
     mockConsoleLog(`Hello ${other}! My name is ${this.fullName}.`);
   }
+
+  #buildGreeting() {
+    return "Howdy!";
+  }
+
+  get greeting() {
+    return this.#buildGreeting();
+  }
+
+  #cachedProxiedPerson: Person | null = null;
+
+  #getProxiedPerson() {
+    if (!this.#cachedProxiedPerson) {
+      this.#cachedProxiedPerson = new Proxy(this, {
+        get: (target, prop) => {
+          const value = Reflect.get(target, prop, target);
+          return value;
+        }
+      });
+    }
+    return this.#cachedProxiedPerson;
+  }
+
+  age = 10;
+
+  get proxiedPerson() {
+    return this.#getProxiedPerson();
+  }
 }
 
 describe("Membranes that proxy classes with private members", () => {
@@ -52,5 +80,36 @@ describe("Membranes that proxy classes with private members", () => {
 
     wetPerson.introduceYourselfTo("Jane"); // this has the potential to blow up if the Reflect calls within the proxy trap pass a receiver around unnecessarily.
     expect(mockConsoleLog).toHaveBeenCalledWith("Hello Jane! My name is John Doe.");
+  });
+
+  it("does not throw when accessing public getter that access a private method", () => {
+    const dryPerson = new Person("John", "Doe");
+
+    const { proxy: wetPerson } = createMembraneProxy(dryPerson);
+
+    let greeting = wetPerson.greeting; // this has the potential to blow up if the Reflect calls within the proxy trap pass a receiver around unnecessarily.
+    expect(greeting).toBe("Howdy!");
+  });
+
+  it("does not throw when accessing properties that return another proxy", () => {
+    const dryPerson = new Person("John", "Doe");
+
+    const { proxy: wetPerson } = createMembraneProxy(dryPerson);
+
+    let wetPersonProxy = wetPerson.proxiedPerson;
+    expect(wetPersonProxy.age).toBe(10);
+
+    let wetPersonProxy2 = wetPersonProxy.proxiedPerson;
+    expect(wetPersonProxy2.age).toBe(10);
+  });
+
+  it("same scenario as above, but without membrane", () => {
+    const person = new Person("John", "Doe");
+
+    let personProxy = person.proxiedPerson;
+    expect(personProxy.age).toBe(10);
+
+    let personProxy2 = personProxy.proxiedPerson;
+    expect(personProxy2.age).toBe(10);
   });
 });
